@@ -1,4 +1,5 @@
 import { getSupabaseBrowserClient } from "@/shared/lib/supabase";
+import { nomeSelecaoPt } from "@/shared/lib/selecao-nomes-pt";
 import type { FaseCopa, Partida, Selecao, StatusPartida } from "@/entities/partida";
 
 // ---------------------------------------------------------------------------
@@ -42,7 +43,9 @@ interface PartidaDb {
  */
 function mapSelecao(db: SelecaoDb | null, label: string | null): Selecao {
   if (db !== null) {
-    return { id: db.id, nome: db.nome, codigo: db.codigo };
+    // O banco guarda o nome em inglês (dataset openfootball); traduz pelo
+    // código FIFA para exibir em PT-BR, com fallback no nome original.
+    return { id: db.id, nome: nomeSelecaoPt(db.codigo, db.nome), codigo: db.codigo };
   }
   // Placeholder: código usa até 3 caracteres do rótulo para exibição compacta
   const rotulo = label ?? "?";
