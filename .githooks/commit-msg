@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Bloqueia rastro de autoria IA/LLM em mensagens de commit.
+# Referencias a arquivos (.claude/, CLAUDE.md) sao permitidas;
+# o que nao pode aparecer e' atribuicao de autoria a IA.
+
+set -e
+
+msg_file="$1"
+msg="$(cat "$msg_file")"
+
+# Padroes de atribuicao proibidos (case-insensitive)
+deny_patterns=(
+  'co-authored-by:[[:space:]]*[^<]*<?(noreply@anthropic|claude|gpt|openai|cursor|copilot)'
+  'generated[[:space:]]+(with|by)[[:space:]]+\[?claude'
+  'generated[[:space:]]+(with|by)[[:space:]]+(anthropic|chatgpt|gpt-[0-9]|copilot|cursor)'
+  'powered[[:space:]]+by[[:space:]]+claude'
+  'assisted[[:space:]]+by[[:space:]]+(claude|chatgpt|copilot|cursor)'
+  '🤖'
+  'claude\.ai/code'
+  'anthropic\.com'
+)
+
+for pat in "${deny_patterns[@]}"; do
+  if echo "$msg" | grep -qiE "$pat"; then
+    echo "ERRO commit-msg: rastro de autoria IA detectado ('$pat')." >&2
+    echo "Remova atribuicoes a Claude/Anthropic/GPT/Copilot/Cursor e tente novamente." >&2
+    exit 1
+  fi
+done
+
+exit 0

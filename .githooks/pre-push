@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Bloqueia push executado por agentes de IA (Claude Code, Cursor etc.).
+# Apenas o desenvolvedor humano faz push.
+
+set -e
+
+# Claude Code define CLAUDECODE=1 e CLAUDE_CODE_ENTRYPOINT no ambiente
+if [ -n "$CLAUDECODE" ] || [ -n "$CLAUDE_CODE_ENTRYPOINT" ] || [ -n "$ANTHROPIC_API_KEY" ] || [ -n "$CURSOR_AGENT" ] || [ -n "$AIDER_AUTO" ]; then
+  echo "ERRO pre-push: push bloqueado para agentes de IA." >&2
+  echo "Apenas o desenvolvedor humano executa 'git push' neste repositorio." >&2
+  exit 1
+fi
+
+# Override explicito do humano (exporte HUMAN_PUSH=1 para autorizar)
+if [ "$HUMAN_PUSH" = "1" ]; then
+  exit 0
+fi
+
+# Se TTY nao esta disponivel (sessao nao-interativa), bloqueia por seguranca
+if [ ! -t 0 ] && [ ! -t 1 ]; then
+  echo "ERRO pre-push: push em sessao nao-interativa bloqueado." >&2
+  echo "Execute 'HUMAN_PUSH=1 git push ...' apenas se voce for o desenvolvedor humano." >&2
+  exit 1
+fi
+
+exit 0
