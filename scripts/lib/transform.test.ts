@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect } from "vitest";
 import {
   parseKickoffToUtc,
@@ -14,6 +15,12 @@ describe("parseKickoffToUtc", () => {
   it("converte horário com offset UTC-4 para UTC", () => {
     expect(parseKickoffToUtc("2026-06-18", "12:00 UTC-4")).toBe("2026-06-18T16:00:00.000Z");
   });
+  it("converte horário com offset UTC+3 para UTC", () => {
+    expect(parseKickoffToUtc("2026-06-20", "15:00 UTC+3")).toBe("2026-06-20T12:00:00.000Z");
+  });
+  it("lança erro para formato inesperado", () => {
+    expect(() => parseKickoffToUtc("2026-06-11", "13h00 BRT")).toThrow(/formato inesperado/);
+  });
 });
 
 describe("roundToFase", () => {
@@ -28,6 +35,9 @@ describe("roundToFase", () => {
     expect(roundToFase("Semi-final")).toBe("semifinal");
     expect(roundToFase("Match for third place")).toBe("terceiro-lugar");
     expect(roundToFase("Final")).toBe("final");
+  });
+  it("lança erro para round desconhecido", () => {
+    expect(() => roundToFase("Playoff")).toThrow(/Playoff/);
   });
 });
 
