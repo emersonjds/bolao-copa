@@ -152,9 +152,9 @@ function CardEdicao({ partida, onCancelar }: CardEdicaoProps) {
       </div>
 
       {/* Confronto com inputs */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         {/* Mandante */}
-        <div className="flex flex-1 items-center gap-2">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <FlagIcon
             codigoFifa={partida.mandante.codigo}
             nome={partida.mandante.nome}
@@ -180,7 +180,7 @@ function CardEdicao({ partida, onCancelar }: CardEdicaoProps) {
             value={golsMandante}
             onChange={(e) => setGolsMandante(e.target.value)}
             disabled={mutation.isPending}
-            className="h-11 w-14 rounded-xl border border-input bg-background text-center font-mono text-xl font-bold text-foreground focus:border-brand-500 focus:ring-1 focus:ring-brand-500/40 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-11 w-12 rounded-xl border border-input bg-background text-center font-mono text-lg font-bold text-foreground focus:border-brand-500 focus:ring-1 focus:ring-brand-500/40 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
           />
           <span className="font-mono text-lg font-bold text-muted-foreground" aria-hidden="true">
             ×
@@ -198,12 +198,12 @@ function CardEdicao({ partida, onCancelar }: CardEdicaoProps) {
             value={golsVisitante}
             onChange={(e) => setGolsVisitante(e.target.value)}
             disabled={mutation.isPending}
-            className="h-11 w-14 rounded-xl border border-input bg-background text-center font-mono text-xl font-bold text-foreground focus:border-brand-500 focus:ring-1 focus:ring-brand-500/40 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-11 w-12 rounded-xl border border-input bg-background text-center font-mono text-lg font-bold text-foreground focus:border-brand-500 focus:ring-1 focus:ring-brand-500/40 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
 
         {/* Visitante */}
-        <div className="flex flex-1 items-center justify-end gap-2">
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
           <span className="truncate text-right text-sm font-medium text-foreground">
             {partida.visitante.nome}
           </span>

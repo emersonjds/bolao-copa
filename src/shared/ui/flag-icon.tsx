@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Shield } from "lucide-react";
 import { getFlagCode } from "@/shared/lib/fifa-flags";
 
@@ -15,13 +18,17 @@ const SIZE_CLASSES: Record<NonNullable<FlagIconProps["tamanho"]>, string> = {
 
 /**
  * Exibe a bandeira de uma seleção a partir do código FIFA-3.
- * Usa a lib `flag-icons` (CSS importado em app/layout.tsx).
- * Quando o código é desconhecido ou ausente, exibe um ícone de escudo.
+ * Usa o SVG do flagcdn.com (consistente em todo dispositivo, sem depender do
+ * CSS do flag-icons — que conflita com o loader de SVG do projeto). Em código
+ * desconhecido, ausente, ou falha de carregamento, mostra um ícone de escudo.
  */
 export function FlagIcon({ codigoFifa, nome, tamanho = "md" }: FlagIconProps) {
+  const [erro, setErro] = useState(false);
   const iso = codigoFifa ? getFlagCode(codigoFifa) : "xx";
   const sizeClass = SIZE_CLASSES[tamanho];
   const label = nome ?? "Seleção a definir";
+
+  const mostraEscudo = iso === "xx" || erro;
 
   return (
     <span
@@ -29,10 +36,17 @@ export function FlagIcon({ codigoFifa, nome, tamanho = "md" }: FlagIconProps) {
       aria-label={label}
       className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted ring-1 ring-border/40 ${sizeClass}`}
     >
-      {iso !== "xx" ? (
-        <span className={`fi fi-${iso} fis block h-full w-full`} />
-      ) : (
+      {mostraEscudo ? (
         <Shield className="h-1/2 w-1/2 text-muted-foreground" aria-hidden="true" />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element -- bandeira externa em static export
+        <img
+          src={`https://flagcdn.com/${iso}.svg`}
+          alt=""
+          className="h-full w-full object-cover"
+          loading="lazy"
+          onError={() => setErro(true)}
+        />
       )}
     </span>
   );

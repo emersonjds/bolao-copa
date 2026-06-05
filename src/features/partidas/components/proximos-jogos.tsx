@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePartidas } from "../api/queries";
+import { FlagIcon } from "@/shared/ui/flag-icon";
 import type { Partida, StatusPartida } from "@/entities/partida";
 
 const formatadorData = new Intl.DateTimeFormat("pt-BR", {
@@ -42,9 +43,7 @@ function StatusPill({ status }: { status: StatusPartida }) {
 function Selecao({ codigo, nome }: { codigo: string; nome: string }) {
   return (
     <div className="flex flex-1 flex-col items-center gap-1.5">
-      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 font-mono text-xs font-bold text-brand-800 ring-1 ring-brand-100">
-        {codigo}
-      </span>
+      <FlagIcon codigoFifa={codigo} nome={nome} tamanho="lg" />
       <span className="text-center text-xs font-medium text-foreground">{nome}</span>
     </div>
   );
