@@ -1,4 +1,11 @@
-export type FaseCopa = "grupos" | "oitavas" | "quartas" | "semifinal" | "terceiro-lugar" | "final";
+export type FaseCopa =
+  | "grupos"
+  | "trinta-e-dois"
+  | "oitavas"
+  | "quartas"
+  | "semifinal"
+  | "terceiro-lugar"
+  | "final";
 
 export type StatusPartida = "agendada" | "ao-vivo" | "encerrada";
 
