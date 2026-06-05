@@ -25,6 +25,7 @@ supabase db push       # aplica as migrations
   são decididos no banco (RLS + triggers), nunca no cliente.
 - **RLS default-deny** em todas as tabelas. Policies sempre comparam contra
   `auth.uid()`.
-- **Segredos nunca commitados**: `service_role key`, senhas e URLs com credencial
-  ficam em `.env.local` / `supabase/.env` (ambos no `.gitignore`). Só a `anon key`
-  pública vai pro frontend via `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+- **Segredos nunca commitados**: a `secret key` (service_role), senhas e URLs com
+  credencial ficam em `.env.local` / `supabase/.env` (ambos no `.gitignore`). Só a
+  `publishable key` pública vai pro frontend via
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
