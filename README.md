@@ -42,7 +42,22 @@ App em `http://localhost:3000`. Requer Node 20+.
 | `pnpm deploy`   | Build + deploy no Cloudflare Workers        |
 | `pnpm validate` | type-check + lint + format:check + test:run |
 
-## Arquitetura — Feature-Sliced Design
+## Estrutura do monorepo
+
+```
+bolao-copa/
+├── src/          ← Frontend (Next.js, Feature-Sliced Design) — ver abaixo
+├── public/       ← Assets estáticos
+└── supabase/     ← Backend (Supabase)
+    ├── migrations/  ← db: schema SQL + RLS + triggers
+    └── functions/   ← api: Edge Functions (apuração, sync de resultados)
+```
+
+Frontend e backend vivem no mesmo repositório. O frontend é estático
+(Cloudflare); o backend é Supabase (Postgres + Auth + RLS + Edge Functions).
+Detalhes do backend em [`supabase/README.md`](./supabase/README.md).
+
+## Arquitetura do frontend — Feature-Sliced Design
 
 ```
 src/
