@@ -1,0 +1,12 @@
+# Prettier — arquivos que NÃO devem ser formatados
+.next/
+out/
+build/
+node_modules/
+bun.lockb
+*.lock
+pnpm-lock.yaml
+coverage/
+public/
+*.min.js
+*.min.css
