@@ -34,7 +34,7 @@ export function FlagIcon({ codigoFifa, nome, tamanho = "md" }: FlagIconProps) {
     <span
       role="img"
       aria-label={label}
-      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted ring-1 ring-border/40 ${sizeClass}`}
+      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted ring-1 ring-black/10 ${sizeClass}`}
     >
       {mostraEscudo ? (
         <Shield className="h-1/2 w-1/2 text-muted-foreground" aria-hidden="true" />
