@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ===== shadcn/ui CSS Variables — Paleta Bolão da Copa (verde-gramado + dourado) ===== */
+:root {
+  --background: 140 30% 98%;
+  --foreground: 150 30% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 150 30% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 150 30% 12%;
+  --primary: 142 72% 35%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 140 35% 95%;
+  --secondary-foreground: 150 30% 12%;
+  --muted: 140 20% 95%;
+  --muted-foreground: 150 10% 38%;
+  --accent: 38 92% 50%;
+  --accent-foreground: 30 50% 12%;
+  --destructive: 0 74% 57%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 140 18% 88%;
+  --input: 140 18% 88%;
+  --ring: 142 72% 35%;
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: 150 30% 8%;
+  --foreground: 140 20% 95%;
+  --card: 150 28% 11%;
+  --card-foreground: 140 20% 95%;
+  --popover: 150 28% 11%;
+  --popover-foreground: 140 20% 95%;
+  --primary: 142 64% 45%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 150 20% 16%;
+  --secondary-foreground: 140 20% 90%;
+  --muted: 150 20% 16%;
+  --muted-foreground: 140 12% 62%;
+  --accent: 38 92% 55%;
+  --accent-foreground: 30 50% 12%;
+  --destructive: 0 74% 57%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 150 18% 22%;
+  --input: 150 18% 22%;
+  --ring: 142 64% 45%;
+}
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+}
+
+@theme {
+  --font-*: initial;
+  --font-outfit: Outfit, sans-serif;
+
+  --breakpoint-2xsm: 375px;
+  --breakpoint-xsm: 425px;
+
+  /* Verde-gramado — cor principal */
+  --color-brand-50: #f0fdf4;
+  --color-brand-100: #dcfce7;
+  --color-brand-200: #bbf7d0;
+  --color-brand-300: #86efac;
+  --color-brand-400: #4ade80;
+  --color-brand-500: #16a34a;
+  --color-brand-600: #15803d;
+  --color-brand-700: #166534;
+  --color-brand-800: #14532d;
+  --color-brand-900: #0f3d22;
+  --color-brand-950: #052e16;
+
+  /* Dourado/troféu — destaque */
+  --color-gold-300: #fcd34d;
+  --color-gold-400: #fbbf24;
+  --color-gold-500: #f59e0b;
+  --color-gold-600: #d97706;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+  }
+}

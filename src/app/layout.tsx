@@ -1,0 +1,34 @@
+import { Outfit } from "next/font/google";
+import type { Metadata } from "next";
+import { Toaster } from "sonner";
+import "./globals.css";
+import { QueryProvider } from "@/shared/lib/query";
+import { MockProvider } from "@/mocks/MockProvider";
+
+const outfit = Outfit({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "Bolão da Copa 2026",
+  description: "Faça seus palpites na Copa do Mundo 2026 e dispute o ranking com os amigos.",
+};
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="pt-BR">
+      <body className={outfit.className}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+        >
+          Ir para o conteúdo principal
+        </a>
+        <MockProvider>
+          <QueryProvider>
+            {children}
+            <Toaster richColors position="top-right" />
+          </QueryProvider>
+        </MockProvider>
+      </body>
+    </html>
+  );
+}
