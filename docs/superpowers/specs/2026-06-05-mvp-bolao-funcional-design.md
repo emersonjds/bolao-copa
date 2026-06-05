@@ -118,6 +118,11 @@ Não há tela de "promover admin" neste ciclo. Após o primeiro login, define-se
 - **Proteção de rotas:** `/palpites` e `/admin` exigem sessão; sem sessão → tela/CTA de login.
   `/admin` exige adicionalmente `is_admin`.
 - **Auto-inscrição:** garantida pelo trigger de banco (não depende do client).
+  **Importante (achado em review):** a inscrição em `participantes` deve ser **síncrona/atômica**
+  no `handle_new_user()` (mesma transação do cadastro). Caso contrário, a policy `boloes_select`
+  (que exige ser participante, e o bolão padrão tem `organizador_id = null`) deixa o bolão
+  invisível até a inscrição — UI vazia. Alternativa: policy de `select` liberando o bolão padrão
+  de id fixo para qualquer autenticado.
 
 ---
 
