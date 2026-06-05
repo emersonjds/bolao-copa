@@ -139,34 +139,48 @@ function CardEdicao({ partida, onCancelar }: CardEdicaoProps) {
   return (
     <div className="space-y-3">
       {/* Header */}
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="text-[11px] text-muted-foreground">
-            {formatDataHora(partida.dataHora)} · {formatGrupoOuFase(partida)}
-          </p>
-          <p className="text-sm font-semibold text-foreground">
-            {partida.mandante.nome} × {partida.visitante.nome}
-          </p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="min-w-0 truncate text-[11px] text-muted-foreground">
+          {formatDataHora(partida.dataHora)} · {formatGrupoOuFase(partida)}
+        </p>
+        <div className="shrink-0">
+          <StatusPill status={partida.status} />
         </div>
-        <StatusPill status={partida.status} />
       </div>
 
-      {/* Confronto com inputs */}
-      <div className="flex items-center gap-2">
-        {/* Mandante */}
-        <div className="flex min-w-0 flex-1 items-center gap-2">
-          <FlagIcon
-            codigoFifa={partida.mandante.codigo}
-            nome={partida.mandante.nome}
-            tamanho="sm"
-          />
-          <span className="truncate text-sm font-medium text-foreground">
-            {partida.mandante.nome}
-          </span>
+      {/* Confronto: nomes dos times na linha de cima (cada um com metade da
+          largura), placar centralizado embaixo. Mantém legível e sem overflow
+          em qualquer largura de tela mobile. */}
+      <div className="space-y-2.5">
+        {/* Times — nomes não competem com os inputs por espaço horizontal */}
+        <div className="flex items-center gap-2">
+          {/* Mandante */}
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <FlagIcon
+              codigoFifa={partida.mandante.codigo}
+              nome={partida.mandante.nome}
+              tamanho="sm"
+            />
+            <span className="truncate text-sm font-medium text-foreground">
+              {partida.mandante.nome}
+            </span>
+          </div>
+
+          {/* Visitante */}
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+            <span className="truncate text-right text-sm font-medium text-foreground">
+              {partida.visitante.nome}
+            </span>
+            <FlagIcon
+              codigoFifa={partida.visitante.codigo}
+              nome={partida.visitante.nome}
+              tamanho="sm"
+            />
+          </div>
         </div>
 
-        {/* Inputs de placar */}
-        <div className="flex shrink-0 items-center gap-1.5">
+        {/* Inputs de placar centralizados */}
+        <div className="flex items-center justify-center gap-2">
           <label className="sr-only" htmlFor={`gols-mandante-${partida.id}`}>
             Gols de {partida.mandante.nome}
           </label>
@@ -180,7 +194,7 @@ function CardEdicao({ partida, onCancelar }: CardEdicaoProps) {
             value={golsMandante}
             onChange={(e) => setGolsMandante(e.target.value)}
             disabled={mutation.isPending}
-            className="h-11 w-12 rounded-xl border border-input bg-background text-center font-mono text-lg font-bold text-foreground focus:border-brand-500 focus:ring-1 focus:ring-brand-500/40 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-12 w-14 rounded-xl border border-input bg-background text-center font-mono text-xl font-bold text-foreground focus:border-brand-500 focus:ring-1 focus:ring-brand-500/40 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
           />
           <span className="font-mono text-lg font-bold text-muted-foreground" aria-hidden="true">
             ×
@@ -198,19 +212,7 @@ function CardEdicao({ partida, onCancelar }: CardEdicaoProps) {
             value={golsVisitante}
             onChange={(e) => setGolsVisitante(e.target.value)}
             disabled={mutation.isPending}
-            className="h-11 w-12 rounded-xl border border-input bg-background text-center font-mono text-lg font-bold text-foreground focus:border-brand-500 focus:ring-1 focus:ring-brand-500/40 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-          />
-        </div>
-
-        {/* Visitante */}
-        <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-          <span className="truncate text-right text-sm font-medium text-foreground">
-            {partida.visitante.nome}
-          </span>
-          <FlagIcon
-            codigoFifa={partida.visitante.codigo}
-            nome={partida.visitante.nome}
-            tamanho="sm"
+            className="h-12 w-14 rounded-xl border border-input bg-background text-center font-mono text-xl font-bold text-foreground focus:border-brand-500 focus:ring-1 focus:ring-brand-500/40 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
       </div>
