@@ -1,6 +1,9 @@
 /**
  * Gera supabase/seed.sql a partir do dataset público openfootball/worldcup.json.
  * Uso: pnpm seed:generate
+ *
+ * A fonte é o branch `master` do openfootball — reexecutar pode trazer correções
+ * do upstream (datas/confrontos). Isso é intencional: o seed reflete o dataset atual.
  */
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -42,9 +45,12 @@ function side(team: string): { idExpr: string; label: string | null } {
 }
 
 async function main(): Promise<void> {
-  const res = await fetch(SOURCE_URL);
+  const res = await fetch(SOURCE_URL, { signal: AbortSignal.timeout(30_000) });
   if (!res.ok) throw new Error(`Falha ao baixar fixture (HTTP ${res.status})`);
   const data = (await res.json()) as { matches: SourceMatch[] };
+  if (!Array.isArray(data.matches)) {
+    throw new Error("Formato do JSON inesperado: campo 'matches' ausente");
+  }
 
   // Seleções reais distintas (ignora placeholders).
   const teams = new Map<string, string>(); // código → nome
@@ -58,9 +64,7 @@ async function main(): Promise<void> {
   lines.push("-- GERADO por scripts/generate-seed.ts — NÃO editar à mão.");
   lines.push("-- Fonte: openfootball/worldcup.json (2026). Reexecute com `pnpm seed:generate`.");
   lines.push("");
-  lines.push(
-    "truncate table public.palpites, public.partidas, public.selecoes restart identity cascade;"
-  );
+  lines.push("truncate table public.palpites, public.partidas, public.selecoes cascade;");
   lines.push("");
 
   // selecoes

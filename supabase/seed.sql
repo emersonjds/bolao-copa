@@ -1,7 +1,7 @@
 -- GERADO por scripts/generate-seed.ts — NÃO editar à mão.
 -- Fonte: openfootball/worldcup.json (2026). Reexecute com `pnpm seed:generate`.
 
-truncate table public.palpites, public.partidas, public.selecoes restart identity cascade;
+truncate table public.palpites, public.partidas, public.selecoes cascade;
 
 insert into public.selecoes (nome, codigo) values
   ('Algeria', 'ALG'),
