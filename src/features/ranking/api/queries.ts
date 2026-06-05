@@ -1,8 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { listarRanking } from "./ranking-fetcher";
+import { listarDestaqueRodada } from "./destaque-rodada-fetcher";
 
 export const rankingKeys = {
   all: ["ranking"] as const,
+};
+
+export const destaqueRodadaKeys = {
+  /** Chave sem rodada → consulta a última rodada apurada (RPC usa default). */
+  ultima: () => ["destaque-rodada"] as const,
+  /** Chave com rodada específica → cache separado por jornada. */
+  porRodada: (rodada: number) => ["destaque-rodada", rodada] as const,
 };
 
 /**
@@ -22,6 +30,32 @@ export function useRanking() {
   return useQuery({
     queryKey: rankingKeys.all,
     queryFn: () => listarRanking(),
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+/**
+ * Destaque(s) da rodada — participante(s) com maior soma de pontos.
+ *
+ * Assinatura: (rodada?: number) => UseQueryResult<DestaqueRodada[], Error>
+ *
+ * @param rodada - Número da jornada a consultar. Se omitido, a RPC retorna
+ *   automaticamente a última rodada com jogo encerrado/apurado. Passe o
+ *   número explicitamente para consultar uma rodada histórica específica.
+ *
+ * staleTime de 2 minutos: o destaque só muda após a apuração de pontos
+ * (trigger no banco), então atualizações frequentes não trazem benefício.
+ *
+ * Array vazio = nenhum jogo da rodada foi encerrado ainda, ou todos
+ * pontuaram 0. O componente deve tratar esse estado graciosamente.
+ *
+ * Depende da RPC get_destaque_rodada() criada na migration 0006.
+ */
+export function useDestaqueRodada(rodada?: number) {
+  return useQuery({
+    queryKey:
+      rodada !== undefined ? destaqueRodadaKeys.porRodada(rodada) : destaqueRodadaKeys.ultima(),
+    queryFn: () => listarDestaqueRodada(rodada),
     staleTime: 2 * 60 * 1000,
   });
 }

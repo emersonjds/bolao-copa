@@ -10,6 +10,7 @@ import { resolve } from "node:path";
 import {
   parseKickoffToUtc,
   roundToFase,
+  roundToRodada,
   parseGroup,
   isPlaceholderTeam,
   fifaCode,
@@ -60,6 +61,19 @@ async function main(): Promise<void> {
     }
   }
 
+  // Calcula o maior número de Matchday da fase de grupos para servir de base
+  // ao offset das rodadas do mata-mata (ex.: se max = 3, Round of 32 → 4).
+  let maxGroupMatchday = 0;
+  for (const m of data.matches) {
+    if (m.round.startsWith("Matchday ")) {
+      const n = parseInt(m.round.slice("Matchday ".length), 10);
+      if (Number.isFinite(n) && n > maxGroupMatchday) maxGroupMatchday = n;
+    }
+  }
+  if (maxGroupMatchday === 0) {
+    throw new Error("Nenhum 'Matchday N' encontrado no JSON — verifique a fonte");
+  }
+
   const lines: string[] = [];
   lines.push("-- GERADO por scripts/generate-seed.ts — NÃO editar à mão.");
   lines.push("-- Fonte: openfootball/worldcup.json (2026). Reexecute com `pnpm seed:generate`.");
@@ -77,13 +91,14 @@ async function main(): Promise<void> {
 
   // partidas
   lines.push(
-    "insert into public.partidas (fase, grupo, data_hora, estadio, status, mandante_id, visitante_id, mandante_label, visitante_label) values"
+    "insert into public.partidas (fase, grupo, rodada, data_hora, estadio, status, mandante_id, visitante_id, mandante_label, visitante_label) values"
   );
   const partidaValues = data.matches.map((m) => {
     const mandante = side(m.team1);
     const visitante = side(m.team2);
+    const rodada = roundToRodada(m.round, maxGroupMatchday);
     return (
-      `  (${sqlStr(roundToFase(m.round))}, ${sqlStr(parseGroup(m.group))}, ` +
+      `  (${sqlStr(roundToFase(m.round))}, ${sqlStr(parseGroup(m.group))}, ${rodada}, ` +
       `${sqlStr(parseKickoffToUtc(m.date, m.time))}, ${sqlStr(m.ground)}, 'agendada', ` +
       `${mandante.idExpr}, ${visitante.idExpr}, ${sqlStr(mandante.label)}, ${sqlStr(visitante.label)})`
     );
