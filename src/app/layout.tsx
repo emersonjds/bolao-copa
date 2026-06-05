@@ -2,6 +2,7 @@ import { Hanken_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import "./globals.css";
+import "flag-icons/css/flag-icons.min.css";
 import { QueryProvider } from "@/shared/lib/query";
 import { MockProvider } from "@/mocks/MockProvider";
 import { AuthProvider } from "@/features/auth";

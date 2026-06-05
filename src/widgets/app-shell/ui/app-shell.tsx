@@ -1,0 +1,15 @@
+import { TopBar } from "./top-bar";
+import { BottomNav } from "./bottom-nav";
+
+/** Casca do app: barra superior, conteúdo e navegação inferior (mobile-first). */
+export function AppShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background">
+      <TopBar />
+      <main id="main-content" className="flex-1 px-4 pt-4 pb-24">
+        {children}
+      </main>
+      <BottomNav />
+    </div>
+  );
+}
