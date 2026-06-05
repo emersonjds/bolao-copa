@@ -151,11 +151,10 @@ resultado    = sinal(saldo)   // mandante | empate | visitante
 0  caso contrário
 ```
 
-> **Decisão sobre empates (ambiguidade resolvida):** o tier de 3 pontos ("vencedor + saldo")
+> **Decisão sobre empates (confirmada pelo dono):** o tier de 3 pontos ("vencedor + saldo")
 > exige um **vencedor**, então **não se aplica a empates**. Um empate previsto corretamente vale
-> **5** (se exato) ou **1** (se o placar do empate diferiu). Isso segue o texto da página de regras
-> ("Só o vencedor — ou o empate" = 1 pt). Confirmar com o dono no review do spec; se preferir que
-> empate não-exato valha 3, é uma linha no trigger.
+> **5** (se exato) ou **1** (se o placar do empate diferiu). Segue o texto da página de regras
+> ("Só o vencedor — ou o empate" = 1 pt).
 
 - **Tempo normal (90′)**: usa-se sempre o placar inserido (que representa o tempo normal). No
   mata-mata, empate no tempo normal **pontua como empate**; `vencedor_penaltis` é só exibição.
