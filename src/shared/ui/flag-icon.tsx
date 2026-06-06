@@ -39,7 +39,7 @@ export function FlagIcon({ codigoFifa, nome, tamanho = "md" }: FlagIconProps) {
       {mostraEscudo ? (
         <Shield className="h-1/2 w-1/2 text-muted-foreground" aria-hidden="true" />
       ) : (
-        // eslint-disable-next-line @next/next/no-img-element -- bandeira externa em static export
+        // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/no-noninteractive-element-interactions -- bandeira externa em static export com fallback de erro
         <img
           src={`https://flagcdn.com/${iso}.svg`}
           alt=""

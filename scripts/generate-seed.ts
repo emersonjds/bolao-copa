@@ -108,7 +108,9 @@ async function main(): Promise<void> {
 
   const outPath = resolve(process.cwd(), "supabase/seed.sql");
   writeFileSync(outPath, lines.join("\n"), "utf8");
-  console.log(`OK: ${teams.size} seleções, ${data.matches.length} partidas → supabase/seed.sql`);
+  process.stdout.write(
+    `OK: ${teams.size} seleções, ${data.matches.length} partidas → supabase/seed.sql\n`
+  );
 }
 
 main().catch((err) => {
