@@ -73,8 +73,8 @@ src/
 
 ## 9. Agentes disponíveis
 
-Especialistas de domínio: `po-bolao-copa`, `arquiteto-software-apis-integracoes`, `backend-integracoes-futebol`, `analista-mercado-concorrencia`, `frontend-performance-expert`, `ux-ui-designer`, `scrum-master-jira`, `red-team-web-offensive`.
-Execução e qualidade: `bug` (QA/quality gate), `scribe` (i18n PT-BR, docs).
+Especialistas de domínio: `arq` (arquitetura, APIs e integrações), `front` (frontend, performance e segurança client-side), `back` (backend, integrações de futebol e Supabase), `pixel` (UX/UI design), `redteam` (segurança ofensiva e threat modeling).
+Execução e qualidade: `bug` (QA/quality gate de código), `qa` (E2E em tela com Playwright), `scribe` (i18n PT-BR, docs).
 
 Regra: **um agent por função, sem duplicação**.
 
