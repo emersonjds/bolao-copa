@@ -86,7 +86,10 @@ port = 54324
 # sender_name = "Admin"
 
 [storage]
-enabled = true
+# Desligado no ambiente local: a imagem storage-api fixada na CLI atual aponta
+# para uma tag inexistente no registry e quebra o `supabase start`. O app não
+# usa Storage (avatar é opcional). Reabilitar quando precisar + pinar versão boa.
+enabled = false
 # The maximum file size allowed (e.g. "5MB", "500KB").
 file_size_limit = "50MiB"
 
