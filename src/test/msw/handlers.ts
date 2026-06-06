@@ -14,14 +14,17 @@ import { http, HttpResponse } from "msw";
 
 type HttpMethod = "get" | "post" | "patch" | "delete";
 
+/** Tipo de corpo aceito por HttpResponse.json (JSON serializável do MSW). */
+type JsonBody = Parameters<typeof HttpResponse.json>[0];
+
 /** GET de lista: devolve um array de linhas (formato cru do banco, snake_case). */
 export function restList(tabela: string, rows: unknown[]) {
-  return http.get(`*/rest/v1/${tabela}`, () => HttpResponse.json(rows));
+  return http.get(`*/rest/v1/${tabela}`, () => HttpResponse.json(rows as JsonBody));
 }
 
 /** GET com `.single()`: devolve um único objeto (PostgREST object response). */
 export function restSingle(tabela: string, row: unknown) {
-  return http.get(`*/rest/v1/${tabela}`, () => HttpResponse.json(row));
+  return http.get(`*/rest/v1/${tabela}`, () => HttpResponse.json(row as JsonBody));
 }
 
 /** Escrita (upsert/insert/update/delete) bem-sucedida; corpo opcional. */
@@ -31,7 +34,9 @@ export function restWrite(
 ) {
   const { method = "post", response = null, status = method === "patch" ? 204 : 201 } = opts;
   return http[method](`*/rest/v1/${tabela}`, () =>
-    response === null ? new HttpResponse(null, { status }) : HttpResponse.json(response, { status })
+    response === null
+      ? new HttpResponse(null, { status })
+      : HttpResponse.json(response as JsonBody, { status })
   );
 }
 
@@ -48,7 +53,7 @@ export function restError(
 
 /** RPC bem-sucedida: devolve o que a função retornaria (array ou escalar). */
 export function rpc(funcao: string, data: unknown) {
-  return http.post(`*/rest/v1/rpc/${funcao}`, () => HttpResponse.json(data));
+  return http.post(`*/rest/v1/rpc/${funcao}`, () => HttpResponse.json(data as JsonBody));
 }
 
 /** RPC com erro (ex.: PGRST202 função inexistente). */
@@ -64,5 +69,5 @@ export function rpcError(
 
 /** Auth: GET /auth/v1/user devolvendo um usuário (para testar caminhos logados). */
 export function authUser(user: unknown) {
-  return http.get(`*/auth/v1/user`, () => HttpResponse.json(user));
+  return http.get(`*/auth/v1/user`, () => HttpResponse.json(user as JsonBody));
 }
