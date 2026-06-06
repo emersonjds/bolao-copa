@@ -8,6 +8,6 @@ export const partidasKeys = {
 export function usePartidas() {
   return useQuery({
     queryKey: partidasKeys.all,
-    queryFn: ({ signal }) => listarPartidas(signal),
+    queryFn: () => listarPartidas(),
   });
 }

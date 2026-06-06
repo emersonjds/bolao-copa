@@ -1,0 +1,18 @@
+{
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": ["serena", "context-mode", "context7"],
+  "permissions": {
+    "deny": [
+      "Bash(git push*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git commit --amend*)",
+      "Bash(git reset --hard*)",
+      "Bash(git config --global*)",
+      "Bash(git config user.*)"
+    ]
+  }
+}

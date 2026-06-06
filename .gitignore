@@ -54,9 +54,12 @@ supabase/.temp
 *.tsbuildinfo
 next-env.d.ts
 
-# ferramentas de IA / editor — fora do repositorio (nada relacionado a IA)
-.claude/
-.mcp.json
+# ferramentas de IA / editor
+.claude/*
+!.claude/agents/
+!.claude/agents/**
+!.claude/settings.json
+.claude/settings.local.json
+.mcp.json.local
 .serena/
-CLAUDE.md
 skills-lock.json
