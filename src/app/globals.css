@@ -2,50 +2,50 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ===== shadcn/ui CSS Variables — Paleta Bolão da Copa (verde-gramado + dourado) ===== */
+/* ===== Design system "Championship Field" — tokens shadcn ===== */
 :root {
-  --background: 140 30% 98%;
-  --foreground: 150 30% 12%;
+  --background: 210 17% 98%;
+  --foreground: 150 25% 12%;
   --card: 0 0% 100%;
-  --card-foreground: 150 30% 12%;
+  --card-foreground: 150 25% 12%;
   --popover: 0 0% 100%;
-  --popover-foreground: 150 30% 12%;
-  --primary: 142 72% 35%;
+  --popover-foreground: 150 25% 12%;
+  --primary: 153 43% 18%; /* verde-floresta #1B4332 */
   --primary-foreground: 0 0% 100%;
-  --secondary: 140 35% 95%;
-  --secondary-foreground: 150 30% 12%;
-  --muted: 140 20% 95%;
-  --muted-foreground: 150 10% 38%;
-  --accent: 38 92% 50%;
-  --accent-foreground: 30 50% 12%;
-  --destructive: 0 74% 57%;
+  --secondary: 150 25% 95%;
+  --secondary-foreground: 153 43% 18%;
+  --muted: 150 16% 95%;
+  --muted-foreground: 150 8% 40%;
+  --accent: 43 78% 48%; /* dourado-troféu #D9A21B */
+  --accent-foreground: 40 60% 12%;
+  --destructive: 0 72% 50%;
   --destructive-foreground: 0 0% 100%;
-  --border: 140 18% 88%;
-  --input: 140 18% 88%;
-  --ring: 142 72% 35%;
-  --radius: 0.75rem;
+  --border: 150 14% 90%;
+  --input: 150 14% 90%;
+  --ring: 153 43% 18%;
+  --radius: 0.875rem;
 }
 
 .dark {
-  --background: 150 30% 8%;
-  --foreground: 140 20% 95%;
-  --card: 150 28% 11%;
-  --card-foreground: 140 20% 95%;
-  --popover: 150 28% 11%;
-  --popover-foreground: 140 20% 95%;
-  --primary: 142 64% 45%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 150 20% 16%;
-  --secondary-foreground: 140 20% 90%;
-  --muted: 150 20% 16%;
-  --muted-foreground: 140 12% 62%;
-  --accent: 38 92% 55%;
-  --accent-foreground: 30 50% 12%;
-  --destructive: 0 74% 57%;
+  --background: 153 35% 7%;
+  --foreground: 150 15% 95%;
+  --card: 153 30% 10%;
+  --card-foreground: 150 15% 95%;
+  --popover: 153 30% 10%;
+  --popover-foreground: 150 15% 95%;
+  --primary: 153 40% 55%;
+  --primary-foreground: 153 45% 10%;
+  --secondary: 153 20% 16%;
+  --secondary-foreground: 150 15% 90%;
+  --muted: 153 20% 16%;
+  --muted-foreground: 150 10% 62%;
+  --accent: 43 78% 52%;
+  --accent-foreground: 40 60% 12%;
+  --destructive: 0 72% 55%;
   --destructive-foreground: 0 0% 100%;
-  --border: 150 18% 22%;
-  --input: 150 18% 22%;
-  --ring: 142 64% 45%;
+  --border: 153 18% 20%;
+  --input: 153 18% 20%;
+  --ring: 153 40% 55%;
 }
 
 @theme inline {
@@ -68,37 +68,49 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
 }
 
 @theme {
   --font-*: initial;
-  --font-outfit: Outfit, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-hanken), var(--font-inter), sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 
   --breakpoint-2xsm: 375px;
   --breakpoint-xsm: 425px;
 
-  /* Verde-gramado — cor principal */
-  --color-brand-50: #f0fdf4;
-  --color-brand-100: #dcfce7;
-  --color-brand-200: #bbf7d0;
-  --color-brand-300: #86efac;
-  --color-brand-400: #4ade80;
-  --color-brand-500: #16a34a;
-  --color-brand-600: #15803d;
-  --color-brand-700: #166534;
-  --color-brand-800: #14532d;
-  --color-brand-900: #0f3d22;
-  --color-brand-950: #052e16;
+  /* Verde-floresta — cor principal */
+  --color-brand-50: #f0f7f3;
+  --color-brand-100: #d9ebe1;
+  --color-brand-200: #b3d7c4;
+  --color-brand-300: #84bca1;
+  --color-brand-400: #559a7c;
+  --color-brand-500: #2d6a4f; /* tertiary */
+  --color-brand-600: #245a43;
+  --color-brand-700: #1f4d3a;
+  --color-brand-800: #1b4332; /* primary */
+  --color-brand-900: #142e23;
+  --color-brand-950: #0a1c15;
 
   /* Dourado/troféu — destaque */
-  --color-gold-300: #fcd34d;
-  --color-gold-400: #fbbf24;
-  --color-gold-500: #f59e0b;
-  --color-gold-600: #d97706;
+  --color-gold-300: #f0cd76;
+  --color-gold-400: #e6b53f;
+  --color-gold-500: #d9a21b; /* secondary */
+  --color-gold-600: #b5830f;
+  --color-gold-700: #8f6609;
 }
 
 @layer base {
   body {
     @apply bg-background text-foreground;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
   }
 }

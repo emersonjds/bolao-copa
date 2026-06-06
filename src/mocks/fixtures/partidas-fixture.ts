@@ -16,6 +16,9 @@ export const partidasFixture: Partida[] = [
     visitante: { id: "bra", nome: "Brasil", codigo: "BRA" },
     golsMandante: null,
     golsVisitante: null,
+    vencedorPenaltis: null,
+    mandanteLabel: null,
+    visitanteLabel: null,
   },
   {
     id: "2",
@@ -28,6 +31,9 @@ export const partidasFixture: Partida[] = [
     visitante: { id: "fra", nome: "França", codigo: "FRA" },
     golsMandante: null,
     golsVisitante: null,
+    vencedorPenaltis: null,
+    mandanteLabel: null,
+    visitanteLabel: null,
   },
   {
     id: "3",
@@ -40,6 +46,9 @@ export const partidasFixture: Partida[] = [
     visitante: { id: "ger", nome: "Alemanha", codigo: "GER" },
     golsMandante: null,
     golsVisitante: null,
+    vencedorPenaltis: null,
+    mandanteLabel: null,
+    visitanteLabel: null,
   },
   {
     id: "4",
@@ -52,5 +61,8 @@ export const partidasFixture: Partida[] = [
     visitante: { id: "por", nome: "Portugal", codigo: "POR" },
     golsMandante: null,
     golsVisitante: null,
+    vencedorPenaltis: null,
+    mandanteLabel: null,
+    visitanteLabel: null,
   },
 ];
