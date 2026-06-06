@@ -1,12 +1,17 @@
 # Testes E2E (Playwright)
 
 Testes de tela rodando contra o app real (`pnpm dev` em `localhost:3000`, subido
-automaticamente pelo `webServer` do `playwright.config.ts`). Dois projetos:
-`desktop-chrome` e `mobile-chrome` (Pixel 7).
+automaticamente pelo `webServer` do `playwright.config.ts`).
+
+Projetos:
+
+- `setup` — cria a sessão de teste (storageState) para os specs autenticados.
+- `desktop-chrome` / `mobile-chrome` (Pixel 7) — specs públicos (sem login).
+- `authenticated` — specs logados, reaproveitam o storageState do `setup`.
 
 ```bash
-pnpm test:e2e            # roda tudo (desktop + mobile)
-pnpm test:e2e --ui      # modo interativo
+pnpm test:e2e            # roda tudo
+pnpm test:e2e:ui         # modo interativo
 ```
 
 **Todos os dados vêm do Supabase real — não há MSW no app.** Partidas via
@@ -14,13 +19,15 @@ pnpm test:e2e --ui      # modo interativo
 `get_destaque_rodada`). Como o conteúdo depende do seed, os testes públicos
 checam estrutura e seleções presentes no seed do torneio, não números voláteis.
 
-## Cobertura atual (sem login)
+## Cobertura
 
-| Arquivo              | O que cobre                                                                                            |
-| -------------------- | ------------------------------------------------------------------------------------------------------ |
-| `navegacao.spec.ts`  | Navegação real pela bottom-nav entre abas, `aria-current`, ausência da aba Admin, responsividade 375px |
-| `home.spec.ts`       | Card de login (HeroStats sem sessão), lista de próximos jogos, atalhos para a agenda                   |
-| `calendario.spec.ts` | Conteúdo da agenda, seletor de semana, filtro por dia (estado vazio + toggle)                          |
+| Arquivo              | Login | O que cobre                                                                  |
+| -------------------- | ----- | ---------------------------------------------------------------------------- |
+| `smoke.spec.ts`      | não   | Carregamento das telas públicas sem erro de JS; marca; ausência do sino      |
+| `navegacao.spec.ts`  | não   | Bottom-nav entre abas, `aria-current`, ausência da aba Admin, 375px          |
+| `home.spec.ts`       | não   | Card de login (HeroStats sem sessão), próximos jogos, atalhos para a agenda  |
+| `calendario.spec.ts` | não   | Conteúdo da agenda, seletor de semana, filtro por dia (vazio + toggle)       |
+| `palpites.spec.ts`   | sim   | Salvar **e editar** palpite (regressão do grant `42501`, migrations 0011/12) |
 
 ## Convenções
 
@@ -32,95 +39,43 @@ checam estrutura e seleções presentes no seed do torneio, não números volát
 
 ---
 
-## Fluxos que exigem sessão autenticada (PENDENTES)
+## Sessão autenticada (`palpites.spec.ts`)
 
-Login é via **Google OAuth (Supabase)**. **Não automatizamos o fluxo do Google**
-(captcha, 2FA, ToS do provedor, fragilidade). Estes fluxos ficam pendentes até
-existir uma estratégia de sessão:
+Login real é **Google OAuth** (não automatizável). Em vez disso, `auth.setup.ts`
+cria a sessão **direto pela API do Supabase** e grava os cookies em
+`tests/e2e/.auth/user.json` (gitignored). O app usa `@supabase/ssr`, que persiste
+a sessão em **COOKIE** `sb-<ref>-auth-token` (`base64-` + base64url do JSON,
+chunkado) — ver `helpers/auth-cookie.ts`.
 
-| Fluxo                                | Tela          | Por que precisa de auth                                            |
-| ------------------------------------ | ------------- | ------------------------------------------------------------------ |
-| Fazer/editar palpite e salvar        | `/palpites`   | `PalpitesContent` só renderiza com `user`; senão mostra `LoginCTA` |
-| Posição pessoal no bolão (HeroStats) | `/`           | "Sua posição no bolão" depende de `user` + `meuParticipanteId`     |
-| "Minha posição" e destaque pessoal   | `/ranking`    | Banner/realce do participante logado precisa de sessão             |
-| CTA de palpite dentro da agenda      | `/calendario` | `mostrarCta` na `AgendaList` só com `user`                         |
-| Menu do usuário e logout             | TopBar        | `UserMenu` retorna `null` sem sessão                               |
-| Painel administrativo                | `/admin`      | Redireciona sem sessão; exige `is_admin = true`                    |
+Fluxo do setup:
 
-### Estratégia recomendada: `storageState` com usuário de teste
+1. `service_role` garante o usuário de teste — o trigger `handle_new_user` cria
+   `profile` + `participante` no bolão padrão automaticamente;
+2. login e-mail/senha (client anon) → sessão real;
+3. cookies gravados no `storageState` que o projeto `authenticated` consome.
 
-Não dá para passar pela tela do Google, mas dá para **criar a sessão Supabase
-direto pela API** (e-mail/senha) e persistir o estado de auth em disco. O
-Supabase guarda a sessão no `localStorage` (chave `sb-<ref>-auth-token`), que o
-Playwright sabe serializar via `storageState`.
+Ao fim do spec, o usuário de teste é **deletado** (FKs `on delete cascade`
+removem participante + palpites — não polui o bolão real).
 
-Passos:
+### Como rodar
 
-1. **Criar usuários de teste no Supabase** (Dashboard → Authentication, ou via
-   service role num script de seed), idealmente num projeto/branch de teste
-   separado do de produção:
-   - um participante comum (palpites, ranking);
-   - um com `profiles.is_admin = true` (rota `/admin`).
-     Habilitar o provider **Email/Password** nesse projeto de teste (o app usa
-     Google em produção, mas para o E2E o login programático por senha é o caminho).
+Defina no `.env.local` (NUNCA commitar — está no `.gitignore`):
 
-2. **Global setup** (`tests/e2e/global-setup.ts`, registrado em
-   `globalSetup` no `playwright.config.ts`) que faz login via
-   `@supabase/supabase-js` e grava o estado:
+```bash
+SUPABASE_SERVICE_ROLE_KEY=sb_secret_...
+# opcionais (têm default): E2E_TEST_EMAIL, E2E_TEST_PASSWORD
+```
 
-   ```ts
-   import { chromium } from "@playwright/test";
-   import { createClient } from "@supabase/supabase-js";
+Sem a `service_role`, `auth.setup.ts` e `palpites.spec.ts` **se auto-pulam** — o
+resto do `pnpm test:e2e` roda normal. Ideal: usar um projeto/branch Supabase de
+teste, não o de produção.
 
-   export default async function globalSetup() {
-     const supabase = createClient(
-       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-     );
-     const { data, error } = await supabase.auth.signInWithPassword({
-       email: process.env.E2E_USER_EMAIL!,
-       password: process.env.E2E_USER_PASSWORD!,
-     });
-     if (error) throw error;
+### Ainda sem spec (pendentes)
 
-     // Injeta a sessão no localStorage na origem do app e salva o storageState.
-     const browser = await chromium.launch();
-     const page = await browser.newPage();
-     await page.goto("http://localhost:3000");
-     await page.evaluate((session) => {
-       const ref = new URL(import.meta.env?.NEXT_PUBLIC_SUPABASE_URL ?? "").host.split(".")[0];
-       localStorage.setItem(
-         `sb-${ref}-auth-token`,
-         JSON.stringify({ currentSession: session, expiresAt: session!.expires_at })
-       );
-     }, data.session);
-     await page.context().storageState({ path: "tests/e2e/.auth/user.json" });
-     await browser.close();
-   }
-   ```
-
-   > A forma exata da chave e do payload do `sb-...-auth-token` deve ser
-   > confirmada inspecionando o `localStorage` após um login real — o snippet
-   > acima é o esqueleto da abordagem, não código pronto.
-
-3. **Projeto autenticado** no `playwright.config.ts` que reaproveita o estado:
-
-   ```ts
-   { name: "auth-chrome", use: { ...devices["Desktop Chrome"], storageState: "tests/e2e/.auth/user.json" } }
-   ```
-
-   Specs autenticados (ex.: `palpites.auth.spec.ts`) rodam só nesse projeto.
-
-4. **Segredos**: `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` via env (CI secret),
-   nunca commitados. Adicionar `tests/e2e/.auth/` ao `.gitignore`.
-
-### Alternativa (sem rede): mock de sessão no client
-
-Para testes que só precisam da UI logada (sem dados reais), interceptar/forçar o
-estado de auth do app — por exemplo um flag `NEXT_PUBLIC_E2E_AUTH` que injeta um
-`user` fake no `AuthProvider`, ou `page.route` nos endpoints do Supabase. Mais
-rápido e estável, porém exige um pequeno gancho no código de produção e não
-exercita as RPCs reais.
-
-**Recomendação:** começar pelo `storageState` com usuário de teste real (cobre o
-caminho de verdade); usar o mock só se o flakiness do backend de teste atrapalhar.
+| Fluxo                              | Tela          |
+| ---------------------------------- | ------------- |
+| Posição pessoal (HeroStats)        | `/`           |
+| "Minha posição" e destaque pessoal | `/ranking`    |
+| CTA de palpite dentro da agenda    | `/calendario` |
+| Menu do usuário e logout           | TopBar        |
+| Painel administrativo (`is_admin`) | `/admin`      |
