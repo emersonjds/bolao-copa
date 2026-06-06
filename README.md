@@ -42,8 +42,8 @@ App em `http://localhost:3000`. Requer Node 20+.
 | Estado client | Zustand 5                                                          |
 | Data fetching | TanStack Query v5                                                  |
 | Formulários   | React Hook Form 7 + Zod 4                                          |
-| Mocks API     | MSW                                                                |
-| Testes        | Vitest + Testing Library                                           |
+| Backend       | Supabase (Postgres + Auth + RLS)                                   |
+| Testes        | Vitest + Testing Library + MSW (integração)                        |
 | Hospedagem    | Netlify (static export — publish `out/`)                           |
 
 ## Qualidade
@@ -115,22 +115,17 @@ Import só de **layers abaixo**: `app → widgets → features → entities → 
 
 ## Dados / API
 
-Export estático, **sem backend embutido**. A camada de dados é o **MSW**, que
-intercepta `/api/*` no browser (`src/mocks/handlers/`), **ligado por padrão em
-dev e em produção** (`src/mocks/MockProvider.tsx`) — o deploy funciona de ponta
-a ponta. Todo fetch passa por `apiUrl()` (`src/shared/lib/api-url.ts`).
+Os dados vêm direto do **Supabase** (Postgres + Auth + RLS) pelo cliente do
+browser (`src/shared/lib/supabase`). Cada feature tem seu fetcher em
+`features/<slice>/api/`, consumido via TanStack Query.
 
-**Virar para o backend real** quando existir — só configuração:
-
-```bash
-NEXT_PUBLIC_API_URL=https://api.bolaodacopa.app
-NEXT_PUBLIC_ENABLE_MSW=false
-```
+O **MSW** roda **apenas nos testes de integração** (`src/mocks/`, ligado em
+`vitest.setup.ts`) — não vai para produção.
 
 ## Status
 
 Esqueleto inicial. Fluxo de exemplo funcionando: home lista os próximos jogos
-via MSW → React Query. Demais funcionalidades (palpites, pontuação, ranking,
+via Supabase → React Query. Demais funcionalidades (palpites, pontuação, ranking,
 autenticação dos amigos) entram conforme as especificações.
 
 ## Licença
