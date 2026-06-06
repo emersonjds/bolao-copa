@@ -5,6 +5,7 @@ import { Target } from "lucide-react";
 import { toast } from "sonner";
 import { usePartidas } from "@/features/partidas";
 import { useMeusPalpites, useSalvarPalpite } from "../api/queries";
+import { traduzirErroSalvar } from "../lib/traduzir-erro-salvar";
 import type { FaseCopa, Partida } from "@/entities/partida";
 import { FiltroFase } from "./filtro-fase";
 import { ListaPalpites } from "./lista-palpites";
@@ -124,8 +125,16 @@ export function PalpitesContent() {
 
       toast.success("Palpites salvos!", { id: toastId });
     } catch (err) {
-      const mensagem = err instanceof Error ? err.message : "Tente novamente.";
-      toast.error(`Erro ao salvar. ${mensagem}`, { id: toastId });
+      const bruto = err instanceof Error ? err.message : "";
+      const { tipo, texto } = traduzirErroSalvar(bruto);
+      if (tipo === "lock") {
+        // Trava de horário: aviso amigável, não erro. Recarrega as partidas
+        // para os cards dos jogos que já começaram aparecerem como "Travado".
+        toast.warning(texto, { id: toastId });
+        void refetch();
+      } else {
+        toast.error(texto, { id: toastId });
+      }
     } finally {
       setIsSaving(false);
     }
