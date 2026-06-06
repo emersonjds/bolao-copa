@@ -95,13 +95,15 @@ export interface SalvarPalpiteInput {
  *
  * Estratégia de colunas:
  *   INSERT grant: participante_id, partida_id, gols_mandante, gols_visitante
- *   UPDATE grant: gols_mandante, gols_visitante, updated_at
+ *   UPDATE grant: participante_id, partida_id, gols_mandante, gols_visitante, updated_at
  *
- * O payload não inclui updated_at para não violar o INSERT grant — o banco usa
- * DEFAULT now() no insert. Na rota de UPDATE (ON CONFLICT DO UPDATE), o
- * PostgREST atualiza apenas as colunas do payload excluindo as de conflito, ou
- * seja, só gols_mandante e gols_visitante. Um trigger de updated_at pode ser
- * adicionado em migration futura para manter o campo atualizado no UPDATE.
+ * ATENÇÃO: no upsert, o PostgREST inclui TODAS as colunas do payload no SET do
+ * ON CONFLICT DO UPDATE — INCLUSIVE participante_id e partida_id (ele NÃO exclui
+ * as colunas de conflito). Por isso o UPDATE grant precisa cobrir essas duas
+ * colunas também (migration 0011); senão editar um palpite existente falha com
+ * 42501. A integridade é garantida pela policy palpites_update_own (WITH CHECK):
+ * a linha resultante tem de continuar sendo do próprio usuário. `pontos` nunca
+ * entra no payload e fica fora de qualquer grant de escrita.
  *
  * A trava de horário (trg_palpite_lock) roda no servidor; se a partida já
  * tiver começado, o banco lança exceção e o erro é propagado pela mutation.
