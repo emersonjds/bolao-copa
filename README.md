@@ -130,3 +130,7 @@ NEXT_PUBLIC_ENABLE_MSW=false
 Esqueleto inicial. Fluxo de exemplo funcionando: home lista os próximos jogos
 via MSW → React Query. Demais funcionalidades (palpites, pontuação, ranking,
 autenticação dos amigos) entram conforme as especificações.
+
+## Licença
+
+Distribuído sob a licença MIT. Consulte [LICENSE](LICENSE) para mais detalhes.
