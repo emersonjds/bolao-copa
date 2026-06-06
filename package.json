@@ -9,8 +9,7 @@
     "seed:generate": "tsx scripts/generate-seed.ts",
     "build": "next build",
     "start": "next start",
-    "preview": "next build && wrangler dev",
-    "deploy": "next build && wrangler deploy",
+    "preview": "next build && npx serve out",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -90,10 +89,5 @@
     "typescript-eslint": "^8.60.0",
     "vitest": "^4.1.7",
     "wrangler": "^4.97.0"
-  },
-  "msw": {
-    "workerDirectory": [
-      "public"
-    ]
   }
 }
