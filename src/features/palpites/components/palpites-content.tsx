@@ -10,6 +10,8 @@ import type { FaseCopa, Partida } from "@/entities/partida";
 import { FiltroFase } from "./filtro-fase";
 import { ListaPalpites } from "./lista-palpites";
 import { BotaoSalvar } from "./botao-salvar";
+import { SeletorVista, type VistaPalpites } from "./seletor-vista";
+import { HistoricoContent } from "./historico-content";
 import type { PlacarLocal } from "./card-palpite";
 
 // Fases na ordem de exibição das tabs
@@ -41,6 +43,7 @@ export function PalpitesContent() {
   const { data: meusPalpites, isPending: isPendingPalpites } = useMeusPalpites();
   const { mutateAsync: salvarPalpite } = useSalvarPalpite();
 
+  const [vista, setVista] = useState<VistaPalpites>("palpitar");
   const [faseSelecionada, setFaseSelecionada] = useState<FaseCopa>("grupos");
   const [placaresLocais, setPlacaresLocais] = useState<Record<string, PlacarLocal>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -52,7 +55,10 @@ export function PalpitesContent() {
     (fase) => fase === "grupos" || (partidas ?? []).some((p) => p.fase === fase)
   );
 
-  const partidasFiltradas = (partidas ?? []).filter((p) => p.fase === faseSelecionada);
+  // Aba "Palpitar": só jogos abertos (editáveis). Os travados moram no Histórico.
+  const partidasFiltradas = (partidas ?? []).filter(
+    (p) => p.fase === faseSelecionada && !estaEmJogo(p)
+  );
 
   /**
    * Um palpite é "pendente" quando placarLocal existe, ambos os campos estão
@@ -187,26 +193,34 @@ export function PalpitesContent() {
 
   // ── Conteúdo principal ─────────────────────────────────────────────────────
   return (
-    <>
-      <FiltroFase
-        fases={fasesDisponiveis}
-        faseSelecionada={faseSelecionada}
-        onSelect={setFaseSelecionada}
-      />
+    <div className="space-y-4">
+      <SeletorVista vista={vista} onSelect={setVista} />
 
-      <ListaPalpites
-        partidas={partidasFiltradas}
-        meusPalpites={meusPalpites ?? []}
-        placaresLocais={placaresLocais}
-        onChangePlacar={handleChangePlacar}
-        isSaving={isSaving}
-      />
+      {vista === "palpitar" ? (
+        <>
+          <FiltroFase
+            fases={fasesDisponiveis}
+            faseSelecionada={faseSelecionada}
+            onSelect={setFaseSelecionada}
+          />
 
-      <BotaoSalvar
-        hasPendingChanges={hasPendingChanges}
-        isSaving={isSaving}
-        onSalvar={() => void handleSalvar()}
-      />
-    </>
+          <ListaPalpites
+            partidas={partidasFiltradas}
+            meusPalpites={meusPalpites ?? []}
+            placaresLocais={placaresLocais}
+            onChangePlacar={handleChangePlacar}
+            isSaving={isSaving}
+          />
+
+          <BotaoSalvar
+            hasPendingChanges={hasPendingChanges}
+            isSaving={isSaving}
+            onSalvar={() => void handleSalvar()}
+          />
+        </>
+      ) : (
+        <HistoricoContent partidas={partidas ?? []} meusPalpites={meusPalpites ?? []} />
+      )}
+    </div>
   );
 }
