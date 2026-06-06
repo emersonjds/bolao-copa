@@ -13,7 +13,7 @@
   <img alt="Cobertura 4.12%" src="https://img.shields.io/badge/cobertura-4.12%25-red" />
   <img alt="MSW 2" src="https://img.shields.io/badge/MSW-2-ff6a33?logo=mockserviceworker&logoColor=white" />
   <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres%20%2B%20Auth-3ecf8e?logo=supabase&logoColor=white" />
-  <img alt="Cloudflare Workers" src="https://img.shields.io/badge/Cloudflare-Workers-f38020?logo=cloudflareworkers&logoColor=white" />
+  <img alt="Netlify" src="https://img.shields.io/badge/Netlify-deploy-00c7b7?logo=netlify&logoColor=white" />
   <img alt="pnpm 10" src="https://img.shields.io/badge/pnpm-10-f69220?logo=pnpm&logoColor=white" />
   <img alt="Licença MIT" src="https://img.shields.io/badge/license-MIT-green" />
 </p>
@@ -44,7 +44,7 @@ App em `http://localhost:3000`. Requer Node 20+.
 | Formulários   | React Hook Form 7 + Zod 4                                          |
 | Mocks API     | MSW                                                                |
 | Testes        | Vitest + Testing Library                                           |
-| Hospedagem    | Cloudflare Workers static assets (static export)                   |
+| Hospedagem    | Netlify (static export — publish `out/`)                           |
 
 ## Qualidade
 
@@ -64,12 +64,12 @@ testes próximos ao slice alterado.
 ## Segurança e variáveis de ambiente
 
 - Não commitar `.env`, `.env.*`, `.dev.vars`, chaves privadas, tokens ou arquivos
-  locais do Supabase/Cloudflare.
+  locais do Supabase/Netlify.
 - Use `.env.local.example` como referência de nomes públicos e placeholders.
 - Variáveis `NEXT_PUBLIC_*` ficam expostas no bundle do frontend; use somente
   valores públicos nelas.
-- Segredos de backend devem ficar no painel do Supabase, no Cloudflare ou em
-  arquivos locais ignorados pelo Git.
+- Segredos de backend devem ficar no painel do Supabase, nas variáveis de
+  ambiente do Netlify ou em arquivos locais ignorados pelo Git.
 - Antes de abrir PR, rode `pnpm validate` e uma busca por termos sensíveis nos
   arquivos versionados.
 
@@ -79,9 +79,11 @@ testes próximos ao slice alterado.
 | --------------- | ------------------------------------------- |
 | `pnpm dev`      | Dev server em `:3000`                       |
 | `pnpm build`    | Build estático (gera `out/`)                |
-| `pnpm preview`  | Build + serve local via `wrangler dev`      |
-| `pnpm deploy`   | Build + deploy no Cloudflare Workers        |
 | `pnpm validate` | type-check + lint + format:check + test:run |
+
+O deploy no Netlify usa a pasta `out/` como _publish directory_ (arraste a
+pasta no painel do Netlify, ou configure build command `pnpm build` + publish
+`out`).
 
 ## Estrutura do monorepo
 
@@ -95,7 +97,7 @@ bolao-copa/
 ```
 
 Frontend e backend vivem no mesmo repositório. O frontend é estático
-(Cloudflare); o backend é Supabase (Postgres + Auth + RLS + Edge Functions).
+(Netlify); o backend é Supabase (Postgres + Auth + RLS + Edge Functions).
 Detalhes do backend em [`supabase/README.md`](./supabase/README.md).
 
 ## Arquitetura do frontend — Feature-Sliced Design

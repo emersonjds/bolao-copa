@@ -1,0 +1,12 @@
+# Deploy estático no Netlify.
+# O projeto é Next.js com output: "export" — gera a pasta out/ 100% estática.
+# Publicamos out/ direto; o runtime SSR do Netlify fica desligado de propósito.
+
+[build]
+  command = "pnpm build"
+  publish = "out"
+
+[build.environment]
+  # Trata o site como estático puro: não roda o plugin de SSR do Next,
+  # que publicaria a pasta errada e deixaria o site sem abrir.
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
