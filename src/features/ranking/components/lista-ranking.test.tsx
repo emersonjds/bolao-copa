@@ -61,6 +61,33 @@ describe("ListaRanking", () => {
     expect(listItems[1]).not.toHaveAttribute("aria-current");
   });
 
+  it("exibe o nome do participante logado como 'Você' e mantém o nome real no title", () => {
+    const items = [
+      makeItem({ participanteId: "meu-id", nome: "Emerson Silva" }),
+      makeItem({ participanteId: "outro-id", nome: "Outro" }),
+    ];
+    render(<ListaRanking items={items} meuParticipanteId="meu-id" />);
+
+    // Minha linha mostra "Você" (e não o nome real) no texto visível…
+    const minhaLinha = screen.getAllByRole("listitem")[0];
+    expect(minhaLinha).toHaveTextContent("Você");
+    expect(screen.queryByText("Emerson Silva")).not.toBeInTheDocument();
+    // …mas o nome real fica acessível como title do parágrafo do nome.
+    expect(minhaLinha.querySelector('[title="Emerson Silva"]')).toBeInTheDocument();
+    // O outro participante segue exibindo o nome normalmente.
+    expect(screen.getByText("Outro")).toBeInTheDocument();
+  });
+
+  it("não exibe 'Você' em nenhuma linha quando o usuário não está na lista", () => {
+    const items = [
+      makeItem({ participanteId: "id-4", nome: "Alpha" }),
+      makeItem({ participanteId: "id-5", nome: "Beta" }),
+    ];
+    render(<ListaRanking items={items} meuParticipanteId="meu-id" />);
+
+    expect(screen.queryByText("Você")).not.toBeInTheDocument();
+  });
+
   it("não aplica aria-current em nenhum item quando meuParticipanteId é null", () => {
     const items = [
       makeItem({ participanteId: "id-4", nome: "Alpha" }),

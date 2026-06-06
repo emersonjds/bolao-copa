@@ -4,28 +4,8 @@ import { RotateCcw, Trophy } from "lucide-react";
 import { useRanking } from "../api/queries";
 import { DestaqueRodadaCard } from "./destaque-rodada-card";
 import { useMeuParticipanteId } from "@/shared/lib/supabase";
-import type { ItemRanking } from "@/entities/ranking";
 import { Podio } from "./podio";
-import { MinhaPosicaoBanner } from "./minha-posicao-banner";
 import { ListaRanking } from "./lista-ranking";
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-interface MeusDados {
-  posicao: number;
-  item: ItemRanking;
-}
-
-function encontrarMinhaPosicao(
-  ranking: ItemRanking[],
-  meuParticipanteId: string
-): MeusDados | null {
-  const idx = ranking.findIndex((item) => item.participanteId === meuParticipanteId);
-  if (idx < 0) return null;
-  return { posicao: idx + 1, item: ranking[idx] };
-}
 
 // ---------------------------------------------------------------------------
 // Skeletons
@@ -115,11 +95,6 @@ export function RankingContent() {
   const top3 = data.slice(0, 3);
   const restante = data.slice(3);
 
-  const meusDados: MeusDados | null =
-    meuParticipanteId !== null ? encontrarMinhaPosicao(data, meuParticipanteId) : null;
-
-  const euEstouForaDoTop3 = meusDados !== null && meusDados.posicao > 3;
-
   return (
     <div className="space-y-4">
       {/* Craque da rodada — auto-suficiente, retorna null quando sem dados */}
@@ -128,12 +103,8 @@ export function RankingContent() {
       {/* Pódio top-3: ordem visual 2º | 1º | 3º */}
       <Podio top3={top3} meuParticipanteId={meuParticipanteId} />
 
-      {/* Posição do usuário logado — só aparece quando está fora do top-3 */}
-      {euEstouForaDoTop3 && meusDados !== null && (
-        <MinhaPosicaoBanner item={meusDados.item} posicao={meusDados.posicao} />
-      )}
-
-      {/* Lista completa a partir do 4º lugar */}
+      {/* Lista completa a partir do 4º lugar — a própria linha destaca "Você",
+          dispensando um banner separado de posição (decisão de UX). */}
       {restante.length > 0 && (
         <ListaRanking items={restante} meuParticipanteId={meuParticipanteId} />
       )}

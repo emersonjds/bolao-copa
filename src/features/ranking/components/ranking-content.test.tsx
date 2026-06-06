@@ -178,29 +178,12 @@ describe("RankingContent", () => {
   });
 
   // ---------------------------------------------------------------------------
-  // MinhaPosicaoBanner — lógica de exibição condicional
+  // Sem duplicação de "Você" — o banner separado foi removido (decisão de UX).
+  // O usuário aparece uma única vez, destacado na própria lista.
   // ---------------------------------------------------------------------------
 
-  it("não exibe MinhaPosicaoBanner quando o usuário não está autenticado", () => {
-    mockedUseMeuParticipanteId.mockReturnValue(null);
-    mockedUseRanking.mockReturnValue({
-      data: makeRanking(6),
-      isLoading: false,
-      isError: false,
-      refetch: vi.fn(),
-    } as unknown as ReturnType<typeof useRanking>);
-
-    render(<RankingContent />);
-
-    expect(screen.queryByRole("region", { name: /sua posição/i })).not.toBeInTheDocument();
-  });
-
-  it("não exibe MinhaPosicaoBanner quando o usuário está no top-3", () => {
-    const ranking = [
-      makeItem({ participanteId: "meu-id", nome: "Eu", pontosTotais: 30 }),
-      makeItem({ participanteId: "id-2", nome: "Segundo", pontosTotais: 20 }),
-      makeItem({ participanteId: "id-3", nome: "Terceiro", pontosTotais: 10 }),
-    ];
+  it("não renderiza um banner 'Sua posição' separado quando o usuário está fora do top-3", () => {
+    const ranking = makeRanking(6, "meu-id");
     mockedUseMeuParticipanteId.mockReturnValue("meu-id");
     mockedUseRanking.mockReturnValue({
       data: ranking,
@@ -214,7 +197,7 @@ describe("RankingContent", () => {
     expect(screen.queryByRole("region", { name: /sua posição/i })).not.toBeInTheDocument();
   });
 
-  it("exibe MinhaPosicaoBanner com posição correta quando usuário está em 4º lugar", () => {
+  it("destaca 'Você' uma única vez, na linha da lista, quando o usuário está em 4º lugar", () => {
     const ranking = [
       makeItem({ participanteId: "id-1", nome: "Primeiro", pontosTotais: 30 }),
       makeItem({ participanteId: "id-2", nome: "Segundo", pontosTotais: 20 }),
@@ -231,34 +214,12 @@ describe("RankingContent", () => {
 
     render(<RankingContent />);
 
-    expect(
-      screen.getByRole("region", { name: "Sua posição no ranking: 4º lugar" })
-    ).toBeInTheDocument();
-  });
-
-  it("exibe MinhaPosicaoBanner com posição correta quando usuário está em 6º lugar", () => {
-    // Fixture explícita: meu-id aparece apenas uma vez, na posição 6
-    const ranking = [
-      makeItem({ participanteId: "id-1", nome: "Primeiro", pontosTotais: 30 }),
-      makeItem({ participanteId: "id-2", nome: "Segundo", pontosTotais: 25 }),
-      makeItem({ participanteId: "id-3", nome: "Terceiro", pontosTotais: 20 }),
-      makeItem({ participanteId: "id-4", nome: "Quarto", pontosTotais: 15 }),
-      makeItem({ participanteId: "id-5", nome: "Quinto", pontosTotais: 10 }),
-      makeItem({ participanteId: "meu-id", nome: "Eu", pontosTotais: 1 }),
-    ];
-    mockedUseMeuParticipanteId.mockReturnValue("meu-id");
-    mockedUseRanking.mockReturnValue({
-      data: ranking,
-      isLoading: false,
-      isError: false,
-      refetch: vi.fn(),
-    } as unknown as ReturnType<typeof useRanking>);
-
-    render(<RankingContent />);
-
-    expect(
-      screen.getByRole("region", { name: "Sua posição no ranking: 6º lugar" })
-    ).toBeInTheDocument();
+    // A linha do 4º lugar é a única do usuário e carrega o destaque.
+    const linhaUsuario = screen.getByLabelText("4º lugar").closest("li");
+    expect(linhaUsuario).toHaveAttribute("aria-current", "true");
+    // "Você" aparece só dentro dessa linha — nenhuma outra ocorrência na tela.
+    const ocorrenciasVoce = screen.getAllByText("Você");
+    ocorrenciasVoce.forEach((node) => expect(linhaUsuario).toContainElement(node));
   });
 
   // ---------------------------------------------------------------------------
