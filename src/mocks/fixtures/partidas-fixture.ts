@@ -1,9 +1,6 @@
 import type { Partida } from "@/entities/partida";
 
-/**
- * Jogos de exemplo da fase de grupos. Placeholder até a integração com uma
- * API de fixtures real (ex.: API-Football / football-data.org).
- */
+// Jogos de exemplo da fase de grupos para os testes de integração.
 export const partidasFixture: Partida[] = [
   {
     id: "1",
