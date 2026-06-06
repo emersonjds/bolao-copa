@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import "./globals.css";
 import { QueryProvider } from "@/shared/lib/query";
-import { MockProvider } from "@/mocks/MockProvider";
 import { AuthProvider } from "@/features/auth";
 import { AppShell } from "@/widgets/app-shell";
 
@@ -32,14 +31,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         >
           Ir para o conteúdo principal
         </a>
-        <MockProvider>
-          <QueryProvider>
-            <AuthProvider>
-              <AppShell>{children}</AppShell>
-              <Toaster richColors position="top-center" />
-            </AuthProvider>
-          </QueryProvider>
-        </MockProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <AppShell>{children}</AppShell>
+            <Toaster richColors position="top-center" />
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );
