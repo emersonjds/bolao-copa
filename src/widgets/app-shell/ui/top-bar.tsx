@@ -11,7 +11,7 @@ export function TopBar() {
             <Trophy className="h-4 w-4" aria-hidden="true" />
           </span>
           <span className="font-display text-base font-bold tracking-tight text-foreground">
-            Bolão da Copa
+            Resenha - Bolão da Copa
           </span>
         </div>
         <UserMenu />
