@@ -10,7 +10,7 @@
   <img alt="TypeScript 6" src="https://img.shields.io/badge/TypeScript-6-3178c6?logo=typescript&logoColor=white" />
   <img alt="Tailwind CSS 4" src="https://img.shields.io/badge/Tailwind_CSS-4-06b6d4?logo=tailwindcss&logoColor=white" />
   <img alt="Vitest 4" src="https://img.shields.io/badge/Vitest-4-6e9f18?logo=vitest&logoColor=white" />
-  <img alt="Cobertura 4.12%" src="https://img.shields.io/badge/cobertura-4.12%25-red" />
+  <img alt="Cobertura 99%" src="https://img.shields.io/badge/cobertura-99%25-brightgreen" />
   <img alt="MSW 2" src="https://img.shields.io/badge/MSW-2-ff6a33?logo=mockserviceworker&logoColor=white" />
   <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres%20%2B%20Auth-3ecf8e?logo=supabase&logoColor=white" />
   <img alt="Netlify" src="https://img.shields.io/badge/Netlify-deploy-00c7b7?logo=netlify&logoColor=white" />
@@ -54,12 +54,14 @@ App em `http://localhost:3000`. Requer Node 20+.
 | Lint              | `pnpm lint`          | Incluso em `pnpm validate`       |
 | Formatação        | `pnpm format:check`  | Incluso em `pnpm validate`       |
 | Testes            | `pnpm test:run`      | Incluso em `pnpm validate`       |
-| Cobertura         | `pnpm test:coverage` | 4.12% linhas / 4.07% statements  |
+| Cobertura         | `pnpm test:coverage` | 100% linhas / 99% statements     |
 | Varredura secrets | `rg` em arquivos Git | Sem segredos reais identificados |
 
 A cobertura acima reflete a última execução local de `pnpm test:coverage` em
-2026-06-05. O projeto ainda está em fase inicial; novas features devem incluir
-testes próximos ao slice alterado.
+2026-06-06: 99% statements, 100% linhas, 100% funções, 96% branches (os ~4% de
+branches restantes são ramos defensivos comprovadamente inalcançáveis). Toda a
+camada de dados (fetchers/RPCs) tem testes de integração via MSW cobrindo
+sucesso, vazio e erro. Novas features devem incluir testes no slice alterado.
 
 ## Segurança e variáveis de ambiente
 
