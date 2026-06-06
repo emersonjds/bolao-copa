@@ -62,5 +62,8 @@ export default defineConfig([
     "next-env.d.ts",
     "node_modules/**",
     "public/mockServiceWorker.js",
+    // Artefatos gerados pelo Playwright (relatório/trace/UI) — não é código nosso.
+    "playwright-report/**",
+    "test-results/**",
   ]),
 ]);
