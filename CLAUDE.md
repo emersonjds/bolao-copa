@@ -84,6 +84,11 @@ Regra: **um agent por função, sem duplicação**.
 - **Participante**: o amigo que entra no bolão e faz palpites
 - **Partida/Jogo**: confronto entre duas seleções, com data, fase e placar
 - **Palpite**: aposta do participante no placar de uma partida
-- **Pontuação**: regras que convertem palpite vs. resultado em pontos (ex.: placar exato, acerto do vencedor)
+- **Pontuação** (mecânica oficial — fonte de verdade: `apurar_pontos()` no Supabase): vale o placar do tempo normal (90'), pênaltis não contam.
+  - `5` — cravou o placar de uma **vitória** (placar exato com vencedor)
+  - `4` — cravou o placar de um **empate** (placar exato empatado)
+  - `3` — acertou **quem ganhou**, placar errado
+  - `2` — acertou que foi **empate**, placar errado
+  - `0` — errou o resultado
 - **Ranking**: classificação dos participantes por pontos
 - **Fases**: grupos → oitavas → quartas → semi → final

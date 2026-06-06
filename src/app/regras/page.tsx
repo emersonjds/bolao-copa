@@ -14,8 +14,8 @@ interface RegraItem {
 const REGRAS: RegraItem[] = [
   {
     pontos: 5,
-    titulo: "Placar exato",
-    descricao: "Acertou o número de gols dos dois times.",
+    titulo: "Cravou o placar da vitória",
+    descricao: "Acertou o placar exato de um jogo que teve vencedor.",
     pontosClasses: "bg-brand-800 text-gold-400",
     itemClasses: "border-brand-200 bg-brand-50",
     tituloClasses: "text-brand-800",
@@ -23,18 +23,27 @@ const REGRAS: RegraItem[] = [
     badgeMaximo: true,
   },
   {
+    pontos: 4,
+    titulo: "Cravou o placar do empate",
+    descricao: "Acertou o placar exato de um jogo que terminou empatado.",
+    pontosClasses: "bg-brand-800 text-gold-400",
+    itemClasses: "border-brand-200 bg-brand-50",
+    tituloClasses: "text-brand-800",
+    descricaoClasses: "text-brand-700",
+  },
+  {
     pontos: 3,
-    titulo: "Vencedor + saldo de gols",
-    descricao: "Acertou quem venceu e por quanto — não vale em empates.",
+    titulo: "Acertou quem ganhou",
+    descricao: "Apostou no vencedor certo, mas errou o placar.",
     pontosClasses: "bg-brand-800 text-gold-400",
     itemClasses: "border-border bg-card",
     tituloClasses: "text-foreground",
     descricaoClasses: "text-muted-foreground",
   },
   {
-    pontos: 1,
-    titulo: "Só o vencedor — ou o empate certo",
-    descricao: "Acertou quem ganhou (ou que empataria), mas não o placar exato.",
+    pontos: 2,
+    titulo: "Acertou que foi empate",
+    descricao: "Apostou em empate e deu empate, mas errou o placar.",
     pontosClasses: "bg-brand-600 text-white",
     itemClasses: "border-border bg-card",
     tituloClasses: "text-foreground",
@@ -42,8 +51,8 @@ const REGRAS: RegraItem[] = [
   },
   {
     pontos: 0,
-    titulo: "Errou",
-    descricao: "Não acertou o resultado da partida.",
+    titulo: "Errou o resultado",
+    descricao: "Não acertou quem venceu nem que o jogo seria empate.",
     pontosClasses: "bg-muted text-muted-foreground",
     itemClasses: "border-border bg-card",
     tituloClasses: "text-foreground",
@@ -64,19 +73,19 @@ interface ExemploPartida {
 
 const EXEMPLOS: ExemploPartida[] = [
   {
-    resultado: "Brasil 3 × 1 Argentina",
+    resultado: "México 2 × 0",
     palpites: [
-      { palpite: "3 × 1", pontos: 5, descricao: "placar exato" },
-      { palpite: "2 × 0", pontos: 3, descricao: "vencedor + saldo de gols (+2)" },
-      { palpite: "1 × 0", pontos: 1, descricao: "vencedor certo, saldo diferente" },
-      { palpite: "1 × 2", pontos: 0, descricao: "errou — apostou em Argentina" },
+      { palpite: "2 × 0", pontos: 5, descricao: "cravou o placar da vitória" },
+      { palpite: "1 × 0", pontos: 3, descricao: "acertou o vencedor, placar errado" },
+      { palpite: "1 × 1", pontos: 0, descricao: "errou — apostou em empate" },
+      { palpite: "0 × 2", pontos: 0, descricao: "errou — apostou no outro time" },
     ],
   },
   {
-    resultado: "Empate 1 × 1",
+    resultado: "Empate 2 × 2",
     palpites: [
-      { palpite: "1 × 1", pontos: 5, descricao: "placar exato" },
-      { palpite: "0 × 0", pontos: 1, descricao: "acertou o empate, placar diferente" },
+      { palpite: "2 × 2", pontos: 4, descricao: "cravou o placar do empate" },
+      { palpite: "1 × 1", pontos: 2, descricao: "acertou o empate, placar errado" },
       { palpite: "2 × 1", pontos: 0, descricao: "errou — apostou em vencedor" },
     ],
   },
@@ -84,7 +93,7 @@ const EXEMPLOS: ExemploPartida[] = [
 
 function getPalpiteBadgeClasses(pontos: number): string {
   if (pontos >= 3) return "bg-brand-800 text-gold-400";
-  if (pontos === 1) return "bg-brand-600 text-white";
+  if (pontos > 0) return "bg-brand-600 text-white";
   return "bg-muted text-muted-foreground";
 }
 
@@ -186,8 +195,8 @@ export default function RegrasPage() {
           Desempate no ranking
         </h2>
         <ol className="mt-2 list-inside list-decimal space-y-1 text-xs text-muted-foreground">
-          <li>Maior número de placares exatos (5 pts)</li>
-          <li>Maior número de acertos de vencedor (1 pt ou mais)</li>
+          <li>Maior número de placares cravados (4 ou 5 pts)</li>
+          <li>Maior número de resultados certos (2 pts ou mais)</li>
           <li>Ordem alfabética (critério de último recurso)</li>
         </ol>
       </section>
