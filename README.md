@@ -4,6 +4,20 @@
 
 **Faça seus palpites na Copa do Mundo 2026 e dispute o ranking com os amigos**
 
+<p align="center">
+  <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs" />
+  <img alt="React 19" src="https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white" />
+  <img alt="TypeScript 6" src="https://img.shields.io/badge/TypeScript-6-3178c6?logo=typescript&logoColor=white" />
+  <img alt="Tailwind CSS 4" src="https://img.shields.io/badge/Tailwind_CSS-4-06b6d4?logo=tailwindcss&logoColor=white" />
+  <img alt="Vitest 4" src="https://img.shields.io/badge/Vitest-4-6e9f18?logo=vitest&logoColor=white" />
+  <img alt="Cobertura 4.12%" src="https://img.shields.io/badge/cobertura-4.12%25-red" />
+  <img alt="MSW 2" src="https://img.shields.io/badge/MSW-2-ff6a33?logo=mockserviceworker&logoColor=white" />
+  <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres%20%2B%20Auth-3ecf8e?logo=supabase&logoColor=white" />
+  <img alt="Cloudflare Workers" src="https://img.shields.io/badge/Cloudflare-Workers-f38020?logo=cloudflareworkers&logoColor=white" />
+  <img alt="pnpm 10" src="https://img.shields.io/badge/pnpm-10-f69220?logo=pnpm&logoColor=white" />
+  <img alt="Licença MIT" src="https://img.shields.io/badge/license-MIT-green" />
+</p>
+
 </div>
 
 ---
@@ -31,6 +45,33 @@ App em `http://localhost:3000`. Requer Node 20+.
 | Mocks API     | MSW                                                                |
 | Testes        | Vitest + Testing Library                                           |
 | Hospedagem    | Cloudflare Workers static assets (static export)                   |
+
+## Qualidade
+
+| Verificação       | Comando              | Status local                     |
+| ----------------- | -------------------- | -------------------------------- |
+| TypeScript        | `pnpm type-check`    | Incluso em `pnpm validate`       |
+| Lint              | `pnpm lint`          | Incluso em `pnpm validate`       |
+| Formatação        | `pnpm format:check`  | Incluso em `pnpm validate`       |
+| Testes            | `pnpm test:run`      | Incluso em `pnpm validate`       |
+| Cobertura         | `pnpm test:coverage` | 4.12% linhas / 4.07% statements  |
+| Varredura secrets | `rg` em arquivos Git | Sem segredos reais identificados |
+
+A cobertura acima reflete a última execução local de `pnpm test:coverage` em
+2026-06-05. O projeto ainda está em fase inicial; novas features devem incluir
+testes próximos ao slice alterado.
+
+## Segurança e variáveis de ambiente
+
+- Não commitar `.env`, `.env.*`, `.dev.vars`, chaves privadas, tokens ou arquivos
+  locais do Supabase/Cloudflare.
+- Use `.env.local.example` como referência de nomes públicos e placeholders.
+- Variáveis `NEXT_PUBLIC_*` ficam expostas no bundle do frontend; use somente
+  valores públicos nelas.
+- Segredos de backend devem ficar no painel do Supabase, no Cloudflare ou em
+  arquivos locais ignorados pelo Git.
+- Antes de abrir PR, rode `pnpm validate` e uma busca por termos sensíveis nos
+  arquivos versionados.
 
 ## Scripts
 
