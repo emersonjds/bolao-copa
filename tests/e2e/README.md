@@ -9,19 +9,18 @@ pnpm test:e2e            # roda tudo (desktop + mobile)
 pnpm test:e2e --ui      # modo interativo
 ```
 
-Dados das partidas vêm do **MSW** (`src/mocks/`), então a Agenda e a lista de
-"Próximos jogos" são determinísticas. O ranking e o destaque da rodada batem no
-Supabase real (RPCs `get_ranking` / `get_destaque_rodada`) — por isso os testes
-públicos não asseguram conteúdo de ranking, apenas que a tela carrega.
+**Todos os dados vêm do Supabase real — não há MSW no app.** Partidas via
+`supabase.from("partidas")`, ranking/destaque via RPCs (`get_ranking` /
+`get_destaque_rodada`). Como o conteúdo depende do seed, os testes públicos
+checam estrutura e seleções presentes no seed do torneio, não números voláteis.
 
 ## Cobertura atual (sem login)
 
-| Arquivo              | O que cobre                                                                                                         |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `smoke.spec.ts`      | Carregamento de `/`, `/calendario`, `/ranking`, `/regras`, `/palpites` sem erro de console; marca; ausência do sino |
-| `navegacao.spec.ts`  | Navegação real pela bottom-nav entre abas, `aria-current`, ausência da aba Admin, responsividade 375px              |
-| `home.spec.ts`       | Card de login (HeroStats sem sessão), lista de próximos jogos (MSW), atalhos para a agenda                          |
-| `calendario.spec.ts` | Conteúdo da agenda, seletor de semana, filtro por dia (estado vazio + toggle)                                       |
+| Arquivo              | O que cobre                                                                                            |
+| -------------------- | ------------------------------------------------------------------------------------------------------ |
+| `navegacao.spec.ts`  | Navegação real pela bottom-nav entre abas, `aria-current`, ausência da aba Admin, responsividade 375px |
+| `home.spec.ts`       | Card de login (HeroStats sem sessão), lista de próximos jogos, atalhos para a agenda                   |
+| `calendario.spec.ts` | Conteúdo da agenda, seletor de semana, filtro por dia (estado vazio + toggle)                          |
 
 ## Convenções
 

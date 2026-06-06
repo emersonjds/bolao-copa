@@ -53,9 +53,9 @@ src/
 
 ## 6. Dados / API
 
-- Sem backend embutido (static export). O **MSW** intercepta `/api/*` no browser (`src/mocks/handlers/`), **ligado por padrão em dev e produção** (`src/mocks/MockProvider.tsx`).
-- Todo fetch passa por `apiUrl()` (`src/shared/lib/api-url.ts`), que prefixa `NEXT_PUBLIC_API_URL`.
-- Virar para o backend real = configurar `NEXT_PUBLIC_API_URL` + `NEXT_PUBLIC_ENABLE_MSW=false`. Sem mexer em código.
+- Backend é **Supabase** (Postgres + RLS + RPCs). O app é SPA static export e fala **direto** com o Supabase via `@supabase/ssr` (`getSupabaseBrowserClient`, `src/shared/lib/supabase/`). **Não há MSW** — todos os dados (partidas, palpites, ranking) vêm do banco real.
+- Usa a **publishable key** (pública por design; a proteção é a RLS no Postgres). A `service_role` NUNCA vai para o frontend.
+- Config em `.env.local`: `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Schema/migrations em `supabase/migrations/` (aplicar com `supabase db push`).
 
 ## 7. Segurança
 

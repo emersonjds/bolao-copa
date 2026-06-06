@@ -1,9 +1,9 @@
 import { test, expect, type Page } from "@playwright/test";
 
 /**
- * Conteúdo e interação da Agenda (/calendario). Os jogos vêm do MSW
- * (src/mocks/fixtures/partidas-fixture.ts): 4 partidas da fase de grupos
- * (11–13/jun/2026). Esta tela é pública e não depende de sessão.
+ * Conteúdo e interação da Agenda (/calendario). Os jogos vêm do Supabase real
+ * (seed do torneio completo); por padrão a agenda lista todas as partidas, então
+ * estas seleções estão presentes no DOM. Tela pública, não depende de sessão.
  */
 
 const TIMES_NA_AGENDA = ["México", "Brasil", "Argentina", "França", "Espanha", "Inglaterra"];
@@ -19,7 +19,7 @@ test.describe("Calendário — agenda da Copa (público)", () => {
     await expect(page.getByText("Copa do Mundo · Jun–Jul 2026")).toBeVisible();
   });
 
-  test("lista os jogos mockados da fase de grupos", async ({ page }) => {
+  test("lista as seleções da agenda (dados do Supabase)", async ({ page }) => {
     await page.goto("/calendario");
     for (const time of TIMES_NA_AGENDA) {
       await expect(
