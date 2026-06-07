@@ -135,9 +135,11 @@ async function main() {
   const abertos = new Set(gruposPorData.slice(-GRUPOS_ABERTOS).map((j) => j.id));
   const fechados = ordenados.filter((j) => !abertos.has(j.id));
 
-  // seleção qualquer pra usar como "vencedor nos pênaltis" (FK exige seleção real)
-  const { data: sel } = await admin.from("selecoes").select("id").limit(1).single();
-  const penaltiSelecao = sel!.id;
+  // Todas as seleções — usadas pra (1) preencher mata-mata com times reais e
+  // (2) escolher um "vencedor nos pênaltis" (a FK exige seleção real).
+  const { data: sels } = await admin.from("selecoes").select("id").order("codigo");
+  const selIds = (sels ?? []).map((s) => s.id);
+  const penaltiSelecao = selIds[0];
 
   console.log("→ resetando estado anterior do cenário…");
   await admin
@@ -172,11 +174,23 @@ async function main() {
   }
 
   console.log(`→ encerrando ${fechados.length} jogos com placar (dispara a apuração)…`);
+  let kc = 0; // contador de jogos de mata-mata, pra parear seleções reais
   for (let gi = 0; gi < fechados.length; gi++) {
     const jogo = fechados[gi];
     const res = RES[gi % RES.length];
     const empate = res[0] === res[1];
     const ehMataMata = jogo.fase !== "grupos";
+    // Mata-mata vem com times indefinidos (rótulos "W74", "2B"). Preenche
+    // seleções reais e distintas pra tela mostrar nome + bandeira. Não é um
+    // chaveamento "correto" (um time pode reaparecer em fases diferentes) —
+    // é só pra dar cara real às telas de cada fase.
+    const times = ehMataMata
+      ? {
+          mandante_id: selIds[(2 * kc) % selIds.length],
+          visitante_id: selIds[(2 * kc + 1) % selIds.length],
+        }
+      : {};
+    if (ehMataMata) kc++;
     const { error } = await admin
       .from("partidas")
       .update({
@@ -184,6 +198,7 @@ async function main() {
         gols_mandante: res[0],
         gols_visitante: res[1],
         vencedor_penaltis: empate && ehMataMata ? penaltiSelecao : null,
+        ...times,
       })
       .eq("id", jogo.id);
     if (error) throw new Error(`Falha ao encerrar jogo ${jogo.id}: ${error.message}`);
