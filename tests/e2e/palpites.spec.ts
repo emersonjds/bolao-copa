@@ -36,13 +36,19 @@ test.describe("Palpites (autenticado)", () => {
     const salvar = page.getByRole("button", { name: "Salvar palpites" });
     await salvar.click();
     await expect(page.getByText("Palpites salvos!")).toBeVisible();
+    // Espera o salvamento assentar: sem pendências o botão some (e o refetch
+    // termina). Sem isso, o refetch pode resetar o input antes da 2ª edição.
+    await expect(salvar).toBeHidden();
 
     // 2ª gravação editando o mesmo jogo — caminho ON CONFLICT DO UPDATE (o que
-    // dava 42501). Precisa passar agora.
+    // dava 42501). Preenche os DOIS campos: um palpite só fica "pendente"
+    // quando está completo (regra da UI), então editar um campo só não basta.
     await inputsEditaveis.nth(0).fill("4");
+    await inputsEditaveis.nth(1).fill("1");
     await expect(salvar).toBeVisible();
     await salvar.click();
-    await expect(page.getByText("Palpites salvos!")).toBeVisible();
+    // Pode haver 2 toasts (o 1º ainda visível) — basta confirmar que apareceu.
+    await expect(page.getByText("Palpites salvos!").first()).toBeVisible();
 
     // Em nenhum momento pode aparecer erro de permissão.
     await expect(page.getByText(/permission denied/i)).toHaveCount(0);
