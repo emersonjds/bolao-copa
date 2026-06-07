@@ -2,12 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "export",
-  // O indicador de dev fica fixo no canto inferior por padrão e, no viewport
-  // mobile, cobre a aba mais à esquerda da bottom-nav (interceptando cliques).
-  // Movido para o topo-direito; só afeta o dev server (não vai no static export).
-  devIndicators: {
-    position: "top-right",
-  },
+  // Desligado: mesmo no topo-direito, o portal do overlay de dev do Next
+  // intercepta cliques na bottom-nav no viewport mobile (Playwright). Esse
+  // overlay só existe em dev — em produção (static export) nem é gerado.
+  devIndicators: false,
   images: {
     unoptimized: true,
   },

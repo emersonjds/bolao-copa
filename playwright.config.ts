@@ -37,6 +37,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
+  // Limita a concorrência: são 4 projetos batendo num único `pnpm dev` + Supabase
+  // local. Muitos workers saturavam o dev server e geravam timeouts esporádicos.
+  workers: process.env.CI ? 2 : 4,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: "http://localhost:3000",
