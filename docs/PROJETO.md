@@ -68,5 +68,5 @@ Feitos: home só próximos jogos, `getSession` local (sem round-trip), paginaç�
 - ✅ Performance: quick-wins + alto impacto aplicados.
 - ⏳ **Cobertura 100% de linha** (meta da task 13) — hoje ~99% unit.
 - ⏳ Segurança M-1 (esconder `is_admin` na leitura) e B-1 (convite uso único).
-- ⏳ Home "jogos por dia" — spec pronto (`docs/design/home-jogos-por-dia.md`), implementação pendente.
+- ✅ Home "jogos por dia" — agrupa os 2 próximos dias com jogo (spec `docs/design/home-jogos-por-dia.md`).
 - ⏳ Refactor de identificadores p/ inglês: **descartado** (baixo valor / alto custo; UI e domínio seguem PT-BR).
