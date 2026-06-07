@@ -102,13 +102,18 @@ export function ProximosJogos() {
     return <p className="text-sm text-destructive">Não foi possível carregar os jogos.</p>;
   }
 
-  if (partidas.length === 0) {
+  const NUM_PROXIMOS = 5;
+  const proximos = partidas
+    .filter((partida) => partida.status !== "encerrada")
+    .slice(0, NUM_PROXIMOS);
+
+  if (proximos.length === 0) {
     return <p className="text-sm text-muted-foreground">Nenhum jogo por aqui ainda.</p>;
   }
 
   return (
     <ul className="flex flex-col gap-3">
-      {partidas.map((partida) => (
+      {proximos.map((partida) => (
         <CardJogo key={partida.id} partida={partida} />
       ))}
     </ul>

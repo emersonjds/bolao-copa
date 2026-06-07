@@ -92,15 +92,21 @@ describe("ProximosJogos", () => {
     expect(link).toHaveAttribute("href", "/palpites");
   });
 
-  it("exibe placar e status 'Encerrado' sem link em partida encerrada", () => {
-    mockUsePartidas({
-      data: [makePartida({ status: "encerrada", golsMandante: 2, golsVisitante: 1 })],
+  it("filtra partidas encerradas e limita a 5 próximos jogos", () => {
+    const encerrada = makePartida({
+      id: "enc-1",
+      status: "encerrada",
+      golsMandante: 2,
+      golsVisitante: 1,
     });
+    const agendadas = Array.from({ length: 6 }, (_, index) =>
+      makePartida({ id: `age-${index + 1}`, status: "agendada" }),
+    );
+    mockUsePartidas({ data: [encerrada, ...agendadas] });
     render(<ProximosJogos />);
 
-    expect(screen.getByText("2 : 1")).toBeInTheDocument();
-    expect(screen.getByText("Encerrado")).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Fazer palpite" })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("listitem")).toHaveLength(5);
+    expect(screen.queryByText("2 : 1")).not.toBeInTheDocument();
   });
 
   it("usa o nome da fase quando não há grupo e mostra status 'Ao vivo'", () => {
