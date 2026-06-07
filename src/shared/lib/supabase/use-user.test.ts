@@ -3,7 +3,7 @@ import { renderHook, waitFor, act } from "@testing-library/react";
 import type { Session } from "@supabase/supabase-js";
 import { fakeUser } from "@/test/render";
 
-const getUser = vi.fn();
+const getSession = vi.fn();
 const onAuthStateChange = vi.fn();
 const unsubscribe = vi.fn();
 
@@ -11,13 +11,13 @@ type AuthCallback = (event: string, session: Session | null) => void;
 let captured: AuthCallback | undefined;
 
 vi.mock("./client", () => ({
-  getSupabaseBrowserClient: () => ({ auth: { getUser, onAuthStateChange } }),
+  getSupabaseBrowserClient: () => ({ auth: { getSession, onAuthStateChange } }),
 }));
 
 import { useSupabaseUser } from "./use-user";
 
 beforeEach(() => {
-  getUser.mockReset();
+  getSession.mockReset();
   onAuthStateChange.mockReset();
   unsubscribe.mockReset();
   captured = undefined;
@@ -28,9 +28,9 @@ beforeEach(() => {
 });
 
 describe("useSupabaseUser", () => {
-  it("carrega o usuário da sessão persistida", async () => {
+  it("carrega o usuário da sessão local sem chamada de rede", async () => {
     const user = fakeUser();
-    getUser.mockResolvedValue({ data: { user } });
+    getSession.mockResolvedValue({ data: { session: { user } } });
 
     const { result } = renderHook(() => useSupabaseUser());
 
@@ -38,25 +38,25 @@ describe("useSupabaseUser", () => {
   });
 
   it("retorna null quando não há sessão", async () => {
-    getUser.mockResolvedValue({ data: { user: null } });
+    getSession.mockResolvedValue({ data: { session: null } });
 
     const { result } = renderHook(() => useSupabaseUser());
 
-    await waitFor(() => expect(getUser).toHaveBeenCalled());
+    await waitFor(() => expect(getSession).toHaveBeenCalled());
     expect(result.current).toBeNull();
   });
 
-  it("retorna null quando getUser rejeita", async () => {
-    getUser.mockRejectedValue(new Error("offline"));
+  it("retorna null quando getSession rejeita", async () => {
+    getSession.mockRejectedValue(new Error("offline"));
 
     const { result } = renderHook(() => useSupabaseUser());
 
-    await waitFor(() => expect(getUser).toHaveBeenCalled());
+    await waitFor(() => expect(getSession).toHaveBeenCalled());
     expect(result.current).toBeNull();
   });
 
   it("atualiza o estado em login (onAuthStateChange)", async () => {
-    getUser.mockResolvedValue({ data: { user: null } });
+    getSession.mockResolvedValue({ data: { session: null } });
     const { result } = renderHook(() => useSupabaseUser());
     await waitFor(() => expect(captured).toBeDefined());
 
@@ -67,7 +67,8 @@ describe("useSupabaseUser", () => {
   });
 
   it("limpa o estado em logout (session null)", async () => {
-    getUser.mockResolvedValue({ data: { user: fakeUser() } });
+    const user = fakeUser();
+    getSession.mockResolvedValue({ data: { session: { user } } });
     const { result } = renderHook(() => useSupabaseUser());
     await waitFor(() => expect(result.current).not.toBeNull());
 
@@ -77,7 +78,7 @@ describe("useSupabaseUser", () => {
   });
 
   it("usa null quando o evento traz sessão sem user", async () => {
-    getUser.mockResolvedValue({ data: { user: null } });
+    getSession.mockResolvedValue({ data: { session: null } });
     const { result } = renderHook(() => useSupabaseUser());
     await waitFor(() => expect(captured).toBeDefined());
 
@@ -87,7 +88,7 @@ describe("useSupabaseUser", () => {
   });
 
   it("cancela a assinatura ao desmontar", async () => {
-    getUser.mockResolvedValue({ data: { user: null } });
+    getSession.mockResolvedValue({ data: { session: null } });
     const { unmount } = renderHook(() => useSupabaseUser());
     await waitFor(() => expect(onAuthStateChange).toHaveBeenCalled());
 

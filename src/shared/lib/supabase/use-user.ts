@@ -21,10 +21,11 @@ export function useSupabaseUser(): User | null {
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
 
-    // Carrega o usuário da sessão persistida (localStorage/cookie)
+    // Lê a sessão local (localStorage/cookie) sem fazer chamada de rede —
+    // elimina o waterfall de ~100-300ms antes das queries de participante/palpites.
     supabase.auth
-      .getUser()
-      .then(({ data }) => setUser(data.user))
+      .getSession()
+      .then(({ data }) => setUser(data.session?.user ?? null))
       .catch(() => setUser(null));
 
     // Mantém o estado atualizado em login/logout subsequentes
