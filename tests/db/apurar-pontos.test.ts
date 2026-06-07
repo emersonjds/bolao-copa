@@ -236,3 +236,44 @@ describe("segurança — grants de profiles (anti-escalonamento de admin)", () =
     ).resolves.toBeDefined();
   });
 });
+
+describe("get_ranking — desempate", () => {
+  it("empate em pontos: mais placares cravados fica na frente", async () => {
+    const participanteA = participanteId;
+    const outro = await db.query("select id from participantes where id <> $1 limit 1", [
+      participanteA,
+    ]);
+    const participanteB = outro.rows[0].id as string;
+
+    await db.query("delete from palpites"); // escopo da transação (rollback no fim)
+
+    const jogos: string[] = [];
+    for (let i = 0; i < 5; i += 1) jogos.push(await novaPartida());
+
+    // A crava 3 jogos: 5+5+5 = 15 pts, 3 placares cravados.
+    for (let i = 0; i < 3; i += 1) {
+      await db.query(
+        "insert into palpites (participante_id, partida_id, gols_mandante, gols_visitante) values ($1,$2,2,1)",
+        [participanteA, jogos[i]]
+      );
+    }
+    // B acerta só o vencedor em 5 jogos: 3×5 = 15 pts, 0 cravados.
+    for (let i = 0; i < 5; i += 1) {
+      await db.query(
+        "insert into palpites (participante_id, partida_id, gols_mandante, gols_visitante) values ($1,$2,1,0)",
+        [participanteB, jogos[i]]
+      );
+    }
+    for (const jogo of jogos) await encerra(jogo, 2, 1); // todos 2x1 → apura
+
+    const ranking = await db.query<{ participante_id: string; pontos_totais: number }>(
+      "select participante_id, pontos_totais from public.get_ranking()"
+    );
+    const idxA = ranking.rows.findIndex((linha) => linha.participante_id === participanteA);
+    const idxB = ranking.rows.findIndex((linha) => linha.participante_id === participanteB);
+
+    expect(ranking.rows[idxA].pontos_totais).toBe(15);
+    expect(ranking.rows[idxB].pontos_totais).toBe(15);
+    expect(idxA).toBeLessThan(idxB); // mesmo total, mais cravados desempata na frente
+  });
+});
