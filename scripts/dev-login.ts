@@ -30,6 +30,14 @@ const PASSWORD = process.env.E2E_TEST_PASSWORD ?? "Senha-Demo-2026!";
 const APP = process.env.E2E_APP_URL ?? "http://localhost:3000";
 const email = process.argv[2] ?? "demo@bolao.test";
 
+// Guard anti-prod: este atalho só pode logar contra o Supabase local — há
+// testers reais no banco de produção.
+if (!URL.includes("127.0.0.1") && !URL.includes("localhost")) {
+  throw new Error(
+    `ABORTADO: a URL não é local (${URL}). Esse login de dev só roda no Supabase local.`
+  );
+}
+
 async function main() {
   console.log(`→ logando como ${email}…`);
   const anon = createClient(URL, PUBLISHABLE, { auth: { persistSession: false } });
