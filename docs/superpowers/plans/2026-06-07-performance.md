@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: superpowers:subagent-driven-development / dispatching-parallel-agents. Steps use `- [ ]`.
 
-**Goal:** Deixar o app rápido aplicando os achados do `docs/perf-audit.md`, sem alterar comportamento visível (UI PT-BR) nem o banco.
+**Goal:** Deixar o app rápido aplicando os achados do `docs/audits/performance-audit.md`, sem alterar comportamento visível (UI PT-BR) nem o banco.
 
 **Architecture:** SPA Next 16 static export + Supabase direto + TanStack Query. Mudanças são localizadas; 3 tarefas tocam arquivos DISJUNTOS (paralelizáveis), 1 é trivial inline.
 
@@ -107,7 +107,7 @@ No fim da Copa o histórico monta 100+ `CardHistorico` de uma vez. Mostrar os pr
 - [ ] `pnpm type-check` + `pnpm lint` + `pnpm test:run` (409+) verdes
 - [ ] `pnpm build` ok
 - [ ] e2e (72) + banco (19) com Supabase local + `pnpm scenario:seed`
-- [ ] Re-medir bundle/LCP no `docs/perf-audit.md` para comprovar ganho
+- [ ] Re-medir bundle/LCP no `docs/audits/performance-audit.md` para comprovar ganho
 
 ## Fora de escopo (registrado, não nesta leva)
 - Unificar a dupla assinatura de auth (AuthProvider + useSupabaseUser) — exige rever fronteira FSD; baixo ganho extra após Task 2.
