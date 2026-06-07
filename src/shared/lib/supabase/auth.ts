@@ -22,6 +22,10 @@ export async function signInWithGoogle(next?: string): Promise<void> {
  * `NODE_ENV === "development"`.
  */
 export async function signInDev(email: string, password: string): Promise<void> {
+  // Blindagem: indisponível no build de produção, mesmo que algo o chame.
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("signInDev indisponível em produção");
+  }
   const supabase = getSupabaseBrowserClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
