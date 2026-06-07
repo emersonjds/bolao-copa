@@ -14,12 +14,11 @@ test.describe("Home — estado público", () => {
     await expect(page.getByRole("button", { name: "Entrar com Google" })).toBeVisible();
   });
 
-  test("lista os próximos jogos vindos do MSW", async ({ page }) => {
+  test("lista os próximos jogos agendados", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { name: "Próximos jogos" })).toBeVisible();
-    // Pelo menos um confronto da fixture deve aparecer na lista.
-    await expect(page.getByText("Brasil", { exact: true }).first()).toBeVisible();
-    await expect(page.getByText("Argentina", { exact: true }).first()).toBeVisible();
+    // A home mostra só os próximos jogos abertos — cada um com a ação de palpitar.
+    await expect(page.getByRole("link", { name: "Fazer palpite" }).first()).toBeVisible();
   });
 
   test("oferece atalho para a agenda completa", async ({ page }) => {

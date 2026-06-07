@@ -26,6 +26,12 @@ test.describe("Telas por fase — Histórico (demo)", () => {
     await page.goto("/palpites");
     await expect(page.getByRole("heading", { name: "Meus palpites" })).toBeVisible();
     await page.getByRole("tab", { name: "Histórico" }).click();
+    // O histórico pagina (20 por vez); revela tudo para que jogos das fases
+    // mais antigas (grupos) também apareçam.
+    const verMais = page.getByRole("button", { name: "Ver mais jogos" });
+    for (let tentativa = 0; tentativa < 10 && (await verMais.count()); tentativa += 1) {
+      await verMais.first().click();
+    }
   });
 
   for (const { fase, badge } of BADGES_FASE) {
