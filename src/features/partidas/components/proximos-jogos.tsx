@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePartidas } from "../api/queries";
+import { agruparProximosDias } from "../lib/agrupar-por-dia";
 import { FlagIcon } from "@/shared/ui/flag-icon";
 import type { Partida, StatusPartida } from "@/entities/partida";
 
@@ -11,6 +12,34 @@ const formatadorData = new Intl.DateTimeFormat("pt-BR", {
   hour: "2-digit",
   minute: "2-digit",
 });
+
+const diaSaoPaulo = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Sao_Paulo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+const cabecalhoDia = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: "America/Sao_Paulo",
+  weekday: "short",
+  day: "2-digit",
+  month: "short",
+});
+
+/** Rótulo do cabeçalho do dia: "HOJE · …", "AMANHÃ · …" ou "QUI, 11 JUN". */
+function rotuloDia(dataChave: string, exemploDataHora: string): string {
+  const hoje = diaSaoPaulo.format(new Date());
+  const amanha = diaSaoPaulo.format(new Date(Date.now() + 86_400_000));
+  const formatado = cabecalhoDia
+    .format(new Date(exemploDataHora))
+    .replace(/\./g, "")
+    .replace(" de ", " ")
+    .toUpperCase();
+  if (dataChave === hoje) return `HOJE · ${formatado}`;
+  if (dataChave === amanha) return `AMANHÃ · ${formatado}`;
+  return formatado;
+}
 
 const STATUS_LABEL: Record<StatusPartida, string> = {
   agendada: "Agendado",
@@ -102,20 +131,37 @@ export function ProximosJogos() {
     return <p className="text-sm text-destructive">Não foi possível carregar os jogos.</p>;
   }
 
-  const NUM_PROXIMOS = 5;
-  const proximos = partidas
-    .filter((partida) => partida.status !== "encerrada")
-    .slice(0, NUM_PROXIMOS);
+  // Mostra os 2 próximos dias COM jogo (todos os jogos de cada dia).
+  const grupos = agruparProximosDias(partidas, 2);
 
-  if (proximos.length === 0) {
+  if (grupos.length === 0) {
     return <p className="text-sm text-muted-foreground">Nenhum jogo por aqui ainda.</p>;
   }
 
   return (
-    <ul className="flex flex-col gap-3">
-      {proximos.map((partida) => (
-        <CardJogo key={partida.id} partida={partida} />
-      ))}
-    </ul>
+    <div className="flex flex-col gap-6 sm:gap-8">
+      {grupos.map((grupo) => {
+        const rotulo = rotuloDia(grupo.data, grupo.jogos[0].dataHora);
+        return (
+          <section key={grupo.data} aria-label={rotulo}>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-[11px] font-semibold tracking-widest text-muted-foreground uppercase">
+                {rotulo}
+              </h3>
+              {grupo.jogos.length >= 3 && (
+                <span className="rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold text-brand-700">
+                  {grupo.jogos.length} jogos
+                </span>
+              )}
+            </div>
+            <ul className="flex flex-col gap-3">
+              {grupo.jogos.map((partida) => (
+                <CardJogo key={partida.id} partida={partida} />
+              ))}
+            </ul>
+          </section>
+        );
+      })}
+    </div>
   );
 }
