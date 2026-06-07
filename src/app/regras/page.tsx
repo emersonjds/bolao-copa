@@ -91,6 +91,32 @@ const EXEMPLOS: ExemploPartida[] = [
   },
 ];
 
+interface MultiplicadorFase {
+  fase: string;
+  multiplicador: string;
+  exemplo: string;
+  destaque?: true;
+}
+
+const MULTIPLICADORES: MultiplicadorFase[] = [
+  {
+    fase: "Fase de grupos e 32-avos",
+    multiplicador: "×1",
+    exemplo: "cravar a vitória = 5 pts",
+  },
+  {
+    fase: "Oitavas e quartas",
+    multiplicador: "×2",
+    exemplo: "cravar a vitória = 10 pts",
+  },
+  {
+    fase: "Semifinal e final",
+    multiplicador: "×3",
+    exemplo: "cravar a vitória = 15 pts",
+    destaque: true,
+  },
+];
+
 function getPalpiteBadgeClasses(pontos: number): string {
   if (pontos >= 3) return "bg-brand-800 text-gold-400";
   if (pontos > 0) return "bg-brand-600 text-white";
@@ -103,15 +129,18 @@ export default function RegrasPage() {
       <header>
         <h1 className="font-display text-2xl font-bold text-foreground">Regras e pontuação</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Como cada palpite vira pontos no ranking.
+          Como cada palpite vira pontos no ranking — e por que o mata-mata vale mais.
         </p>
       </header>
 
-      {/* Tabela de pontuação */}
+      {/* Tabela de pontuação base */}
       <section aria-labelledby="titulo-pontuacao">
-        <h2 id="titulo-pontuacao" className="sr-only">
-          Tabela de pontuação
+        <h2 id="titulo-pontuacao" className="mb-1 font-display text-base font-bold text-foreground">
+          Pontuação base
         </h2>
+        <p className="mb-3 text-xs text-muted-foreground">
+          Estes são os pontos na fase de grupos. No mata-mata eles são multiplicados (veja abaixo).
+        </p>
         <ul className="space-y-2">
           {REGRAS.map((regra) => (
             <li
@@ -135,6 +164,50 @@ export default function RegrasPage() {
             </li>
           ))}
         </ul>
+      </section>
+
+      {/* Multiplicador por fase */}
+      <section aria-labelledby="titulo-multiplicador">
+        <h2
+          id="titulo-multiplicador"
+          className="mb-1 font-display text-base font-bold text-foreground"
+        >
+          Multiplicador por fase
+        </h2>
+        <p className="mb-3 text-xs text-muted-foreground">
+          Quanto mais perto da taça, mais cada palpite vale. Dá pra virar o bolão na reta final!
+        </p>
+        <ul className="space-y-2">
+          {MULTIPLICADORES.map((item) => (
+            <li
+              key={item.fase}
+              className={`flex items-center gap-3 rounded-2xl border p-4 shadow-sm ${
+                item.destaque ? "border-gold-400 bg-brand-50" : "border-border bg-card"
+              }`}
+            >
+              <span
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl font-mono text-base font-bold ${
+                  item.destaque ? "bg-brand-800 text-gold-400" : "bg-brand-100 text-brand-800"
+                }`}
+              >
+                {item.multiplicador}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground">{item.fase}</p>
+                <p className="text-xs text-muted-foreground">{item.exemplo}</p>
+              </div>
+              {item.destaque && (
+                <span className="self-start rounded-full bg-gold-400 px-2 py-0.5 text-[10px] font-bold text-brand-950">
+                  Decisão
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2 text-xs text-muted-foreground">
+          O 3º lugar conta como fase inicial (×1). O multiplicador vale para todas as faixas de
+          pontos da partida (placar cravado, vencedor certo e empate certo).
+        </p>
       </section>
 
       {/* Exemplos */}
@@ -195,8 +268,8 @@ export default function RegrasPage() {
           Desempate no ranking
         </h2>
         <ol className="mt-2 list-inside list-decimal space-y-1 text-xs text-muted-foreground">
-          <li>Maior número de placares cravados (4 ou 5 pts)</li>
-          <li>Maior número de resultados certos (2 pts ou mais)</li>
+          <li>Maior número de placares cravados (acertou o placar exato)</li>
+          <li>Maior número de resultados certos (acertou o vencedor ou o empate)</li>
           <li>Ordem alfabética (critério de último recurso)</li>
         </ol>
       </section>
