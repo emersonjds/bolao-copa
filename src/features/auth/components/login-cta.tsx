@@ -2,6 +2,7 @@
 
 import { LogIn } from "lucide-react";
 import { signInWithGoogle } from "@/shared/lib/supabase";
+import { DevLoginButton } from "./dev-login-button";
 
 interface LoginCTAProps {
   /** Caminho para onde voltar após o login. */
@@ -32,6 +33,7 @@ export function LoginCTA({
       >
         Entrar com Google
       </button>
+      <DevLoginButton next={next} />
     </div>
   );
 }

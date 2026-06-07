@@ -15,6 +15,18 @@ export async function signInWithGoogle(next?: string): Promise<void> {
   });
 }
 
+/**
+ * SOMENTE DEV: login direto por e-mail/senha numa conta de teste do cenário
+ * local (Supabase local + `pnpm scenario:seed`), sem passar pelo Google OAuth.
+ * Não use em produção — o botão que chama isto só é renderizado quando
+ * `NODE_ENV === "development"`.
+ */
+export async function signInDev(email: string, password: string): Promise<void> {
+  const supabase = getSupabaseBrowserClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+}
+
 /** Encerra a sessão atual. */
 export async function signOutUser(): Promise<void> {
   const supabase = getSupabaseBrowserClient();
