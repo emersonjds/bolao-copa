@@ -3,10 +3,11 @@
  * Seed de cenário para testar a mecânica do bolão NA TELA, contra o Supabase
  * LOCAL (supabase start). Idempotente — pode rodar quantas vezes quiser.
  *
- * Cria 5 contas de teste e monta um estado conhecido em TODAS as fases
- * (grupos → 32-avos → oitavas → quartas → semi → 3º lugar → final), com
- * palpites desenhados pra disparar cada balde de pontos (5/4/3/2/0) e dois
- * empates decididos nos pênaltis pra provar que pênalti NÃO conta.
+ * Cria 5 contas de teste e ENCERRA a maioria dos jogos de TODAS as fases
+ * (grupos → 32-avos → oitavas → quartas → semi → 3º lugar → final) com placar,
+ * dando às 5 contas palpites que disparam cada balde de pontos (5/4/3/2/0).
+ * Empates de mata-mata recebem "vencedor nos pênaltis" pra provar que pênalti
+ * NÃO conta. Deixa a última rodada de grupos ABERTA pra dar pra palpitar.
  *
  * Uso: pnpm scenario:seed   (lê .env.test, nunca prod)
  */
@@ -27,6 +28,8 @@ const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const PASSWORD = process.env.E2E_TEST_PASSWORD ?? "Senha-Demo-2026!";
 const BOLAO = "00000000-0000-0000-0000-000000000b01";
+// Quantos jogos de grupos deixar ABERTOS (sem placar) pra dar pra palpitar.
+const GRUPOS_ABERTOS = 9;
 
 // Guarda anti-prod: só roda contra o local.
 if (!URL.includes("127.0.0.1") && !URL.includes("localhost")) {
@@ -37,97 +40,52 @@ const admin = createClient(URL, SERVICE_KEY, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
-// ── cenário ──────────────────────────────────────────────────────────────────
-// 7 fases, um jogo cada. res = placar do tempo normal [mandante, visitante].
-// pen = empate decidido nos pênaltis (prova que não conta).
-const FASES = [
-  { fase: "grupos", res: [2, 1] },
-  { fase: "trinta-e-dois", res: [1, 1], pen: true },
-  { fase: "oitavas", res: [0, 2] },
-  { fase: "quartas", res: [3, 1] },
-  { fase: "semifinal", res: [1, 1], pen: true },
-  { fase: "terceiro-lugar", res: [2, 0] },
-  { fase: "final", res: [2, 3] },
-] as const;
+const ORDEM_FASE: Record<string, number> = {
+  grupos: 0,
+  "trinta-e-dois": 1,
+  oitavas: 2,
+  quartas: 3,
+  semifinal: 4,
+  "terceiro-lugar": 5,
+  final: 6,
+};
 
-// Palpites por conta, alinhados por índice de fase. Desenhados pra cobrir
-// todos os baldes e gerar um ranking claro.
-const CONTAS = [
-  {
-    email: "ana@bolao.test",
-    nome: "Ana Atacante",
-    guesses: [
-      [2, 1],
-      [1, 1],
-      [0, 2],
-      [3, 1],
-      [1, 1],
-      [2, 0],
-      [2, 3],
-    ],
-  },
-  {
-    email: "bruno@bolao.test",
-    nome: "Bruno Zagueiro",
-    guesses: [
-      [3, 1],
-      [1, 1],
-      [0, 1],
-      [2, 0],
-      [2, 2],
-      [1, 0],
-      [1, 2],
-    ],
-  },
-  {
-    email: "demo@bolao.test",
-    nome: "Você (Demo)",
-    guesses: [
-      [2, 1],
-      [1, 1],
-      [0, 1],
-      [1, 0],
-      [0, 0],
-      [0, 2],
-      [2, 3],
-    ],
-  },
-  {
-    email: "carla@bolao.test",
-    nome: "Carla Meio",
-    guesses: [
-      [0, 0],
-      [2, 1],
-      [2, 0],
-      [1, 1],
-      [1, 1],
-      [2, 0],
-      [0, 0],
-    ],
-  },
-  {
-    email: "diego@bolao.test",
-    nome: "Diego Lanterna",
-    guesses: [
-      [1, 2],
-      [0, 2],
-      [1, 1],
-      [0, 1],
-      [2, 0],
-      [0, 1],
-      [1, 3],
-    ],
-  },
-] as const;
+// Pool de placares variados (vitórias mandante/visitante e empates), ciclado
+// pelo índice global do jogo — determinístico.
+const RES: number[][] = [
+  [2, 1],
+  [0, 0],
+  [1, 2],
+  [3, 1],
+  [1, 1],
+  [0, 1],
+  [2, 2],
+  [1, 0],
+  [2, 3],
+  [0, 2],
+];
 
-// Espelha a regra do apurar_pontos() — só pra imprimir/conferir.
-function pontos(res: readonly number[], g: readonly number[]): number {
-  const sgn = (a: number, b: number) => Math.sign(a - b);
-  const r = sgn(res[0], res[1]);
-  const p = sgn(g[0], g[1]);
-  if (g[0] === res[0] && g[1] === res[1]) return r === 0 ? 4 : 5;
-  if (p === r) return r === 0 ? 2 : 3;
-  return 0;
+// Estratégia de palpite por conta, ciclada pelo índice do jogo:
+//   E = crava o placar | S = acerta o resultado (placar errado) | W = erra
+type Estrategia = "E" | "S" | "W";
+const CONTAS: { email: string; nome: string; ciclo: Estrategia[] }[] = [
+  { email: "ana@bolao.test", nome: "Ana Atacante", ciclo: ["E", "E", "E", "S"] },
+  { email: "bruno@bolao.test", nome: "Bruno Zagueiro", ciclo: ["E", "S", "S", "E"] },
+  { email: "demo@bolao.test", nome: "Você (Demo)", ciclo: ["E", "S", "W", "S"] },
+  { email: "carla@bolao.test", nome: "Carla Meio", ciclo: ["S", "W", "W", "E"] },
+  { email: "diego@bolao.test", nome: "Diego Lanterna", ciclo: ["W", "W", "S", "W"] },
+];
+
+function palpiteDe(estrategia: Estrategia, res: number[]): [number, number] {
+  const [hm, ha] = res;
+  if (estrategia === "E") return [hm, ha];
+  if (estrategia === "S") {
+    if (hm > ha) return [hm + 1, ha]; // mandante vence, placar diferente
+    if (hm < ha) return [hm, ha + 1]; // visitante vence, placar diferente
+    return [hm + 1, ha + 1]; // empate, placar diferente
+  }
+  // W: força resultado oposto → 0 pontos
+  return hm < ha ? [3, 0] : [0, 3];
 }
 
 async function ensureUser(email: string, nome: string): Promise<string> {
@@ -146,7 +104,7 @@ async function ensureUser(email: string, nome: string): Promise<string> {
 
 async function main() {
   console.log("→ garantindo contas de teste…");
-  const participantes: { email: string; nome: string; participanteId: string }[] = [];
+  const participantes: { nome: string; participanteId: string }[] = [];
   for (const c of CONTAS) {
     const userId = await ensureUser(c.email, c.nome);
     const { data: pa, error } = await admin
@@ -156,28 +114,32 @@ async function main() {
       .eq("bolao_id", BOLAO)
       .single();
     if (error || !pa) throw new Error(`Sem participante para ${c.email}: ${error?.message}`);
-    participantes.push({ email: c.email, nome: c.nome, participanteId: pa.id });
+    participantes.push({ nome: c.nome, participanteId: pa.id });
   }
+  const participanteIds = participantes.map((p) => p.participanteId);
 
-  console.log("→ selecionando 1 jogo por fase…");
-  const jogos: { fase: string; id: string }[] = [];
-  for (const f of FASES) {
-    const { data, error } = await admin
-      .from("partidas")
-      .select("id")
-      .eq("fase", f.fase)
-      .order("data_hora", { ascending: true })
-      .limit(1);
-    if (error || !data?.[0]) throw new Error(`Sem jogo na fase ${f.fase}: ${error?.message}`);
-    jogos.push({ fase: f.fase, id: data[0].id });
-  }
-  const jogoIds = jogos.map((j) => j.id);
+  console.log("→ carregando todos os jogos…");
+  const { data: todos, error: errJogos } = await admin
+    .from("partidas")
+    .select("id, fase, data_hora")
+    .order("data_hora", { ascending: true });
+  if (errJogos || !todos) throw new Error(`Falha ao ler partidas: ${errJogos?.message}`);
+
+  // Ordena por (fase, data) e decide quais grupos ficam abertos (os últimos N).
+  const ordenados = [...todos].sort(
+    (a, b) => ORDEM_FASE[a.fase] - ORDEM_FASE[b.fase] || a.data_hora.localeCompare(b.data_hora)
+  );
+  const gruposPorData = todos
+    .filter((j) => j.fase === "grupos")
+    .sort((a, b) => a.data_hora.localeCompare(b.data_hora));
+  const abertos = new Set(gruposPorData.slice(-GRUPOS_ABERTOS).map((j) => j.id));
+  const fechados = ordenados.filter((j) => !abertos.has(j.id));
 
   // seleção qualquer pra usar como "vencedor nos pênaltis" (FK exige seleção real)
   const { data: sel } = await admin.from("selecoes").select("id").limit(1).single();
   const penaltiSelecao = sel!.id;
 
-  console.log("→ resetando jogos e palpites antigos do cenário…");
+  console.log("→ resetando estado anterior do cenário…");
   await admin
     .from("partidas")
     .update({
@@ -186,55 +148,64 @@ async function main() {
       gols_visitante: null,
       vencedor_penaltis: null,
     })
-    .in("id", jogoIds);
-  await admin.from("palpites").delete().in("partida_id", jogoIds);
+    .neq("status", "x"); // todas
+  await admin.from("palpites").delete().in("participante_id", participanteIds);
 
-  console.log("→ inserindo palpites (5 contas × 7 fases)…");
-  const rows = participantes.flatMap((p, ci) =>
-    jogos.map((j, fi) => ({
-      participante_id: p.participanteId,
-      partida_id: j.id,
-      gols_mandante: CONTAS[ci].guesses[fi][0],
-      gols_visitante: CONTAS[ci].guesses[fi][1],
-    }))
+  console.log(`→ palpitando ${fechados.length} jogos × ${CONTAS.length} contas…`);
+  const rows = fechados.flatMap((jogo, gi) =>
+    CONTAS.map((conta, ci) => {
+      const res = RES[gi % RES.length];
+      const estrategia = conta.ciclo[gi % conta.ciclo.length];
+      const [gm, gv] = palpiteDe(estrategia, res);
+      return {
+        participante_id: participanteIds[ci],
+        partida_id: jogo.id,
+        gols_mandante: gm,
+        gols_visitante: gv,
+      };
+    })
   );
-  const { error: errIns } = await admin.from("palpites").insert(rows);
-  if (errIns) throw new Error(`Falha ao inserir palpites: ${errIns.message}`);
+  // insere em lotes pra não estourar payload
+  for (let i = 0; i < rows.length; i += 500) {
+    const { error } = await admin.from("palpites").insert(rows.slice(i, i + 500));
+    if (error) throw new Error(`Falha ao inserir palpites: ${error.message}`);
+  }
 
-  console.log("→ encerrando jogos com placar (dispara a apuração)…");
-  for (let fi = 0; fi < FASES.length; fi++) {
-    const f = FASES[fi];
+  console.log(`→ encerrando ${fechados.length} jogos com placar (dispara a apuração)…`);
+  for (let gi = 0; gi < fechados.length; gi++) {
+    const jogo = fechados[gi];
+    const res = RES[gi % RES.length];
+    const empate = res[0] === res[1];
+    const ehMataMata = jogo.fase !== "grupos";
     const { error } = await admin
       .from("partidas")
       .update({
         status: "encerrada",
-        gols_mandante: f.res[0],
-        gols_visitante: f.res[1],
-        vencedor_penaltis: "pen" in f && f.pen ? penaltiSelecao : null,
+        gols_mandante: res[0],
+        gols_visitante: res[1],
+        vencedor_penaltis: empate && ehMataMata ? penaltiSelecao : null,
       })
-      .eq("id", jogos[fi].id);
-    if (error) throw new Error(`Falha ao encerrar ${f.fase}: ${error.message}`);
+      .eq("id", jogo.id);
+    if (error) throw new Error(`Falha ao encerrar jogo ${jogo.id}: ${error.message}`);
   }
 
   // ── relatório ──────────────────────────────────────────────────────────────
-  console.log("\n📊 Pontos esperados por fase:");
-  const totaisEsperados = new Map<string, number>();
-  for (let ci = 0; ci < CONTAS.length; ci++) {
-    const linha = FASES.map((f, fi) => pontos(f.res, CONTAS[ci].guesses[fi]));
-    const total = linha.reduce((a, b) => a + b, 0);
-    totaisEsperados.set(CONTAS[ci].nome, total);
-    console.log(`  ${CONTAS[ci].nome.padEnd(16)} ${linha.join(" ")}  = ${total}`);
+  const porFase = new Map<string, number>();
+  for (const j of fechados) porFase.set(j.fase, (porFase.get(j.fase) ?? 0) + 1);
+  console.log("\n📊 Jogos encerrados por fase:");
+  for (const fase of Object.keys(ORDEM_FASE)) {
+    console.log(`  ${fase.padEnd(16)} ${porFase.get(fase) ?? 0}`);
   }
+  console.log(`  (grupos abertos p/ palpitar: ${abertos.size})`);
 
-  console.log("\n🏆 Ranking real (get_ranking) no banco:");
+  console.log("\n🏆 Ranking (get_ranking):");
   const { data: ranking, error: errRk } = await admin.rpc("get_ranking");
   if (errRk) throw new Error(`get_ranking falhou: ${errRk.message}`);
   for (const [i, r] of (
     ranking as { nome: string; pontos_totais: number; jogos_pontuados: number }[]
   ).entries()) {
-    const ok = totaisEsperados.get(r.nome) === r.pontos_totais ? "✓" : "✗ DIVERGE";
     console.log(
-      `  ${i + 1}º ${r.nome.padEnd(16)} ${r.pontos_totais} pts (${r.jogos_pontuados} jogos) ${ok}`
+      `  ${i + 1}º ${r.nome.padEnd(16)} ${r.pontos_totais} pts (${r.jogos_pontuados} jogos)`
     );
   }
 

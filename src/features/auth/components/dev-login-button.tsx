@@ -15,11 +15,11 @@ interface ContaDev {
 }
 
 const CONTAS_DEV: ContaDev[] = [
-  { email: "demo@bolao.test", rotulo: "Você (Demo) — 22 pts · 2º" },
-  { email: "ana@bolao.test", rotulo: "Ana Atacante — 33 pts · 1º" },
-  { email: "bruno@bolao.test", rotulo: "Bruno Zagueiro — 21 pts · 3º" },
-  { email: "carla@bolao.test", rotulo: "Carla Meio — 9 pts · 4º" },
-  { email: "diego@bolao.test", rotulo: "Diego Lanterna — 3 pts · 5º" },
+  { email: "demo@bolao.test", rotulo: "Você (Demo) — meio do ranking" },
+  { email: "ana@bolao.test", rotulo: "Ana Atacante — líder (crava muito)" },
+  { email: "bruno@bolao.test", rotulo: "Bruno Zagueiro — vice" },
+  { email: "carla@bolao.test", rotulo: "Carla Meio — parte de baixo" },
+  { email: "diego@bolao.test", rotulo: "Diego Lanterna — lanterna" },
 ];
 
 // Senha do cenário local (não-secreta; documentada em .env.test.example).
