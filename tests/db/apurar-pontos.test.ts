@@ -106,13 +106,14 @@ async function pontos(partida: string): Promise<number | null> {
   return r.rows[0].pontos;
 }
 
-/** Atalho: palpite + resultado → pontos. */
+/** Atalho: palpite + resultado (na fase dada) → pontos. */
 async function caso(
   guess: [number, number],
   res: [number, number],
-  pen = false
+  pen = false,
+  fase = "grupos"
 ): Promise<number | null> {
-  const p = await novaPartida();
+  const p = await novaPartida(fase);
   await palpita(p, guess[0], guess[1]);
   await encerra(p, res[0], res[1], pen);
   return pontos(p);
@@ -140,13 +141,39 @@ describe("apurar_pontos — baldes de pontuação", () => {
   });
 });
 
-describe("apurar_pontos — pênaltis não contam", () => {
-  it("empate cravado com vencedor nos pênaltis vale 4 (não 5)", async () => {
-    expect(await caso([1, 1], [1, 1], true)).toBe(4);
+describe("apurar_pontos — multiplicador por fase", () => {
+  it("grupos: ×1 (cravou vitória = 5)", async () => {
+    expect(await caso([2, 1], [2, 1], false, "grupos")).toBe(5);
   });
 
-  it("empate acertado (placar errado) com pênaltis vale 2 (não 3)", async () => {
-    expect(await caso([2, 2], [1, 1], true)).toBe(2);
+  it("oitavas: ×2 (cravou vitória = 10)", async () => {
+    expect(await caso([2, 1], [2, 1], false, "oitavas")).toBe(10);
+  });
+
+  it("quartas: ×2 (acertou só o vencedor = 6)", async () => {
+    expect(await caso([3, 0], [2, 1], false, "quartas")).toBe(6);
+  });
+
+  it("semifinal: ×3 (cravou empate = 12)", async () => {
+    expect(await caso([1, 1], [1, 1], false, "semifinal")).toBe(12);
+  });
+
+  it("final: ×3 (cravou vitória = 15)", async () => {
+    expect(await caso([2, 1], [2, 1], false, "final")).toBe(15);
+  });
+
+  it("errar continua 0 em qualquer fase", async () => {
+    expect(await caso([0, 2], [2, 1], false, "final")).toBe(0);
+  });
+});
+
+describe("apurar_pontos — pênaltis não contam (com multiplicador)", () => {
+  it("final: empate cravado nos pênaltis vale 12 (4×3, não 5×3)", async () => {
+    expect(await caso([1, 1], [1, 1], true, "final")).toBe(12);
+  });
+
+  it("final: empate acertado (placar errado) nos pênaltis vale 6 (2×3)", async () => {
+    expect(await caso([2, 2], [1, 1], true, "final")).toBe(6);
   });
 });
 
