@@ -17,9 +17,9 @@ test.describe("Ranking — cenário de teste", () => {
     await expect(page.getByText("Diego Lanterna").first()).toBeVisible();
   });
 
-  test("pontos do cenário (400 líder, 350 vice, 62 lanterna)", async ({ page }) => {
+  test("pontos do cenário (473 líder, 417 vice, 74 lanterna)", async ({ page }) => {
     await page.goto("/ranking");
-    for (const pts of ["400 pts", "350 pts", "62 pts"]) {
+    for (const pts of ["473 pts", "417 pts", "74 pts"]) {
       await expect(page.getByText(pts).first()).toBeVisible();
     }
   });
