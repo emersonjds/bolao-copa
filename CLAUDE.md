@@ -2,6 +2,8 @@
 
 Regras de ouro para todo desenvolvimento assistido por IA neste projeto. Leia e siga integralmente antes de qualquer tarefa.
 
+> 📖 **Mapa operacional, estado atual e how-to:** [`docs/PROJETO.md`](docs/PROJETO.md) (handbook) e [`docs/README.md`](docs/README.md) (índice das docs). Leia o handbook para trabalhar numa tarefa sem reler o projeto todo.
+
 ---
 
 ## 1. Identidade do Produto
