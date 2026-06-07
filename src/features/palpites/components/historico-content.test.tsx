@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import type { Partida } from "@/entities/partida";
 import type { Palpite } from "@/entities/palpite";
 import { HistoricoContent } from "./historico-content";
@@ -102,5 +102,37 @@ describe("HistoricoContent", () => {
     expect(screen.queryByText(/nenhum jogo encerrado ainda/i)).not.toBeInTheDocument();
     // Mas o banner de pontos mostra 0 apurados (palpite sem pontos)
     expect(screen.getByText(/0 pontos/i)).toBeInTheDocument();
+  });
+
+  // ---------------------------------------------------------------------------
+  // Paginação progressiva
+  // ---------------------------------------------------------------------------
+
+  /** Gera N partidas encerradas com IDs únicos, distribuídas em datas passadas. */
+  function gerarPartidasEncerradas(quantidade: number): Partida[] {
+    return Array.from({ length: quantidade }, (_, i): Partida => ({
+      ...partidaTravada,
+      id: `part-pag-${i}`,
+      // Cicla entre 2026-06-01 e 2026-06-06 (todas no passado)
+      dataHora: `2026-06-${String((i % 6) + 1).padStart(2, "0")}T19:00:00.000Z`,
+    }));
+  }
+
+  it("renderiza os primeiros 20 itens e exibe botão 'Ver mais jogos' quando há mais de 20 partidas", () => {
+    render(<HistoricoContent partidas={gerarPartidasEncerradas(25)} meusPalpites={[]} />);
+
+    // Cada card exibe 2 bandeiras (mandante + visitante); 20 cards = 40 bandeiras
+    expect(screen.getAllByTestId("bandeira")).toHaveLength(40);
+    expect(screen.getByRole("button", { name: /ver mais jogos/i })).toBeInTheDocument();
+  });
+
+  it("exibe todos os itens e remove o botão após clicar em 'Ver mais jogos'", () => {
+    render(<HistoricoContent partidas={gerarPartidasEncerradas(25)} meusPalpites={[]} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /ver mais jogos/i }));
+
+    // Todos os 25 cards visíveis = 50 bandeiras
+    expect(screen.getAllByTestId("bandeira")).toHaveLength(50);
+    expect(screen.queryByRole("button", { name: /ver mais jogos/i })).not.toBeInTheDocument();
   });
 });

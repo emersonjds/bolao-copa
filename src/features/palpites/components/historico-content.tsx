@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { History, Trophy } from "lucide-react";
 import type { Partida } from "@/entities/partida";
 import type { Palpite } from "@/entities/palpite";
@@ -34,6 +35,7 @@ function formatarData(dataStr: string): string {
  * inclusive os jogos em que não houve palpite.
  */
 export function HistoricoContent({ partidas, meusPalpites }: HistoricoContentProps) {
+  const [limite, setLimite] = useState(20);
   const { itens, totalPontos, jogosApurados } = derivarHistorico(partidas, meusPalpites);
 
   if (itens.length === 0) {
@@ -52,9 +54,12 @@ export function HistoricoContent({ partidas, meusPalpites }: HistoricoContentPro
     );
   }
 
+  // Corta a lista plana ordenada ANTES de agrupar, mantendo a ordenação desc original.
+  const itensPaginados = itens.slice(0, limite);
+
   // Agrupa por data UTC, mais recente primeiro (itens já vêm ordenados desc).
   const grupos = new Map<string, ItemHistorico[]>();
-  for (const item of itens) {
+  for (const item of itensPaginados) {
     const dataStr = item.partida.dataHora.slice(0, 10);
     const grupo = grupos.get(dataStr) ?? [];
     grupo.push(item);
@@ -97,6 +102,16 @@ export function HistoricoContent({ partidas, meusPalpites }: HistoricoContentPro
           </div>
         </section>
       ))}
+
+      {itens.length > limite && (
+        <button
+          type="button"
+          onClick={() => setLimite((atual) => atual + 20)}
+          className="w-full rounded-2xl border border-brand-300 bg-transparent py-2.5 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-50"
+        >
+          Ver mais jogos
+        </button>
+      )}
     </div>
   );
 }
