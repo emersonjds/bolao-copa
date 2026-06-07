@@ -220,3 +220,19 @@ describe("enforce_palpite_lock — trava no apito", () => {
     await expect(palpita(p, 1, 0)).resolves.toBeUndefined();
   });
 });
+
+describe("segurança — grants de profiles (anti-escalonamento de admin)", () => {
+  it("authenticated NÃO pode escrever is_admin", async () => {
+    await db.query("set role authenticated");
+    await expect(
+      db.query("update public.profiles set is_admin = true where id = $1", [userIdTeste])
+    ).rejects.toThrow(/permission denied/i);
+  });
+
+  it("authenticated pode atualizar nome/avatar (nível de privilégio)", async () => {
+    await db.query("set role authenticated");
+    await expect(
+      db.query("update public.profiles set nome = 'x' where id = $1", [userIdTeste])
+    ).resolves.toBeDefined();
+  });
+});
