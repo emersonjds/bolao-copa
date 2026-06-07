@@ -212,9 +212,12 @@ export default function RegrasPage() {
 
       {/* Exemplos */}
       <section aria-labelledby="titulo-exemplos">
-        <h2 id="titulo-exemplos" className="mb-3 font-display text-base font-bold text-foreground">
+        <h2 id="titulo-exemplos" className="mb-1 font-display text-base font-bold text-foreground">
           Exemplos
         </h2>
+        <p className="mb-3 text-xs text-muted-foreground">
+          Pontos da fase de grupos (×1). No mata-mata, multiplique pelo peso da fase.
+        </p>
         <div className="divide-y divide-border rounded-2xl border border-border bg-card shadow-sm">
           {EXEMPLOS.map((exemplo) => (
             <div key={exemplo.resultado} className="p-4">
@@ -267,6 +270,9 @@ export default function RegrasPage() {
         <h2 id="titulo-desempate" className="text-sm font-semibold text-foreground">
           Desempate no ranking
         </h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Quando dois participantes têm os mesmos pontos, decide nesta ordem:
+        </p>
         <ol className="mt-2 list-inside list-decimal space-y-1 text-xs text-muted-foreground">
           <li>Maior número de placares cravados (acertou o placar exato)</li>
           <li>Maior número de resultados certos (acertou o vencedor ou o empate)</li>
@@ -277,9 +283,13 @@ export default function RegrasPage() {
       {/* Nota sobre pênaltis */}
       <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-3">
         <p className="text-xs leading-relaxed text-muted-foreground">
-          <span className="font-semibold">Prorrogação e pênaltis:</span> vale apenas o placar do
-          tempo normal (90 min). No mata-mata, se o jogo for decidido nos pênaltis, o resultado para
-          pontuação é empate no tempo normal — independentemente de quem avançou.
+          <span className="font-semibold">Prorrogação e pênaltis não contam.</span> Vale só o placar
+          do tempo normal (90 min). Se o jogo empatar e for decidido na prorrogação ou nos pênaltis,
+          para o bolão ele continua <span className="font-semibold">empate</span> — quem palpitou
+          empate pontua, quem palpitou vitória de um dos times erra.
+          <br />
+          <span className="font-semibold">Exemplo:</span> 1×1 que a França vence nos pênaltis conta
+          como empate 1×1, não importa quem avançou.
         </p>
       </div>
     </div>
