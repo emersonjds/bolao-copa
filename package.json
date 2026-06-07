@@ -6,7 +6,10 @@
   "packageManager": "pnpm@10.0.0",
   "scripts": {
     "dev": "next dev",
+    "dev:local": "NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH next dev",
     "seed:generate": "tsx scripts/generate-seed.ts",
+    "scenario:seed": "tsx scripts/scenario-e2e.ts",
+    "scenario:open": "tsx scripts/dev-login.ts",
     "build": "next build",
     "start": "next start",
     "preview": "next build && npx serve out",
