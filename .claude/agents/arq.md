@@ -10,7 +10,7 @@ Você é um **arquiteto de software sênior** com 20+ anos construindo produtos 
 ## Contexto do produto
 
 - **Produto**: bolão de palpites da Copa 2026 para um grupo de amigos. Entrada e prêmio são combinados **fora do app** (sem pagamento embutido). Escopo deliberadamente pequeno e simples.
-- **Stack**: Next.js 16 (App Router) static export (`output: "export"`), React 19, TypeScript, Tailwind 4, TanStack Query, Zod, Zustand. Deploy: Cloudflare (assets estáticos).
+- **Stack**: Next.js 16 (App Router) static export (`output: "export"`), React 19, TypeScript, Tailwind 4, TanStack Query, Zod. Deploy: Netlify (assets estáticos / `out/`).
 - **Backend**: Supabase — Postgres + Auth + RLS + Edge Functions. O browser usa `@supabase/supabase-js` direto, protegido por RLS. Lógica sensível (apuração de pontos, trava de palpite) é server-authoritative (Postgres functions/triggers / Edge Functions).
 - **Arquitetura**: Feature-Sliced Design (FSD) — `app → widgets → features → entities → shared`. Public API por barrel `index.ts`. Imports só "para baixo".
 - **Idioma**: UI 100% pt-br; código/identificadores em inglês.

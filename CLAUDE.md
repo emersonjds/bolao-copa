@@ -12,7 +12,7 @@ Regras de ouro para todo desenvolvimento assistido por IA neste projeto. Leia e 
 - **Domínio**: bolão de palpites da Copa do Mundo FIFA 2026 (11/jun–19/jul/2026) para grupos de amigos
 - **Stack**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, pnpm
 - **Tipo**: SPA com static export (`output: "export"`) — sem servidor próprio; dados direto do Supabase (MSW só nos testes)
-- **Deploy**: Cloudflare Workers (static assets)
+- **Deploy**: Netlify (static export — publish `out/`)
 - **Idioma da UI**: português brasileiro em 100% dos textos visíveis
 
 ## 2. Identidade Visual
