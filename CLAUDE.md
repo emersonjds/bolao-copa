@@ -11,7 +11,7 @@ Regras de ouro para todo desenvolvimento assistido por IA neste projeto. Leia e 
 - **Nome**: Bolão da Copa 2026
 - **Domínio**: bolão de palpites da Copa do Mundo FIFA 2026 (11/jun–19/jul/2026) para grupos de amigos
 - **Stack**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, pnpm
-- **Tipo**: SPA com static export (`output: "export"`) — sem servidor, dados via MSW até o backend existir
+- **Tipo**: SPA com static export (`output: "export"`) — sem servidor próprio; dados direto do Supabase (MSW só nos testes)
 - **Deploy**: Cloudflare Workers (static assets)
 - **Idioma da UI**: português brasileiro em 100% dos textos visíveis
 
@@ -62,7 +62,7 @@ src/
 ## 7. Segurança
 
 - Nunca commitar secrets/tokens/chaves de API
-- Integridade da pontuação: apuração de pontos é fonte de verdade do servidor (não confiar no cliente) — relevante quando o backend existir
+- Integridade da pontuação: a apuração é fonte de verdade do servidor (função `apurar_pontos()` no Supabase) — nunca confiar no cliente
 - Validar inputs de palpite no servidor; antifraude na pontuação
 
 ## 8. Review (antes de concluir)
