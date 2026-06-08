@@ -64,9 +64,11 @@ Feitos: home só próximos jogos, `getSession` local (sem round-trip), paginaç�
 
 ## 10. Estado atual & pendências
 - ✅ Pontuação com multiplicador por fase + desempate (em prod via `db push`).
-- ✅ Segurança: C-1/A-1/A-2/A-3/M-2 corrigidos.
+- ✅ Segurança: C-1/A-1/A-2/A-3/M-1/M-2 corrigidos (migrations 0016/0018 + headers).
 - ✅ Performance: quick-wins + alto impacto aplicados.
-- ⏳ **Cobertura 100% de linha** (meta da task 13) — hoje ~99% unit.
-- ⏳ Segurança M-1 (esconder `is_admin` na leitura) e B-1 (convite uso único).
+- ✅ **Cobertura**: 100% de linhas e funções (442+ testes; ~3% de branches são fallbacks defensivos inalcançáveis, documentados).
 - ✅ Home "jogos por dia" — agrupa os 2 próximos dias com jogo (spec `docs/design/home-jogos-por-dia.md`).
+- ✅ Comentários: limpos (só o "porquê" não-óbvio).
+- ⏳ B-1 (convite uso único) e M-3 (filtro por `bolao_id`): adiados — só relevantes quando houver fluxo de convite / múltiplos bolões. Habilitar **PITR** em prod (ação no painel).
 - ⏳ Refactor de identificadores p/ inglês: **descartado** (baixo valor / alto custo; UI e domínio seguem PT-BR).
+- ⚠️ Migrations novas (0015–0018) precisam de `supabase db push` quando ainda não aplicadas em prod (0015–0017 já foram; 0018 pendente).
