@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { BOLAO_PADRAO_ID } from "./constants";
-import { VALOR_INSCRICAO, DIVISAO_PREMIO } from "./constants";
+import { BOLAO_PADRAO_ID, VALOR_INSCRICAO, DIVISAO_PREMIO } from "./constants";
 
 describe("BOLAO_PADRAO_ID", () => {
   it("é o UUID fixo do bolão padrão da migration 0002", () => {
