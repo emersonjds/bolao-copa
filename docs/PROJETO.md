@@ -24,7 +24,7 @@ Vale o **placar do tempo normal (90')** — prorrogação e pênaltis **não con
 - Base por jogo: `5` cravou vitória · `4` cravou empate · `3` acertou vencedor · `2` acertou empate · `0` errou.
 - **Multiplicador por fase** (migration `0015`): grupos/32-avos/3º-lugar **×1**, oitavas/quartas **×2**, semi/final **×3** (cravar a final = 15). Função `peso_fase()`.
 - **Empate decidido nos pênaltis** = empate para pontuação (quem palpitou empate pontua; quem palpitou vitória erra).
-- **Desempate no ranking** (migration 0017): pontos → placares cravados → resultados certos → nome (alfabético).
+- **Desempate no ranking** (migration 0017): pontos → placares cravados → resultados certos. O nome (alfabético) é só a chave final de ordenação do SQL (lista estável), **não** um critério de prêmio — empate real divide o prêmio da colocação em partes iguais.
 - **Palpite trava no apito** (`enforce_palpite_lock`, 0012): editável só até o início da partida.
 - Detalhe completo e didático: ver tela `/regras` (`src/app/regras/page.tsx`) e `CLAUDE.md` §10.
 

@@ -357,8 +357,12 @@ export default function RegrasPage() {
         <ol className="mt-2 list-inside list-decimal space-y-1 text-xs text-muted-foreground">
           <li>Maior número de placares cravados (acertou o placar exato)</li>
           <li>Maior número de resultados certos (acertou o vencedor ou o empate)</li>
-          <li>Ordem alfabética (critério de último recurso)</li>
         </ol>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Se ainda assim continuar empatado, os participantes{" "}
+          <span className="font-semibold text-foreground">dividem o prêmio</span> daquela colocação
+          em partes iguais.
+        </p>
       </section>
 
       <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-3">
