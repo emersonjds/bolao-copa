@@ -33,4 +33,16 @@ describe("useRefetchNaBorda", () => {
     vi.advanceTimersByTime(10 * HORA);
     expect(onBorda).not.toHaveBeenCalled();
   });
+
+  it("não agenda nada quando a borda está além do limite de 32 bits", () => {
+    const agora = Date.now();
+    const muitoLonge = partida({
+      janelaInicio: new Date(agora + 2_147_483_648).toISOString(),
+      dataHora: new Date(agora + 2_147_483_648 + HORA).toISOString(),
+    });
+    const onBorda = vi.fn();
+    renderHook(() => useRefetchNaBorda([muitoLonge], onBorda));
+    vi.advanceTimersByTime(2000);
+    expect(onBorda).not.toHaveBeenCalled();
+  });
 });

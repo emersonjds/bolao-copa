@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Target } from "lucide-react";
 import { toast } from "sonner";
 import { usePartidas } from "@/features/partidas";
@@ -69,20 +69,24 @@ export function PalpitesContent() {
     agora
   );
 
-  // Hidrata rascunhos locais dos jogos futuros visíveis (uma vez por partidas/user).
+  // Hidrata rascunhos locais dos jogos futuros visíveis (uma vez por partida).
+  // Rastreia os ids já hidratados num ref para só processar partidas novas.
+  const partidasHidratadas = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (!userId) return;
     const futuras = (partidas ?? []).filter((p) => estadoPalpite(p, agora) === "futuro");
-    if (futuras.length === 0) return;
-    setPlacaresLocais((prev) => {
-      const next = { ...prev };
-      for (const partida of futuras) {
-        if (next[partida.id]) continue;
-        const rascunho = lerRascunho(userId, partida.id);
-        if (rascunho) next[partida.id] = rascunho;
-      }
-      return next;
-    });
+    const novos: Record<string, PlacarLocal> = {};
+    for (const partida of futuras) {
+      if (partidasHidratadas.current.has(partida.id)) continue;
+      partidasHidratadas.current.add(partida.id);
+      const rascunho = lerRascunho(userId, partida.id);
+      if (rascunho) novos[partida.id] = rascunho;
+    }
+    if (Object.keys(novos).length === 0) return;
+    // Hidratação única do localStorage (store externo) após o load assíncrono das
+    // partidas; só roda para partidas ainda não hidratadas (guardadas no ref).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPlacaresLocais((prev) => ({ ...prev, ...novos }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, partidas]);
 
@@ -121,12 +125,9 @@ export function PalpitesContent() {
       valorNormalizado = isNaN(num) ? "" : String(Math.min(20, Math.max(0, num)));
     }
 
-    let atualizado: PlacarLocal = { mandante: "", visitante: "" };
-    setPlacaresLocais((prev) => {
-      const anterior = prev[partidaId] ?? { mandante: "", visitante: "" };
-      atualizado = { ...anterior, [campo]: valorNormalizado };
-      return { ...prev, [partidaId]: atualizado };
-    });
+    const anterior = placaresLocais[partidaId] ?? { mandante: "", visitante: "" };
+    const atualizado: PlacarLocal = { ...anterior, [campo]: valorNormalizado };
+    setPlacaresLocais((prev) => ({ ...prev, [partidaId]: atualizado }));
 
     // Jogos futuros: persiste o rascunho no localStorage para sobreviver a reloads.
     const partida = (partidas ?? []).find((p) => p.id === partidaId);

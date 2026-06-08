@@ -31,6 +31,11 @@ vi.mock("../api/queries", () => ({
   useSalvarPalpite: vi.fn(),
 }));
 
+vi.mock("@/shared/lib/supabase", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/shared/lib/supabase")>()),
+  useSupabaseUser: vi.fn(() => ({ id: "user-test" })),
+}));
+
 // ---------------------------------------------------------------------------
 // Imports pós-mock
 // ---------------------------------------------------------------------------
@@ -201,6 +206,7 @@ function mockSalvarRejeicaoNaoError(valor: unknown) {
 describe("PalpitesContent", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
   });
 
   // ── Loading ───────────────────────────────────────────────────────────────
@@ -541,6 +547,28 @@ describe("PalpitesContent", () => {
       partidaId: "p-hoje",
       golsMandante: 2,
       golsVisitante: 1,
+    });
+  });
+
+  // ── Rascunho local: jogos futuros persistem no localStorage ────────────────
+
+  it("persiste rascunho no localStorage ao palpitar num jogo futuro", async () => {
+    const user = userEvent.setup();
+    const agora = Date.now();
+    const amanha = fazerPartida("p-amanha", "França", "Alemanha", 24 * HORA, 25 * HORA, agora);
+
+    mockPartidasOk([amanha]);
+    mockPalpitesOk();
+    mockSalvarOk();
+
+    render(<PalpitesContent />);
+
+    await user.type(screen.getByRole("spinbutton", { name: /gols do frança/i }), "3");
+
+    await waitFor(() => {
+      const cru = localStorage.getItem("palpite-rascunho:user-test:p-amanha");
+      expect(cru).not.toBeNull();
+      expect(JSON.parse(cru as string)).toEqual({ mandante: "3", visitante: "" });
     });
   });
 });
