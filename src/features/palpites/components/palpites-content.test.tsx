@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Partida } from "@/entities/partida";
 import type { Palpite } from "@/entities/palpite";
+import type { User } from "@supabase/supabase-js";
 import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 
 // ---------------------------------------------------------------------------
@@ -42,6 +43,7 @@ vi.mock("@/shared/lib/supabase", async (importOriginal) => ({
 
 import { toast } from "sonner";
 import { usePartidas } from "@/features/partidas";
+import { useSupabaseUser } from "@/shared/lib/supabase";
 import { useMeusPalpites, useSalvarPalpite } from "../api/queries";
 import { PalpitesContent } from "./palpites-content";
 
@@ -207,6 +209,8 @@ describe("PalpitesContent", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    // Restaura o usuário autenticado padrão (testes que precisam o sobrescrevem).
+    vi.mocked(useSupabaseUser).mockReturnValue({ id: "user-test" } as User);
   });
 
   // ── Loading ───────────────────────────────────────────────────────────────
@@ -570,5 +574,93 @@ describe("PalpitesContent", () => {
       expect(cru).not.toBeNull();
       expect(JSON.parse(cru as string)).toEqual({ mandante: "3", visitante: "" });
     });
+  });
+
+  it("hidrata o rascunho salvo de um jogo futuro a partir do localStorage", async () => {
+    const agora = Date.now();
+    const amanha = fazerPartida("p-amanha", "França", "Alemanha", 24 * HORA, 25 * HORA, agora);
+    // Rascunho pré-existente no store externo: a hidratação deve preencher os inputs.
+    localStorage.setItem(
+      "palpite-rascunho:user-test:p-amanha",
+      JSON.stringify({ mandante: "1", visitante: "2" })
+    );
+
+    mockPartidasOk([amanha]);
+    mockPalpitesOk();
+    mockSalvarOk();
+
+    render(<PalpitesContent />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("spinbutton", { name: /gols do frança/i })).toHaveValue(1);
+    });
+    expect(screen.getByRole("spinbutton", { name: /gols do alemanha/i })).toHaveValue(2);
+  });
+
+  it("não re-hidrata uma partida futura já processada quando a lista é refeita", () => {
+    const agora = Date.now();
+    const amanha = fazerPartida("p-amanha", "França", "Alemanha", 24 * HORA, 25 * HORA, agora);
+
+    mockPartidasOk([amanha]);
+    mockPalpitesOk();
+    mockSalvarOk();
+
+    const { rerender } = render(<PalpitesContent />);
+
+    // Nova referência de lista (mesma partida) força o efeito de hidratação a
+    // rodar de novo; a partida já está no ref de hidratadas → ramo `continue`.
+    vi.mocked(usePartidas).mockReturnValue({
+      data: [{ ...amanha }],
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as unknown as UseQueryResult<Partida[], Error>);
+    rerender(<PalpitesContent />);
+
+    expect(screen.getByRole("spinbutton", { name: /gols do frança/i })).toBeInTheDocument();
+  });
+
+  it("não tenta hidratar rascunhos quando não há usuário autenticado", () => {
+    vi.mocked(useSupabaseUser).mockReturnValue(null);
+    const agora = Date.now();
+    const amanha = fazerPartida("p-amanha", "França", "Alemanha", 24 * HORA, 25 * HORA, agora);
+    // Rascunho existe, mas com userId nulo o efeito retorna antes de lê-lo.
+    localStorage.setItem(
+      "palpite-rascunho:user-test:p-amanha",
+      JSON.stringify({ mandante: "1", visitante: "2" })
+    );
+
+    mockPartidasOk([amanha]);
+    mockPalpitesOk();
+    mockSalvarOk();
+
+    render(<PalpitesContent />);
+
+    // O input do jogo futuro renderiza vazio (sem hidratação).
+    expect(screen.getByRole("spinbutton", { name: /gols do frança/i })).toHaveValue(null);
+  });
+
+  it("reage à borda: ao virar a janela do jogo, atualiza o instante e refaz o fetch", () => {
+    vi.useFakeTimers();
+    try {
+      const agora = Date.now();
+      // Jogo futuro cuja janela abre ~2s à frente → agenda timer até a borda.
+      const futura = fazerPartida("p-fut", "França", "Alemanha", 2000, 10 * HORA, agora);
+      const { refetch } = mockPartidasOk([futura]);
+      mockPalpitesOk();
+      mockSalvarOk();
+
+      render(<PalpitesContent />);
+      expect(refetch).not.toHaveBeenCalled();
+
+      // Avança além da borda → o timer dispara onBorda (setAgora + refetch).
+      act(() => {
+        vi.advanceTimersByTime(2500);
+      });
+
+      expect(refetch).toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
