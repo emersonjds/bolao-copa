@@ -82,13 +82,13 @@
 
 ### A7. HTTP Cache / Deploy
 
-| Item | Status atual |
+| Item | Status (resolvido nesta leva) |
 |---|---|
-| `_next/static/*` | Imutável via hash de conteúdo (CDN padrão) |
-| HTML pages (`index.html`, etc.) | Sem `Cache-Control` explícito no `wrangler.jsonc` |
-| Preconnect para Supabase | Ausente |
-| Preconnect para `flagcdn.com` | Ausente |
-| Headers de segurança (CSP, HSTS) | Ausentes no wrangler |
+| `_next/static/*` | ✅ Imutável (`max-age=31536000, immutable` em `public/_headers`) |
+| HTML pages (`index.html`, etc.) | ✅ `max-age=300, stale-while-revalidate=86400` em `public/_headers` |
+| Preconnect para Supabase | ✅ adicionado no `layout.tsx` |
+| Preconnect para `flagcdn.com` | ✅ adicionado no `layout.tsx` |
+| Headers de segurança (CSP, HSTS) | ✅ em `public/_headers` (Netlify) |
 
 ---
 
