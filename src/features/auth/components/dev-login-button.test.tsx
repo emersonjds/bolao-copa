@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { render } from "@testing-library/react";
 
 const { signInDev } = vi.hoisted(() => ({ signInDev: vi.fn() }));
 vi.mock("@/shared/lib/supabase", () => ({ signInDev }));

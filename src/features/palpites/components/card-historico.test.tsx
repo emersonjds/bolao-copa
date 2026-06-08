@@ -141,7 +141,7 @@ describe("CardHistorico", () => {
     // não existe no mapa e grupo é null — o fallback retorna a string crua.
     const partidaFaseDesconhecida: Partida = {
       ...partida,
-      fase: "preliminar",
+      fase: "preliminar" as unknown as Partida["fase"],
       grupo: null,
     };
     const item: ItemHistorico = { partida: partidaFaseDesconhecida, palpite: null, pontos: null };

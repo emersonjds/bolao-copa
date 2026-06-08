@@ -171,11 +171,6 @@ describe("HistoricoContent", () => {
     // O span irmão contém o texto do cabeçalho gerado por formatarData.
     const secao = screen.getByRole("region");
     expect(secao).toBeInTheDocument();
-
-    // O texto do cabeçalho existe em algum elemento dentro da section
-    // (formatarData retorna algo como "Seg, 1 jun" dependendo da locale do Node).
-    const cabecalhoEl = secao.previousElementSibling ?? secao.parentElement;
-    // Verifica pela presença do data-id do cabeçalho sticky
     expect(document.getElementById("historico-data-2026-06-01")).toBeInTheDocument();
   });
 });

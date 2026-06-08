@@ -317,7 +317,7 @@ describe("CardPalpite — fase não mapeada no FASE_LABEL (linha 97 fallback ??)
     // não existe no mapa (nenhuma das chaves conhecidas) e grupo é null.
     const comFaseDesconhecida: Partida = {
       ...partidaTravada,
-      fase: "preliminar",
+      fase: "preliminar" as unknown as Partida["fase"],
       grupo: null,
     };
 

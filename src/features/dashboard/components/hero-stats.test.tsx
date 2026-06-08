@@ -163,7 +163,7 @@ describe("HeroStats", () => {
       isLoading: false,
       isError: false,
       refetch: vi.fn(),
-    } as UseRankingResult);
+    } as unknown as UseRankingResult);
     render(<HeroStats />);
 
     expect(screen.getByText("Ainda sem palpites pontuados.")).toBeInTheDocument();
