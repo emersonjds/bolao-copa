@@ -4,6 +4,7 @@ import { Trophy, Shirt } from "lucide-react";
 import { VALOR_INSCRICAO, DIVISAO_PREMIO } from "@/shared/lib/constants";
 import { dividirPote } from "../lib/calcular-divisao";
 import { useContagemInscritos } from "../api/queries";
+import { BlocoPagamentoInscricao } from "./bloco-pagamento-inscricao";
 
 const reais = (valor: number): string =>
   valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -50,8 +51,13 @@ export function PremiacaoContent() {
           <p className="mt-1 font-display text-xl font-bold text-brand-800">
             {`${inscritos} inscritos × ${reais(VALOR_INSCRICAO)} = ${reais(pote)}`}
           </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Cada participante que entrou no bolão soma ao pote.
+          </p>
         </section>
       )}
+
+      <BlocoPagamentoInscricao />
 
       <section aria-labelledby="divisao">
         <h2 id="divisao" className="mb-3 font-display text-base font-bold text-foreground">
@@ -96,9 +102,10 @@ export function PremiacaoContent() {
 
       <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-3">
         <p className="text-xs leading-relaxed text-muted-foreground">
-          <span className="font-semibold">Pagamento após a final</span> (19/jul/2026). O critério de
-          desempate é o mesmo do ranking. Todo o dinheiro arrecadado é distribuído — a organização
-          não retém nada.
+          A <span className="font-semibold">inscrição</span> é paga via PIX até 10/06/2026; a{" "}
+          <span className="font-semibold">premiação</span> é paga após a final (19/jul/2026). O
+          critério de desempate é o mesmo do ranking. Todo o dinheiro arrecadado é distribuído — a
+          organização não retém nada.
         </p>
       </div>
     </div>

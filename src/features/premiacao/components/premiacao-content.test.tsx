@@ -30,7 +30,7 @@ describe("PremiacaoContent", () => {
       typeof useContagemInscritos
     >);
     render(<PremiacaoContent />);
-    expect(screen.getByText(/87/)).toBeInTheDocument();
+    expect(screen.getByText(/87 inscritos/)).toBeInTheDocument();
     expect(screen.getByText(/R\$\s*870/)).toBeInTheDocument();
     expect(screen.getByText(/R\$\s*435/)).toBeInTheDocument();
   });
