@@ -1,9 +1,10 @@
 "use client";
 
-import { Check, Lock } from "lucide-react";
+import { Check, Clock, Lock } from "lucide-react";
 import type { Partida } from "@/entities/partida";
 import type { Palpite } from "@/entities/palpite";
 import { FlagIcon } from "@/shared/ui/flag-icon";
+import type { EstadoPalpite } from "../lib/estado-palpite";
 
 export interface PlacarLocal {
   mandante: string;
@@ -12,6 +13,7 @@ export interface PlacarLocal {
 
 interface CardPalpiteProps {
   partida: Partida;
+  estado: EstadoPalpite;
   palpiteSalvo: Palpite | undefined;
   placarLocal: PlacarLocal | undefined;
   onChangeMandante: (valor: string) => void;
@@ -40,11 +42,6 @@ const formatadorHora = new Intl.DateTimeFormat("pt-BR", {
   hour12: false,
 });
 
-/** Regra de trava (client-side): agendada E ainda no futuro → pode editar. */
-function isTravado(partida: Partida): boolean {
-  return partida.status !== "agendada" || new Date(partida.dataHora) <= new Date();
-}
-
 /**
  * Confronto indefinido: fase mata-mata cujos times ainda não foram definidos.
  * O tipo Selecao.codigo é string (nunca null), mas o banco pode devolver
@@ -62,13 +59,13 @@ const INPUT_TRAVADO =
 
 export function CardPalpite({
   partida,
+  estado,
   palpiteSalvo,
   placarLocal,
   onChangeMandante,
   onChangeVisitante,
   disabled,
 }: CardPalpiteProps) {
-  const travado = isTravado(partida);
   const indefinido = isConfrontoIndefinido(partida);
 
   // Valor exibido: local (em edição) → salvo → vazio
@@ -114,7 +111,7 @@ export function CardPalpite({
     );
   }
 
-  if (travado) {
+  if (estado === "encerrado") {
     const temPlacarOficial = partida.golsMandante !== null && partida.golsVisitante !== null;
 
     return (
@@ -189,6 +186,62 @@ export function CardPalpite({
             )}
           </div>
         )}
+      </article>
+    );
+  }
+
+  if (estado === "futuro") {
+    const temRascunho =
+      !!placarLocal && placarLocal.mandante !== "" && placarLocal.visitante !== "";
+    return (
+      <article className="rounded-2xl border border-dashed border-amber-200 bg-amber-50/40 p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] font-semibold text-brand-700">
+            {badgeGrupo}
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+            <Clock className="h-3 w-3" aria-hidden="true" />
+            Libera amanhã
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="flex flex-1 flex-col items-center gap-1.5">
+            <FlagIcon codigoFifa={partida.mandante.codigo} nome={partida.mandante.nome} tamanho="md" />
+            <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
+              {partida.mandante.nome}
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <input
+              type="number" min={0} max={20} inputMode="numeric"
+              value={valorMandante}
+              onChange={(e) => onChangeMandante(e.target.value)}
+              disabled={disabled}
+              aria-label={`Gols do ${partida.mandante.nome}`}
+              className={INPUT_BASE}
+            />
+            <span className="font-mono text-lg font-bold text-muted-foreground" aria-hidden="true">×</span>
+            <input
+              type="number" min={0} max={20} inputMode="numeric"
+              value={valorVisitante}
+              onChange={(e) => onChangeVisitante(e.target.value)}
+              disabled={disabled}
+              aria-label={`Gols do ${partida.visitante.nome}`}
+              className={INPUT_BASE}
+            />
+          </div>
+          <div className="flex flex-1 flex-col items-center gap-1.5">
+            <FlagIcon codigoFifa={partida.visitante.codigo} nome={partida.visitante.nome} tamanho="md" />
+            <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
+              {partida.visitante.nome}
+            </span>
+          </div>
+        </div>
+
+        <p className="mt-3 text-center text-xs text-amber-700">
+          {temRascunho ? "Rascunho guardado · salva quando liberar" : "Você pode preparar seu palpite aqui"}
+        </p>
       </article>
     );
   }

@@ -4,6 +4,7 @@ import type { Partida } from "@/entities/partida";
 import type { Palpite } from "@/entities/palpite";
 import { CardPalpite } from "./card-palpite";
 import type { PlacarLocal } from "./card-palpite";
+import { estadoPalpite } from "../lib/estado-palpite";
 
 interface ListaPalpitesProps {
   partidas: Partida[];
@@ -82,6 +83,7 @@ export function ListaPalpites({
                 <CardPalpite
                   key={partida.id}
                   partida={partida}
+                  estado={estadoPalpite(partida, Date.now())}
                   palpiteSalvo={meusPalpites.find((p) => p.partidaId === partida.id)}
                   placarLocal={placaresLocais[partida.id]}
                   onChangeMandante={(valor) => onChangePlacar(partida.id, "mandante", valor)}

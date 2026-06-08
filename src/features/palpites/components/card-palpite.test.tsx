@@ -41,6 +41,14 @@ const partidaTravada: Partida = {
   golsVisitante: null,
 };
 
+/** Partida agendada cuja janela de palpite ainda não abriu → futuro. */
+const partidaFutura: Partida = {
+  ...partidaAberta,
+  id: "part-3",
+  janelaInicio: "2099-06-25T03:00:00Z",
+  dataHora: "2099-06-26T19:00:00.000Z",
+};
+
 /** Partida mata-mata com confronto ainda indefinido (codigo vazio). */
 const partidaIndefinida: Partida = {
   ...partidaAberta,
@@ -76,6 +84,7 @@ describe("CardPalpite — confronto indefinido", () => {
       <CardPalpite
         {...defaultProps}
         partida={partidaIndefinida}
+        estado="liberado"
         palpiteSalvo={undefined}
         placarLocal={undefined}
       />
@@ -96,6 +105,7 @@ describe("CardPalpite — travado", () => {
       <CardPalpite
         {...defaultProps}
         partida={partidaTravada}
+        estado="encerrado"
         palpiteSalvo={undefined}
         placarLocal={undefined}
       />
@@ -118,6 +128,7 @@ describe("CardPalpite — travado", () => {
       <CardPalpite
         {...defaultProps}
         partida={comPlacar}
+        estado="encerrado"
         palpiteSalvo={undefined}
         placarLocal={undefined}
       />
@@ -142,6 +153,7 @@ describe("CardPalpite — travado", () => {
       <CardPalpite
         {...defaultProps}
         partida={comPlacar}
+        estado="encerrado"
         palpiteSalvo={comPontos}
         placarLocal={undefined}
       />
@@ -166,6 +178,7 @@ describe("CardPalpite — travado", () => {
       <CardPalpite
         {...defaultProps}
         partida={comPlacar}
+        estado="encerrado"
         palpiteSalvo={comUmPonto}
         placarLocal={undefined}
       />
@@ -190,6 +203,7 @@ describe("CardPalpite — travado", () => {
       <CardPalpite
         {...defaultProps}
         partida={comPlacar}
+        estado="encerrado"
         palpiteSalvo={semPontos}
         placarLocal={undefined}
       />
@@ -209,6 +223,7 @@ describe("CardPalpite — aberto", () => {
       <CardPalpite
         {...defaultProps}
         partida={partidaAberta}
+        estado="liberado"
         palpiteSalvo={undefined}
         placarLocal={undefined}
       />
@@ -227,6 +242,7 @@ describe("CardPalpite — aberto", () => {
       <CardPalpite
         {...defaultProps}
         partida={partidaAberta}
+        estado="liberado"
         palpiteSalvo={palpiteSalvo}
         placarLocal={undefined}
       />
@@ -240,6 +256,7 @@ describe("CardPalpite — aberto", () => {
       <CardPalpite
         {...defaultProps}
         partida={partidaAberta}
+        estado="liberado"
         palpiteSalvo={palpiteSalvo}
         // Valor local diferente do salvo → hasPendente = true, hasSalvo = false
         placarLocal={{ mandante: "1", visitante: "1" }}
@@ -260,6 +277,7 @@ describe("CardPalpite — aberto", () => {
       <CardPalpite
         {...defaultProps}
         partida={partidaAberta}
+        estado="liberado"
         palpiteSalvo={palpiteSalvo} // 2 × 0
         // mandante igual ao salvo, visitante diferente → ramo esquerdo falso,
         // ramo direito do || avaliado → hasPendente = true, sem badge "Salvo".
@@ -278,6 +296,7 @@ describe("CardPalpite — aberto", () => {
         {...defaultProps}
         onChangeMandante={onChangeMandante}
         partida={partidaAberta}
+        estado="liberado"
         palpiteSalvo={undefined}
         placarLocal={undefined}
       />
@@ -296,6 +315,7 @@ describe("CardPalpite — aberto", () => {
         {...defaultProps}
         onChangeVisitante={onChangeVisitante}
         partida={partidaAberta}
+        estado="liberado"
         palpiteSalvo={undefined}
         placarLocal={undefined}
       />
@@ -305,6 +325,43 @@ describe("CardPalpite — aberto", () => {
     await userEvent.type(inputVisitante, "1");
 
     expect(onChangeVisitante).toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Futuro (palpite dia a dia)
+// ---------------------------------------------------------------------------
+
+describe("CardPalpite — futuro", () => {
+  it("estado futuro: mostra 'Libera amanhã' e mantém inputs habilitados", () => {
+    render(
+      <CardPalpite
+        partida={partidaFutura}
+        estado="futuro"
+        palpiteSalvo={undefined}
+        placarLocal={undefined}
+        onChangeMandante={() => {}}
+        onChangeVisitante={() => {}}
+        disabled={false}
+      />
+    );
+    expect(screen.getByText(/libera amanhã/i)).toBeInTheDocument();
+    expect(screen.getAllByLabelText(/Gols do/i)[0]).not.toBeDisabled();
+  });
+
+  it("estado futuro com rascunho: mostra microcopy de rascunho", () => {
+    render(
+      <CardPalpite
+        partida={partidaFutura}
+        estado="futuro"
+        palpiteSalvo={undefined}
+        placarLocal={{ mandante: "2", visitante: "1" }}
+        onChangeMandante={() => {}}
+        onChangeVisitante={() => {}}
+        disabled={false}
+      />
+    );
+    expect(screen.getByText(/rascunho guardado/i)).toBeInTheDocument();
   });
 });
 
@@ -326,6 +383,7 @@ describe("CardPalpite — fase não mapeada no FASE_LABEL (linha 97 fallback ??)
       <CardPalpite
         {...defaultProps}
         partida={comFaseDesconhecida}
+        estado="encerrado"
         palpiteSalvo={undefined}
         placarLocal={undefined}
       />
