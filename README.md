@@ -2,19 +2,15 @@
 
 # ⚽ Bolão da Copa 2026
 
-**Faça seus palpites na Copa do Mundo 2026 e dispute o ranking com os amigos**
+**Palpites da Copa do Mundo 2026 pra disputar o ranking com os amigos.**
 
 <p align="center">
   <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs" />
   <img alt="React 19" src="https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white" />
-  <img alt="TypeScript 6" src="https://img.shields.io/badge/TypeScript-6-3178c6?logo=typescript&logoColor=white" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&logoColor=white" />
   <img alt="Tailwind CSS 4" src="https://img.shields.io/badge/Tailwind_CSS-4-06b6d4?logo=tailwindcss&logoColor=white" />
-  <img alt="Vitest 4" src="https://img.shields.io/badge/Vitest-4-6e9f18?logo=vitest&logoColor=white" />
-  <img alt="Cobertura 99%" src="https://img.shields.io/badge/cobertura-99%25-brightgreen" />
-  <img alt="MSW 2" src="https://img.shields.io/badge/MSW-2-ff6a33?logo=mockserviceworker&logoColor=white" />
-  <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres%20%2B%20Auth-3ecf8e?logo=supabase&logoColor=white" />
-  <img alt="Netlify" src="https://img.shields.io/badge/Netlify-deploy-00c7b7?logo=netlify&logoColor=white" />
-  <img alt="pnpm 10" src="https://img.shields.io/badge/pnpm-10-f69220?logo=pnpm&logoColor=white" />
+  <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres%20%2B%20RLS-3ecf8e?logo=supabase&logoColor=white" />
+  <img alt="Cobertura 100%" src="https://img.shields.io/badge/cobertura-100%25%20linhas-brightgreen" />
   <img alt="Licença MIT" src="https://img.shields.io/badge/license-MIT-green" />
 </p>
 
@@ -22,114 +18,75 @@
 
 ---
 
-## Quick start
+SPA estática (Next.js, `output: "export"`) que fala **direto com o Supabase** (Postgres + RLS + Auth Google). UI 100% em PT-BR. Deploy estático no Netlify.
+
+## Rodar localmente (via Docker)
+
+Pré-requisitos: **Node 20+**, **pnpm 10**, **Docker** (para o Supabase local) e a **CLI do Supabase**.
 
 ```bash
-git config --local core.hooksPath .githooks
 pnpm install
-pnpm dev
+supabase start                 # sobe Postgres + APIs do Supabase no Docker (aplica migrations + seed.sql)
+cp .env.test.example .env.test # preencha com os valores de `supabase status`
+pnpm scenario:seed             # popula um cenário de teste (5 contas, todas as fases)
+pnpm dev:local                 # app em http://localhost:3000 apontando pro Supabase LOCAL
 ```
 
-App em `http://localhost:3000`. Requer Node 20+.
+- **Login em dev:** o login real é Google OAuth (não roda no local). Na aba **Palpites**, use o botão **"Logar em dev"** (só aparece em desenvolvimento) e escolha uma conta de teste — senha `Senha-Demo-2026!`.
+- **Inspecionar o banco:** Supabase Studio em `http://127.0.0.1:54323`, ou DBeaver/psql em `127.0.0.1:54322` (db/user/pass = `postgres`).
+- `pnpm dev` (sem `:local`) usa o Supabase de **produção** (`.env.local`); use `pnpm dev:local` para o banco local.
 
-## Stack
+## Testes
 
-| Camada        | Tecnologia                                                         |
-| ------------- | ------------------------------------------------------------------ |
-| Framework     | Next.js 16 (App Router) + React 19                                 |
-| Linguagem     | TypeScript                                                         |
-| Estilização   | Tailwind CSS 4 + design tokens (`brand-*` verde-gramado, `gold-*`) |
-| Estado client | Zustand 5                                                          |
-| Data fetching | TanStack Query v5                                                  |
-| Formulários   | React Hook Form 7 + Zod 4                                          |
-| Backend       | Supabase (Postgres + Auth + RLS)                                   |
-| Testes        | Vitest + Testing Library + MSW (integração)                        |
-| Hospedagem    | Netlify (static export — publish `out/`)                           |
+Três camadas, todas verdes:
 
-## Qualidade
+| Camada            | Comando         | Cobre                                                     |
+| ----------------- | --------------- | -------------------------------------------------------- |
+| Unit / integração | `pnpm test:run` | componentes, hooks e fetchers (mocks via MSW)            |
+| Banco             | `pnpm test:db`  | regra de pontos, RLS/grants e desempate (Postgres local) |
+| E2E               | `pnpm test:e2e` | telas fase a fase, ranking, palpitar (Playwright)        |
 
-| Verificação       | Comando              | Status local                     |
-| ----------------- | -------------------- | -------------------------------- |
-| TypeScript        | `pnpm type-check`    | Incluso em `pnpm validate`       |
-| Lint              | `pnpm lint`          | Incluso em `pnpm validate`       |
-| Formatação        | `pnpm format:check`  | Incluso em `pnpm validate`       |
-| Testes            | `pnpm test:run`      | Incluso em `pnpm validate`       |
-| Cobertura         | `pnpm test:coverage` | 100% linhas / 99% statements     |
-| Varredura secrets | `rg` em arquivos Git | Sem segredos reais identificados |
+```bash
+pnpm test:coverage   # cobertura: 100% linhas e funções
+```
 
-A cobertura acima reflete a última execução local de `pnpm test:coverage` em
-2026-06-06: 99% statements, 100% linhas, 100% funções, 96% branches (os ~4% de
-branches restantes são ramos defensivos comprovadamente inalcançáveis). Toda a
-camada de dados (fetchers/RPCs) tem testes de integração via MSW cobrindo
-sucesso, vazio e erro. Novas features devem incluir testes no slice alterado.
-
-## Segurança e variáveis de ambiente
-
-- Não commitar `.env`, `.env.*`, `.dev.vars`, chaves privadas, tokens ou arquivos
-  locais do Supabase/Netlify.
-- Use `.env.local.example` como referência de nomes públicos e placeholders.
-- Variáveis `NEXT_PUBLIC_*` ficam expostas no bundle do frontend; use somente
-  valores públicos nelas.
-- Segredos de backend devem ficar no painel do Supabase, nas variáveis de
-  ambiente do Netlify ou em arquivos locais ignorados pelo Git.
-- Antes de abrir PR, rode `pnpm validate` e uma busca por termos sensíveis nos
-  arquivos versionados.
+`test:db` e `test:e2e` exigem `supabase start` + `pnpm scenario:seed` rodados antes.
 
 ## Scripts
 
-| Comando         | O que faz                                   |
-| --------------- | ------------------------------------------- |
-| `pnpm dev`      | Dev server em `:3000`                       |
-| `pnpm build`    | Build estático (gera `out/`)                |
-| `pnpm validate` | type-check + lint + format:check + test:run |
+| Comando              | O que faz                                   |
+| -------------------- | ------------------------------------------- |
+| `pnpm dev:local`     | Dev server apontando pro Supabase local     |
+| `pnpm build`         | Build estático (gera `out/`)                |
+| `pnpm validate`      | type-check + lint + format:check + test:run |
+| `pnpm scenario:seed` | (Re)cria o cenário de teste no banco local  |
+| `pnpm scenario:open` | Abre um Chrome já logado numa conta de teste|
 
-O deploy no Netlify usa a pasta `out/` como _publish directory_ (arraste a
-pasta no painel do Netlify, ou configure build command `pnpm build` + publish
-`out`).
+## Stack
 
-## Estrutura do monorepo
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · TanStack Query v5 · React Hook Form + Zod · Supabase (Postgres + RLS + Auth) · Vitest + Testing Library + MSW · Playwright · Netlify.
 
-```
-bolao-copa/
-├── src/          ← Frontend (Next.js, Feature-Sliced Design) — ver abaixo
-├── public/       ← Assets estáticos
-└── supabase/     ← Backend (Supabase)
-    ├── migrations/  ← db: schema SQL + RLS + triggers
-    └── functions/   ← api: Edge Functions (apuração, sync de resultados)
-```
+## Arquitetura
 
-Frontend e backend vivem no mesmo repositório. O frontend é estático
-(Netlify); o backend é Supabase (Postgres + Auth + RLS + Edge Functions).
-Detalhes do backend em [`supabase/README.md`](./supabase/README.md).
-
-## Arquitetura do frontend — Feature-Sliced Design
+Feature-Sliced Design — import só de camadas abaixo:
 
 ```
-src/
-├── app/        ← Rotas e layouts (App Router). Sem regra de negócio.
-├── widgets/    ← UI composta. Junta features + entities.
-├── features/   ← Casos de uso (partidas, palpites, ranking).
-├── entities/   ← Modelos de domínio (partida, palpite, participante).
-└── shared/     ← Infra reutilizável (ui, lib, hooks, providers).
+src/  app → widgets → features → entities → shared
 ```
 
-Import só de **layers abaixo**: `app → widgets → features → entities → shared`.
+Backend é Supabase: schema/RLS/RPCs versionados em `supabase/migrations/`.
 
-## Dados / API
+## Documentação
 
-Os dados vêm direto do **Supabase** (Postgres + Auth + RLS) pelo cliente do
-browser (`src/shared/lib/supabase`). Cada feature tem seu fetcher em
-`features/<slice>/api/`, consumido via TanStack Query.
+- **`docs/PROJETO.md`** — handbook (visão geral, regras de pontuação, ambientes, testes, estado atual). **Leia primeiro.**
+- `docs/README.md` — índice de toda a documentação.
+- `docs/audits/` — auditorias de segurança e performance.
+- `CLAUDE.md` — regras de desenvolvimento do projeto.
 
-O **MSW** roda **apenas nos testes de integração** (`src/mocks/`, ligado em
-`vitest.setup.ts`) — não vai para produção.
+## Deploy
 
-## Status
-
-Esqueleto inicial. Fluxo de exemplo funcionando: home lista os próximos jogos
-via Supabase → React Query. Demais funcionalidades (palpites, pontuação, ranking,
-autenticação dos amigos) entram conforme as especificações.
+Netlify estático: build `pnpm build`, publish `out/`. Security/cache headers em `public/_headers`.
 
 ## Licença
 
-Distribuído sob a licença MIT. Consulte [LICENSE](LICENSE) para mais detalhes.
+MIT — ver [LICENSE](LICENSE).
