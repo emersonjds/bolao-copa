@@ -9,7 +9,7 @@
 create or replace function public.janela_palpite_inicio(p_data_hora timestamptz)
 returns timestamptz
 language sql
-immutable
+stable
 as $$
   select date_trunc('day', p_data_hora at time zone 'America/Sao_Paulo')
            at time zone 'America/Sao_Paulo';

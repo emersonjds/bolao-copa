@@ -70,6 +70,7 @@ afterEach(async () => {
   await db.query("ROLLBACK");
 });
 
+// AVISO: dataHoraSql é interpolado diretamente no SQL — use apenas literais confiáveis, nunca input externo.
 /** Insere uma partida com data_hora explícita e devolve o id. */
 async function partidaEm(dataHoraSql: string): Promise<string> {
   const r = await db.query(
@@ -107,15 +108,26 @@ describe("enforce_palpite_lock — borda inferior (dia a dia)", () => {
     const p = await partidaEm("now() + interval '10 days'");
     await expect(palpita(p)).rejects.toThrow(/nao_liberado|não liberado|abrem no dia/i);
   });
-  it("aceita palpite DENTRO da janela (jogo hoje, 23h BRT)", async () => {
-    const p = await partidaEm(
-      "(date_trunc('day', now() at time zone 'America/Sao_Paulo') at time zone 'America/Sao_Paulo') + interval '23 hours'"
-    );
+  it("aceita palpite DENTRO da janela (jogo hoje, 1h no futuro)", async () => {
+    const p = await partidaEm("now() + interval '1 hour'");
     await expect(palpita(p)).resolves.toBeUndefined();
   });
   it("recusa palpite DEPOIS do apito (borda superior, sem regressão)", async () => {
     const p = await partidaEm("now() - interval '1 hour'");
     await expect(palpita(p)).rejects.toThrow(/encerrado|começou/i);
+  });
+  it("recusa UPDATE que muda gols ANTES da janela", async () => {
+    // cria a partida HOJE (janela aberta), insere o palpite, depois empurra a
+    // data_hora pra 10 dias no futuro (janela fecha) e tenta editar os gols.
+    const p = await partidaEm("now() + interval '1 hour'");
+    await palpita(p); // 1x0, dentro da janela → ok
+    await db.query("update partidas set data_hora = now() + interval '10 days' where id=$1", [p]);
+    await expect(
+      db.query(
+        "update palpites set gols_mandante=3 where participante_id=$1 and partida_id=$2",
+        [participanteId, p]
+      )
+    ).rejects.toThrow(/nao_liberado|não liberado|abrem no dia/i);
   });
 });
 

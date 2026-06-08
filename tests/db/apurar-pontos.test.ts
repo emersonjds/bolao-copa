@@ -85,9 +85,7 @@ afterEach(async () => {
 async function novaPartida(fase = "grupos"): Promise<string> {
   const r = await db.query(
     `insert into partidas (fase, data_hora, estadio, status, mandante_id, visitante_id)
-     values ($1,
-       (date_trunc('day', now() at time zone 'America/Sao_Paulo') at time zone 'America/Sao_Paulo') + interval '23 hours',
-       'Estádio Teste', 'agendada', $2, $3) returning id`,
+     values ($1, now() + interval '1 hour', 'Estádio Teste', 'agendada', $2, $3) returning id`,
     [fase, selA, selB]
   );
   return r.rows[0].id;
