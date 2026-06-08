@@ -30,9 +30,10 @@ Vale o **placar do tempo normal (90')** — prorrogação e pênaltis **não con
 
 ## 4. Backend / dados (Supabase)
 
-Postgres + RLS + RPCs + Auth (Google OAuth). Schema versionado em `supabase/migrations/` (0001–0017).
+Postgres + RLS + RPCs + Auth (Google OAuth). Schema versionado em `supabase/migrations/` (0001–0019).
 Funções-chave: `apurar_pontos()` (trigger ao encerrar partida), `peso_fase()`, `get_ranking()`,
-`enforce_palpite_lock()`, `handle_new_user()`. Seed: `supabase/seed.sql`. Reset cirúrgico:
+`enforce_palpite_lock()` (trava no apito + janela do dia, 0019), `janela_palpite_inicio()`,
+`handle_new_user()`. Seed: `supabase/seed.sql`. Reset cirúrgico:
 `supabase/reset-cenario-teste.sql`. Tabelas: profiles, selecoes, partidas, boloes, participantes, convites, palpites.
 
 ## 5. Ambientes
