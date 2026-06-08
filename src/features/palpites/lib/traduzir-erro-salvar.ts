@@ -16,6 +16,14 @@ export interface ErroSalvarAmigavel {
 export function traduzirErroSalvar(mensagemBruta: string): ErroSalvarAmigavel {
   const msg = mensagemBruta.toLowerCase();
 
+  // Borda inferior: o jogo ainda não liberou (antes da meia-noite BRT do dia).
+  if (msg.includes("nao_liberado") || msg.includes("não liberado") || msg.includes("abrem no dia")) {
+    return {
+      tipo: "lock",
+      texto: "Ainda não é o dia! Os palpites deste jogo abrem na data da partida.",
+    };
+  }
+
   // Trava de horário: a partida já começou (apito inicial fecha os palpites).
   if (msg.includes("começou") || msg.includes("encerrado")) {
     return {
