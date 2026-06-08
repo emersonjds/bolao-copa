@@ -65,6 +65,9 @@ export function ListaPalpites({
   return (
     <div className="space-y-2">
       {datasOrdenadas.map((dataStr, indice) => {
+        // dataStr vem de grupos.keys(): a chave sempre existe, o `?? []` é só
+        // para satisfazer o tipo `T | undefined` do Map.get (inalcançável).
+        /* v8 ignore next */
         const partidasDoDia = grupos.get(dataStr) ?? [];
         const cabecalho = formatarCabecalho(dataStr, indice + 1);
 

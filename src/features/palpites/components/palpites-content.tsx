@@ -41,6 +41,10 @@ export function PalpitesContent() {
   const { data: meusPalpites, isPending: isPendingPalpites } = useMeusPalpites();
   const { mutateAsync: salvarPalpite } = useSalvarPalpite();
 
+  // Lista normalizada: `partidas` é undefined durante o load. Centralizar o
+  // `?? []` aqui evita espalhar o fallback por todo o componente (DRY).
+  const listaPartidas = partidas ?? [];
+
   const [vista, setVista] = useState<VistaPalpites>("palpitar");
   const [faseSelecionada, setFaseSelecionada] = useState<FaseCopa>("grupos");
   const [placaresLocais, setPlacaresLocais] = useState<Record<string, PlacarLocal>>({});
@@ -54,18 +58,18 @@ export function PalpitesContent() {
     setAgora(Date.now());
     void refetch();
   }, [refetch]);
-  useRefetchNaBorda(partidas ?? [], onBorda);
+  useRefetchNaBorda(listaPartidas, onBorda);
 
   const isLoading = isLoadingPartidas || isPendingPalpites;
 
   // "Fase de Grupos" sempre visível; outras apenas se houver partidas nelas
   const fasesDisponiveis: FaseCopa[] = ORDEM_FASES.filter(
-    (fase) => fase === "grupos" || (partidas ?? []).some((p) => p.fase === fase)
+    (fase) => fase === "grupos" || listaPartidas.some((p) => p.fase === fase)
   );
 
   // Aba "Palpitar": jogos liberados hoje + o próximo dia (mecânica dia a dia).
   const partidasFiltradas = filtrarHojeEProximoDia(
-    (partidas ?? []).filter((p) => p.fase === faseSelecionada),
+    listaPartidas.filter((p) => p.fase === faseSelecionada),
     agora
   );
 
@@ -74,7 +78,7 @@ export function PalpitesContent() {
   const partidasHidratadas = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (!userId) return;
-    const futuras = (partidas ?? []).filter((p) => estadoPalpite(p, agora) === "futuro");
+    const futuras = listaPartidas.filter((p) => estadoPalpite(p, agora) === "futuro");
     const novos: Record<string, PlacarLocal> = {};
     for (const partida of futuras) {
       if (partidasHidratadas.current.has(partida.id)) continue;
@@ -108,7 +112,7 @@ export function PalpitesContent() {
   }
 
   // Só os jogos liberados (de hoje) contam como pendência salvável.
-  const hasPendingChanges = (partidas ?? []).some(
+  const hasPendingChanges = listaPartidas.some(
     (p) => estadoPalpite(p, agora) === "liberado" && ehPendente(p.id)
   );
 
@@ -122,6 +126,9 @@ export function PalpitesContent() {
       valorNormalizado = "";
     } else {
       const num = parseInt(valor, 10);
+      // O input é type="number": `valor` é sempre "" ou numérico, então parseInt
+      // nunca retorna NaN aqui — o ramo "" é defensivo e inalcançável em runtime.
+      /* v8 ignore next */
       valorNormalizado = isNaN(num) ? "" : String(Math.min(20, Math.max(0, num)));
     }
 
@@ -130,17 +137,20 @@ export function PalpitesContent() {
     setPlacaresLocais((prev) => ({ ...prev, [partidaId]: atualizado }));
 
     // Jogos futuros: persiste o rascunho no localStorage para sobreviver a reloads.
-    const partida = (partidas ?? []).find((p) => p.id === partidaId);
+    const partida = listaPartidas.find((p) => p.id === partidaId);
     if (userId && partida && estadoPalpite(partida, agora) === "futuro") {
       salvarRascunho(userId, partidaId, atualizado);
     }
   }
 
   async function handleSalvar(): Promise<void> {
-    const pendentes = (partidas ?? []).filter(
+    const pendentes = listaPartidas.filter(
       (p) => estadoPalpite(p, agora) === "liberado" && ehPendente(p.id)
     );
 
+    // Guarda defensiva: o botão de salvar só é exibido quando há pendências de
+    // hoje (mesmo predicado), então `pendentes` aqui nunca está vazio.
+    /* v8 ignore next */
     if (pendentes.length === 0) return;
 
     setIsSaving(true);
@@ -169,7 +179,9 @@ export function PalpitesContent() {
       });
 
       // Limpa qualquer rascunho local das partidas já gravadas no servidor.
+      // Salvar pressupõe sessão, então `userId` é sempre verdadeiro aqui.
       for (const p of pendentes) {
+        /* v8 ignore next */
         if (userId) limparRascunho(userId, p.id);
       }
 
@@ -260,7 +272,7 @@ export function PalpitesContent() {
           />
         </>
       ) : (
-        <HistoricoContent partidas={partidas ?? []} meusPalpites={meusPalpites ?? []} />
+        <HistoricoContent partidas={listaPartidas} meusPalpites={meusPalpites ?? []} />
       )}
     </div>
   );
