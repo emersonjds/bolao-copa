@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 
 // Captura o `value` passado ao QR para provar que ele é gerado EXATAMENTE a
 // partir do BR Code canônico (e nunca de uma fonte dinâmica).
@@ -64,5 +64,52 @@ describe("BlocoPagamentoInscricao", () => {
     // O feedback ("Copiado!") aparece após o await da Clipboard API resolver.
     expect(await screen.findByRole("button", { name: "Código PIX copiado" })).toBeInTheDocument();
     expect(screen.getByText("Código PIX copiado para a área de transferência")).toBeInTheDocument();
+  });
+
+  it("seleciona o código inteiro ao focar o campo", () => {
+    render(<BlocoPagamentoInscricao />);
+    const campo = screen.getByLabelText("Código PIX copia e cola") as HTMLInputElement;
+    const select = vi.spyOn(campo, "select");
+    fireEvent.focus(campo);
+    expect(select).toHaveBeenCalled();
+  });
+
+  it("usa o fallback execCommand quando a Clipboard API falha", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: vi.fn().mockRejectedValue(new Error("sem clipboard")) },
+      configurable: true,
+    });
+    const execCommand = vi.fn();
+    // jsdom não implementa execCommand; injetamos um stub para checar o fallback.
+    Object.defineProperty(document, "execCommand", { value: execCommand, configurable: true });
+
+    render(<BlocoPagamentoInscricao />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Copiar código PIX" }));
+    });
+
+    expect(execCommand).toHaveBeenCalledWith("copy");
+    expect(screen.getByRole("button", { name: "Código PIX copiado" })).toBeInTheDocument();
+  });
+
+  it("volta o botão para 'Copiar' após o tempo do feedback", async () => {
+    vi.useFakeTimers();
+    try {
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+
+      render(<BlocoPagamentoInscricao />);
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Copiar código PIX" }));
+      });
+      expect(screen.getByRole("button", { name: "Código PIX copiado" })).toBeInTheDocument();
+
+      act(() => {
+        vi.advanceTimersByTime(2500);
+      });
+      expect(screen.getByRole("button", { name: "Copiar código PIX" })).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
