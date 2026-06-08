@@ -306,3 +306,30 @@ describe("CardPalpite — aberto", () => {
     expect(onChangeVisitante).toHaveBeenCalled();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Fallback de fase desconhecida no badgeGrupo
+// ---------------------------------------------------------------------------
+
+describe("CardPalpite — fase não mapeada no FASE_LABEL (linha 97 fallback ??)", () => {
+  it("usa a própria string da fase como badge quando grupo é null e fase não está no mapeamento", () => {
+    // Cobre o branch `FASE_LABEL[partida.fase] ?? partida.fase` quando a fase
+    // não existe no mapa (nenhuma das chaves conhecidas) e grupo é null.
+    const comFaseDesconhecida: Partida = {
+      ...partidaTravada,
+      fase: "preliminar",
+      grupo: null,
+    };
+
+    render(
+      <CardPalpite
+        {...defaultProps}
+        partida={comFaseDesconhecida}
+        palpiteSalvo={undefined}
+        placarLocal={undefined}
+      />
+    );
+
+    expect(screen.getByText("preliminar")).toBeInTheDocument();
+  });
+});

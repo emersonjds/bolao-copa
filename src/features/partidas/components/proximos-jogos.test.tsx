@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import type { Partida } from "@/entities/partida";
 import { usePartidas } from "../api/queries";
@@ -39,6 +39,10 @@ function makePartida(overrides: Partial<Partida> = {}): Partida {
 describe("ProximosJogos", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("mostra skeletons enquanto carrega", () => {
@@ -134,5 +138,38 @@ describe("ProximosJogos", () => {
 
     expect(screen.getByText("final")).toBeInTheDocument();
     expect(screen.getByText("Ao vivo")).toBeInTheDocument();
+  });
+
+  it("exibe rótulo 'HOJE' quando o jogo cai no dia atual em São Paulo", () => {
+    vi.useFakeTimers();
+    // 2026-06-11T12:00:00Z = 09:00 no fuso America/Sao_Paulo → dia 2026-06-11
+    vi.setSystemTime(new Date("2026-06-11T12:00:00Z"));
+    mockUsePartidas({
+      data: [makePartida({ dataHora: "2026-06-11T19:00:00.000Z" })],
+    });
+    render(<ProximosJogos />);
+
+    expect(screen.getByText(/HOJE/)).toBeInTheDocument();
+  });
+
+  it("exibe rótulo 'AMANHÃ' quando o jogo é no dia seguinte ao atual em São Paulo", () => {
+    vi.useFakeTimers();
+    // 2026-06-10T12:00:00Z = 09:00 SP → hoje=2026-06-10; amanhã=2026-06-11
+    vi.setSystemTime(new Date("2026-06-10T12:00:00Z"));
+    mockUsePartidas({
+      data: [makePartida({ dataHora: "2026-06-11T19:00:00.000Z" })],
+    });
+    render(<ProximosJogos />);
+
+    expect(screen.getByText(/AMANHÃ/)).toBeInTheDocument();
+  });
+
+  it("exibe placar quando a partida está ao vivo com gols marcados", () => {
+    mockUsePartidas({
+      data: [makePartida({ status: "ao-vivo", golsMandante: 2, golsVisitante: 0 })],
+    });
+    render(<ProximosJogos />);
+
+    expect(screen.getByText("2 : 0")).toBeInTheDocument();
   });
 });

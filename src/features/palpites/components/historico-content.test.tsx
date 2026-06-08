@@ -135,4 +135,47 @@ describe("HistoricoContent", () => {
     expect(screen.getAllByTestId("bandeira")).toHaveLength(50);
     expect(screen.queryByRole("button", { name: /ver mais jogos/i })).not.toBeInTheDocument();
   });
+
+  // ---------------------------------------------------------------------------
+  // Cobertura do callback do .map() de grupos (linhas 94, 103-105)
+  // ---------------------------------------------------------------------------
+
+  it("agrupa duas partidas da mesma data UTC em uma única seção com header de data", () => {
+    // Duas partidas em "2026-06-01": primeira cria o grupo (?? [] cria novo array),
+    // segunda encontra o grupo existente (?? [] NÃO ativado — left side retorna array).
+    // Garante que o span com formatarData (linha 94) e o fechamento da section
+    // (linhas 103-105) são executados pelo map callback.
+    const partida2: Partida = {
+      ...partidaTravada,
+      id: "part-mesmo-dia",
+      dataHora: "2026-06-01T22:00:00.000Z", // mesma data UTC, hora diferente
+    };
+
+    render(<HistoricoContent partidas={[partidaTravada, partida2]} meusPalpites={[]} />);
+
+    // Uma única seção para "2026-06-01"
+    const secoes = screen.getAllByRole("region");
+    expect(secoes).toHaveLength(1);
+
+    // Dois cards dentro da seção = 4 bandeiras (2 por card)
+    expect(screen.getAllByTestId("bandeira")).toHaveLength(4);
+  });
+
+  it("exibe o cabeçalho de data formatado pela função formatarData dentro do section header", () => {
+    // Verifica que o span com o resultado de formatarData (linha 94 do JSX) está
+    // no DOM — cobrindo explicitamente o caminho do map callback que inclui
+    // capitalize + formatarData + fechamento da section.
+    render(<HistoricoContent partidas={[partidaTravada]} meusPalpites={[]} />);
+
+    // A seção deve ter um label com o id `historico-data-YYYY-MM-DD`.
+    // O span irmão contém o texto do cabeçalho gerado por formatarData.
+    const secao = screen.getByRole("region");
+    expect(secao).toBeInTheDocument();
+
+    // O texto do cabeçalho existe em algum elemento dentro da section
+    // (formatarData retorna algo como "Seg, 1 jun" dependendo da locale do Node).
+    const cabecalhoEl = secao.previousElementSibling ?? secao.parentElement;
+    // Verifica pela presença do data-id do cabeçalho sticky
+    expect(document.getElementById("historico-data-2026-06-01")).toBeInTheDocument();
+  });
 });

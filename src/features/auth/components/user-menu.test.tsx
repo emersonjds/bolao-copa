@@ -84,6 +84,15 @@ describe("UserMenu", () => {
     await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
   });
 
+  it("não fecha o menu ao pressionar tecla que não é Escape", async () => {
+    renderWithProviders(<UserMenu />, { user: fakeUser() });
+    await userEvent.click(screen.getByRole("button", { name: /menu do usuário/i }));
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+    // Pressiona uma tecla neutra — o menu deve permanecer aberto.
+    await userEvent.keyboard("{ArrowDown}");
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+  });
+
   it("fecha o menu ao clicar fora", async () => {
     renderWithProviders(
       <div>

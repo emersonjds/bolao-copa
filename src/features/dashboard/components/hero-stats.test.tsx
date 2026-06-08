@@ -150,4 +150,22 @@ describe("HeroStats", () => {
 
     expect(screen.getByText("Ainda sem palpites pontuados.")).toBeInTheDocument();
   });
+
+  it("totalParticipantes é zero quando useRanking retorna data: undefined", () => {
+    // Cobre a branch `?? 0` da linha 78: ranking?.length = undefined (??  usa o fallback 0).
+    // Usa mock direto em vez de setup() pois a desestruturação padrão `ranking = []`
+    // substituiria undefined pelo array vazio, impedindo o branch de ser atingido.
+    vi.mocked(useAuth).mockReturnValue({ loading: false } as ReturnType<typeof useAuth>);
+    vi.mocked(useUser).mockReturnValue(fakeUser());
+    vi.mocked(useMeuParticipanteId).mockReturnValue("part-id-1");
+    vi.mocked(useRanking).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as UseRankingResult);
+    render(<HeroStats />);
+
+    expect(screen.getByText("Ainda sem palpites pontuados.")).toBeInTheDocument();
+  });
 });

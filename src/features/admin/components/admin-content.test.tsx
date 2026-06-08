@@ -150,4 +150,39 @@ describe("AdminContent — filtro de fase", () => {
     expect(screen.getByLabelText("Gols de Brasil")).toBeInTheDocument();
     expect(screen.queryByLabelText("Gols de México")).not.toBeInTheDocument();
   });
+
+  it("reverte filtroFaseEfetivo para 'todas' quando a fase selecionada sai das disponíveis", async () => {
+    // Começa com grupos e oitavas.
+    mockUsePartidas({
+      isLoading: false,
+      isError: false,
+      data: [
+        makePartida({ id: "g", fase: "grupos", grupo: "A" }),
+        makePartida({
+          id: "o",
+          fase: "oitavas",
+          grupo: null,
+          mandante: { id: "sel-bra", nome: "Brasil", codigo: "BRA" },
+          visitante: { id: "sel-arg", nome: "Argentina", codigo: "ARG" },
+        }),
+      ],
+    });
+    const { rerender } = renderWithProviders(<AdminContent />);
+
+    // Seleciona o chip de Oitavas → filtroFase = "oitavas".
+    await userEvent.click(screen.getByRole("button", { name: "Oitavas" }));
+    expect(screen.getByLabelText("Gols de Brasil")).toBeInTheDocument();
+
+    // Agora os dados mudam: apenas a partida de grupos existe.
+    // "oitavas" some de fasesDisponiveis → filtroFaseEfetivo cai para "todas".
+    mockUsePartidas({
+      isLoading: false,
+      isError: false,
+      data: [makePartida({ id: "g", fase: "grupos", grupo: "A" })],
+    });
+    rerender(<AdminContent />);
+
+    // Com filtroFaseEfetivo = "todas", a partida de grupos (México) aparece.
+    expect(screen.getByLabelText("Gols de México")).toBeInTheDocument();
+  });
 });

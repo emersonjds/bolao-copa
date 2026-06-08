@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
 import { toast } from "sonner";
@@ -7,7 +7,7 @@ import { renderWithProviders } from "@/test/render";
 import { server } from "@/test/msw/server";
 import { restList, restWrite, restError } from "@/test/msw/handlers";
 import { selecaoMexicoDb, selecaoAfricaDb } from "@/test/fixtures";
-import type { Partida } from "@/entities/partida";
+import type { FaseCopa, Partida } from "@/entities/partida";
 import { DefinirConfrontoDialog } from "./definir-confronto-dialog";
 
 vi.mock("sonner", () => ({
@@ -137,6 +137,52 @@ describe("DefinirConfrontoDialog", () => {
     await waitFor(() =>
       expect(toast.success).toHaveBeenCalledWith("Confronto definido com sucesso.")
     );
+  });
+
+  it("usa a fase como label de fallback quando não consta no dicionário interno", async () => {
+    // Cobre a branch `?? partida.fase` da linha 42 — uma fase fora do dicionário
+    // FASE_LABEL faz o operador ?? retornar o valor bruto de partida.fase.
+    server.use(restList("selecoes", []));
+    const faseDesconhecida = "fase-extra" as unknown as FaseCopa;
+    renderWithProviders(
+      <DefinirConfrontoDialog
+        partida={{ ...makePartidaIndefinida(), fase: faseDesconhecida }}
+        open
+        onOpenChange={() => {}}
+      />
+    );
+    // A descrição do dialog exibe o valor bruto da fase como fallback.
+    expect(screen.getByText(/fase-extra/)).toBeInTheDocument();
+  });
+
+  it("handleConfirmar retorna cedo (guardas de validação) quando IDs não estão selecionados", async () => {
+    // Cobre os branches de retorno antecipado das linhas 46-47 de handleConfirmar.
+    // A button está disabled pelo React, mas fireEvent dispara o evento DOM diretamente.
+    server.use(restList("selecoes", [selecaoMexicoDb, selecaoAfricaDb]));
+    renderWithProviders(
+      <DefinirConfrontoDialog partida={makePartidaIndefinida()} open onOpenChange={() => {}} />
+    );
+
+    const confirmar = screen.getByRole("button", { name: "Confirmar confronto" });
+    // Estado inicial: mandanteId = "" e visitanteId = "" → cobre linha 46 (return).
+    fireEvent.click(confirmar);
+    // Nenhuma requisição deve ter sido disparada.
+    expect(toast.success).not.toHaveBeenCalled();
+
+    // Seleciona mandante; visitante ainda vazio → linha 46 ainda cobre.
+    const mandante = screen.getByLabelText("Mandante (casa)");
+    await waitFor(() => expect(mandante).not.toBeDisabled());
+    await userEvent.selectOptions(mandante, "sel-mex");
+    fireEvent.click(confirmar);
+    expect(toast.success).not.toHaveBeenCalled();
+
+    // Força visitante igual ao mandante via fireEvent.change (bypassa opção disabled).
+    // Cobre linha 47: mandanteId === visitanteId → return.
+    fireEvent.change(screen.getByLabelText("Visitante (fora)"), {
+      target: { value: "sel-mex" },
+    });
+    fireEvent.click(confirmar);
+    expect(toast.success).not.toHaveBeenCalled();
   });
 
   it("exibe toast de erro e mantém o diálogo aberto quando o PATCH falha", async () => {

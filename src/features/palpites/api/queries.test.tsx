@@ -143,4 +143,34 @@ describe("useSalvarPalpite", () => {
       golsVisitante: 0,
     });
   });
+
+  it("invoca invalidateQueries com a chave de palpites do participante ao salvar com sucesso (onSuccess)", async () => {
+    vi.mocked(useSupabaseUser).mockReturnValue(fakeUser);
+    vi.mocked(salvarPalpite).mockResolvedValue(undefined);
+
+    const qc = createTestQueryClient();
+    qc.setQueryData(palpitesKeys.participanteId(fakeUser.id), "part-id-1");
+    const invalidateSpy = vi.spyOn(qc, "invalidateQueries");
+
+    function Wrapper({ children }: { children: ReactNode }) {
+      return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
+    }
+
+    const { result } = renderHook(() => useSalvarPalpite(), { wrapper: Wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        partidaId: "part-2",
+        golsMandante: 2,
+        golsVisitante: 1,
+      });
+    });
+
+    // Garante que o branch `if (participanteId)` em onSuccess foi executado.
+    await waitFor(() => {
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: palpitesKeys.meus("part-id-1"),
+      });
+    });
+  });
 });

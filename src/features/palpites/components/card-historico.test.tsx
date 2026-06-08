@@ -135,4 +135,19 @@ describe("CardHistorico", () => {
     expect(screen.getByText("Oitavas")).toBeInTheDocument();
     expect(screen.queryByText(/grupo/i)).not.toBeInTheDocument();
   });
+
+  it("usa a própria string da fase como badge quando não está no mapeamento FASE_LABEL (linha 36 fallback ??)", () => {
+    // Cobre o branch `FASE_LABEL[partida.fase] ?? partida.fase` quando a fase
+    // não existe no mapa e grupo é null — o fallback retorna a string crua.
+    const partidaFaseDesconhecida: Partida = {
+      ...partida,
+      fase: "preliminar",
+      grupo: null,
+    };
+    const item: ItemHistorico = { partida: partidaFaseDesconhecida, palpite: null, pontos: null };
+
+    render(<CardHistorico item={item} />);
+
+    expect(screen.getByText("preliminar")).toBeInTheDocument();
+  });
 });
