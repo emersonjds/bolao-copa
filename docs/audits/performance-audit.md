@@ -179,15 +179,10 @@ Correção: aplicar a fonte apenas nas rotas que precisam (`/palpites`, `/rankin
 
 ---
 
-**B7. Cache HTTP não configurado para HTML no Cloudflare**  
-**Impacto**: Médio — usuários recorrentes recarregam HTML a cada visita  
-**Esforço**: Baixo
+**B7. Cache HTTP do HTML** ✅ **RESOLVIDO**
+**Impacto**: Médio — usuários recorrentes recarregam HTML a cada visita
 
-`wrangler.jsonc` usa apenas `assets.directory: "out"` sem regras de cache. Os HTML pages (`index.html`, `palpites.html`, etc.) saem com o cache padrão do Cloudflare Workers (que varia por plano, mas sem `Cache-Control` explícito pode ser `no-store` ou TTL curto).
-
-`_next/static/` com hash de conteúdo já é imutável pelo Cloudflare (correto), mas os HTMLs deveriam ter `Cache-Control: public, max-age=300, stale-while-revalidate=3600` para evitar viagens ao origin a cada navegação.
-
-Correção: adicionar `headers` rule no `wrangler.jsonc` via Cloudflare Rules ou configurar `Cache-Control` no worker.
+Resolvido em `public/_headers` (honrado pelo Netlify): HTML com `Cache-Control: public, max-age=300, stale-while-revalidate=86400` e `/_next/static/*` imutável (`max-age=31536000, immutable`).
 
 ---
 
