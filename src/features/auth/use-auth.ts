@@ -12,12 +12,10 @@ export function useAuth(): AuthState {
   return ctx;
 }
 
-/** Usuário logado (ou null). */
 export function useUser() {
   return useAuth().user;
 }
 
-/** Sessão atual (ou null). */
 export function useSession() {
   return useAuth().session;
 }

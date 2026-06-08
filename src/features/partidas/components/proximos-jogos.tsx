@@ -27,7 +27,6 @@ const cabecalhoDia = new Intl.DateTimeFormat("pt-BR", {
   month: "short",
 });
 
-/** Rótulo do cabeçalho do dia: "HOJE · …", "AMANHÃ · …" ou "QUI, 11 JUN". */
 function rotuloDia(dataChave: string, exemploDataHora: string): string {
   const hoje = diaSaoPaulo.format(new Date());
   const amanha = diaSaoPaulo.format(new Date(Date.now() + 86_400_000));
@@ -131,7 +130,6 @@ export function ProximosJogos() {
     return <p className="text-sm text-destructive">Não foi possível carregar os jogos.</p>;
   }
 
-  // Mostra os 2 próximos dias COM jogo (todos os jogos de cada dia).
   const grupos = agruparProximosDias(partidas, 2);
 
   if (grupos.length === 0) {

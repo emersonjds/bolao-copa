@@ -35,10 +35,6 @@ function SemSessao() {
   );
 }
 
-/**
- * Card verde do Dashboard com saudação, posição no ranking e stats do usuário.
- * Mostra skeleton durante carregamento, card neutro para usuário não autenticado.
- */
 export function HeroStats() {
   const { loading: authLoading } = useAuth();
   const user = useUser();

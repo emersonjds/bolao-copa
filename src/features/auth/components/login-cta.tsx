@@ -11,7 +11,6 @@ interface LoginCTAProps {
   descricao?: string;
 }
 
-/** Bloco de chamada para login com Google (porta de entrada da ação protegida). */
 export function LoginCTA({
   next,
   titulo = "Entre para palpitar",

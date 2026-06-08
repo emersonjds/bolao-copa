@@ -24,10 +24,6 @@ interface CardHistoricoProps {
   item: ItemHistorico;
 }
 
-/**
- * Card read-only de um jogo no histórico: meu palpite (ou "Sem palpite"),
- * resultado oficial (ou "A apurar") e os pontos. Sem edição — auditoria pura.
- */
 export function CardHistorico({ item }: CardHistoricoProps) {
   const { partida, palpite, pontos } = item;
 

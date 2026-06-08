@@ -5,7 +5,6 @@ import type { Session } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "@/shared/lib/supabase";
 import { AuthContext, type AuthState } from "./auth-context";
 
-/** Disponibiliza a sessão do Supabase para toda a árvore (o "crachá" global). */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);

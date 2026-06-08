@@ -1,14 +1,10 @@
 import type { Partida, FaseCopa } from "@/entities/partida";
 
-// ─── Domain types ────────────────────────────────────────────────────────────
-
 export interface GrupoDiaData {
   dateKey: string;
   date: Date;
   partidas: Partida[];
 }
-
-// ─── Date utilities ──────────────────────────────────────────────────────────
 
 /**
  * Converts a Date to a local-timezone "YYYY-MM-DD" key used throughout the
@@ -22,10 +18,8 @@ export function toDateKey(date: Date): string {
   ].join("-");
 }
 
-// Short day-of-week labels (index 0 = Sunday, matching Date.getDay()).
 export const DIAS_SEMANA_ABREV = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"] as const;
 
-// Short month labels (index 0 = January).
 export const MESES_ABREV = [
   "Jan",
   "Fev",
@@ -41,9 +35,6 @@ export const MESES_ABREV = [
   "Dez",
 ] as const;
 
-/**
- * Formats a Date as a sticky-header label, e.g. "SAB, 13 JUN".
- */
 export function formatarHeaderDia(date: Date): string {
   const dia = DIAS_SEMANA_ABREV[date.getDay()];
   const numero = date.getDate();
@@ -73,8 +64,6 @@ export function getWeekStart(date: Date): Date {
   return d;
 }
 
-// ─── Phase label ─────────────────────────────────────────────────────────────
-
 const FASE_ABREV: Record<FaseCopa, string> = {
   grupos: "Grupos",
   "trinta-e-dois": "R32",
@@ -85,9 +74,6 @@ const FASE_ABREV: Record<FaseCopa, string> = {
   final: "Final",
 };
 
-/**
- * Returns a compact badge label for a match's phase, e.g. "Gr.A" or "Oitavas".
- */
 export function getFaseBadge(partida: Partida): string {
   if (partida.fase === "grupos" && partida.grupo) {
     return `Gr.${partida.grupo}`;
@@ -95,12 +81,6 @@ export function getFaseBadge(partida: Partida): string {
   return FASE_ABREV[partida.fase];
 }
 
-// ─── Grouping ─────────────────────────────────────────────────────────────────
-
-/**
- * Groups an array of matches by local calendar day, returning a sorted list of
- * day groups (ascending chronological order).
- */
 export function groupByDay(partidas: readonly Partida[]): GrupoDiaData[] {
   const map = new Map<string, { date: Date; partidas: Partida[] }>();
 

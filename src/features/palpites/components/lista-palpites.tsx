@@ -13,7 +13,6 @@ interface ListaPalpitesProps {
   isSaving: boolean;
 }
 
-/** Extrai a data UTC (YYYY-MM-DD) do campo dataHora para agrupamento. */
 function getDataUtc(dataHora: string): string {
   return dataHora.slice(0, 10);
 }
@@ -22,11 +21,7 @@ function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-/**
- * Formata o cabeçalho da seção de data.
- * Usa noon UTC para evitar desvio de fuso ao parsear só a data.
- * Exemplo: "Rodada 1 · Qui, 11 jun"
- */
+/** Usa noon UTC para evitar desvio de fuso ao parsear só a data. */
 function formatarCabecalho(dataStr: string, rodada: number): string {
   const data = new Date(`${dataStr}T12:00:00Z`);
   const diaSemana = data.toLocaleDateString("pt-BR", { weekday: "short", timeZone: "UTC" });
@@ -54,7 +49,6 @@ export function ListaPalpites({
     );
   }
 
-  // Agrupa partidas por data UTC (data oficial do jogo, independente de fuso)
   const grupos = new Map<string, Partida[]>();
   for (const partida of partidas) {
     const dataStr = getDataUtc(partida.dataHora);

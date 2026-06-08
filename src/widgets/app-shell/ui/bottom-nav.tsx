@@ -25,7 +25,6 @@ function isActive(pathname: string, href: string): boolean {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
-/** Navegação inferior mobile-first (4 abas + aba Admin condicional para admins). */
 export function BottomNav() {
   const pathname = usePathname();
   const isAdmin = useIsAdmin();

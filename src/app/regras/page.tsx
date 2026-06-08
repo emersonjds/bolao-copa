@@ -133,7 +133,6 @@ export default function RegrasPage() {
         </p>
       </header>
 
-      {/* Tabela de pontuação base */}
       <section aria-labelledby="titulo-pontuacao">
         <h2 id="titulo-pontuacao" className="mb-1 font-display text-base font-bold text-foreground">
           Pontuação base
@@ -166,7 +165,6 @@ export default function RegrasPage() {
         </ul>
       </section>
 
-      {/* Multiplicador por fase */}
       <section aria-labelledby="titulo-multiplicador">
         <h2
           id="titulo-multiplicador"
@@ -210,7 +208,6 @@ export default function RegrasPage() {
         </p>
       </section>
 
-      {/* Exemplos */}
       <section aria-labelledby="titulo-exemplos">
         <h2 id="titulo-exemplos" className="mb-1 font-display text-base font-bold text-foreground">
           Exemplos
@@ -250,7 +247,6 @@ export default function RegrasPage() {
         </div>
       </section>
 
-      {/* Dica: palpite trava no apito */}
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
         <p className="flex items-center gap-1.5 text-sm font-semibold text-amber-800">
           <Lock className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -262,7 +258,6 @@ export default function RegrasPage() {
         </p>
       </div>
 
-      {/* Desempate no ranking */}
       <section
         aria-labelledby="titulo-desempate"
         className="rounded-2xl border border-border bg-muted/50 p-4"
@@ -280,7 +275,6 @@ export default function RegrasPage() {
         </ol>
       </section>
 
-      {/* Nota sobre pênaltis */}
       <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-3">
         <p className="text-xs leading-relaxed text-muted-foreground">
           <span className="font-semibold">Prorrogação e pênaltis não contam.</span> Vale só o placar

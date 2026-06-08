@@ -54,7 +54,6 @@ function PodioItem({ item, posicao, ehMeuPerfil }: PodioItemProps) {
         tamanho={AVATAR_TAMANHO[posicao]}
         className={AVATAR_RING[posicao]}
       />
-      {/* Badge de posição sobreposto à borda inferior do avatar */}
       <span
         className={`-mt-2 flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold ${BADGE_CLASSES[posicao]}`}
         aria-hidden="true"
@@ -110,7 +109,6 @@ export function Podio({ top3, meuParticipanteId }: PodioProps) {
       className="rounded-2xl bg-gradient-to-b from-brand-800 to-brand-900 p-5 text-white shadow-sm"
       aria-label="Pódio — top 3"
     >
-      {/* Ordem visual: 2º à esquerda, 1º ao centro (mais alto), 3º à direita */}
       <div className="flex items-end justify-center gap-4">
         {segundo && (
           <PodioItem

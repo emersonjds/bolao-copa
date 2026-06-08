@@ -41,7 +41,6 @@ export function GrupoDia({ dateKey, date, partidas, eHoje, mostrarCta }: GrupoDi
         </div>
       </div>
 
-      {/* Lista de jogos do dia */}
       <ul className="mt-2 flex flex-col gap-2 pb-4">
         {partidas.map((partida) => (
           <ItemJogo key={partida.id} partida={partida} mostrarCta={mostrarCta} />

@@ -2,10 +2,6 @@ import { getSupabaseBrowserClient } from "@/shared/lib/supabase";
 import { BOLAO_PADRAO_ID } from "@/shared/lib/constants";
 import type { Palpite } from "@/entities/palpite";
 
-// ---------------------------------------------------------------------------
-// Tipos internos — formato bruto do banco (snake_case)
-// ---------------------------------------------------------------------------
-
 interface PalpiteDb {
   id: string;
   participante_id: string;
@@ -14,10 +10,6 @@ interface PalpiteDb {
   gols_visitante: number;
   pontos: number | null;
 }
-
-// ---------------------------------------------------------------------------
-// Mapper
-// ---------------------------------------------------------------------------
 
 function mapPalpite(db: PalpiteDb): Palpite {
   return {
@@ -29,10 +21,6 @@ function mapPalpite(db: PalpiteDb): Palpite {
     pontos: db.pontos,
   };
 }
-
-// ---------------------------------------------------------------------------
-// Fetchers
-// ---------------------------------------------------------------------------
 
 /**
  * Busca o participante_id do usuário no bolão padrão.
@@ -78,10 +66,6 @@ export async function listarMeusPalpites(participanteId: string): Promise<Palpit
 
   return (data as unknown as PalpiteDb[]).map(mapPalpite);
 }
-
-// ---------------------------------------------------------------------------
-// Mutação
-// ---------------------------------------------------------------------------
 
 export interface SalvarPalpiteInput {
   participanteId: string;

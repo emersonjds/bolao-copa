@@ -10,7 +10,6 @@ export type TipoErroSalvar = "lock" | "permissao" | "rede" | "generico";
 
 export interface ErroSalvarAmigavel {
   tipo: TipoErroSalvar;
-  /** Texto pronto para exibir no toast. */
   texto: string;
 }
 
@@ -25,7 +24,6 @@ export function traduzirErroSalvar(mensagemBruta: string): ErroSalvarAmigavel {
     };
   }
 
-  // Sem permissão / sessão expirada.
   if (
     msg.includes("permission denied") ||
     msg.includes("row-level security") ||
@@ -38,7 +36,6 @@ export function traduzirErroSalvar(mensagemBruta: string): ErroSalvarAmigavel {
     };
   }
 
-  // Falha de rede.
   if (msg.includes("failed to fetch") || msg.includes("network") || msg.includes("fetch")) {
     return {
       tipo: "rede",

@@ -7,8 +7,6 @@ import { toDateKey, groupByDay, getWeekStart, type GrupoDiaData } from "../lib";
 import { SeletorSemana } from "./seletor-semana";
 import { AgendaList } from "./agenda-list";
 
-// ─── Loading skeleton ─────────────────────────────────────────────────────────
-
 function SeletorSemanaSkeleton() {
   return (
     <div
@@ -41,8 +39,6 @@ function AgendaListSkeleton() {
     </ul>
   );
 }
-
-// ─── Main component ───────────────────────────────────────────────────────────
 
 export function CalendarioContent() {
   const { data: partidas, isLoading, isError, refetch } = usePartidas();
@@ -91,8 +87,6 @@ export function CalendarioContent() {
     setSelectedDate(null);
   };
 
-  // ── Loading ───────────────────────────────────────────────────────────────
-
   if (isLoading) {
     return (
       <>
@@ -101,8 +95,6 @@ export function CalendarioContent() {
       </>
     );
   }
-
-  // ── Error ─────────────────────────────────────────────────────────────────
 
   if (isError) {
     return (
@@ -120,8 +112,6 @@ export function CalendarioContent() {
       </div>
     );
   }
-
-  // ── Normal ────────────────────────────────────────────────────────────────
 
   return (
     <>

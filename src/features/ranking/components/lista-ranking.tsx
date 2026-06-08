@@ -29,7 +29,6 @@ function ItemRankingRow({ item, posicao, ehMeuPerfil }: ItemRankingRowProps) {
       }`}
       aria-current={ehMeuPerfil ? "true" : undefined}
     >
-      {/* Número da posição */}
       <span
         className="w-6 shrink-0 text-right font-mono text-sm font-bold text-muted-foreground"
         aria-label={`${posicao}º lugar`}
@@ -67,10 +66,7 @@ function ItemRankingRow({ item, posicao, ehMeuPerfil }: ItemRankingRowProps) {
   );
 }
 
-/**
- * Lista de participantes a partir da 4ª posição.
- * Retorna null quando a lista está vazia (sem ruído visual desnecessário).
- */
+/** Retorna null quando a lista está vazia (sem ruído visual desnecessário). */
 export function ListaRanking({ items, meuParticipanteId, startPosition = 4 }: ListaRankingProps) {
   if (items.length === 0) return null;
 

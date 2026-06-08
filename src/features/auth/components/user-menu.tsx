@@ -26,11 +26,7 @@ function getAvatarUrl(user: User): string | null {
   return null;
 }
 
-/**
- * Menu de usuário na TopBar: avatar clicável que abre dropdown com
- * nome, badge de admin (quando aplicável) e botão de logout.
- * Fecha ao clicar fora ou pressionar Escape.
- */
+/** Fecha ao clicar fora ou pressionar Escape. */
 export function UserMenu() {
   const user = useUser();
   const isAdmin = useIsAdmin();
@@ -88,7 +84,6 @@ export function UserMenu() {
           role="menu"
           className="absolute top-full right-0 z-30 mt-2 w-52 overflow-hidden rounded-xl border border-border bg-card shadow-md"
         >
-          {/* Cabeçalho com nome e badge admin */}
           <div className="border-b border-border px-4 py-3">
             <p className="truncate text-sm font-semibold text-foreground">{displayName}</p>
             {isAdmin && (
@@ -98,7 +93,6 @@ export function UserMenu() {
             )}
           </div>
 
-          {/* Ações */}
           <div className="p-1.5">
             <button
               type="button"

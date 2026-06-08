@@ -41,7 +41,6 @@ export function SeletorSemana({
      */
     <div className="sticky top-14 z-10 -mx-4 border-b border-border bg-background/95 px-4 py-2 backdrop-blur">
       <div className="flex items-center gap-1">
-        {/* Semana anterior */}
         <button
           type="button"
           onClick={onPrevWeek}
@@ -52,7 +51,6 @@ export function SeletorSemana({
           <ChevronLeft className="h-4 w-4" aria-hidden="true" />
         </button>
 
-        {/* Dias da semana */}
         <div
           className="flex flex-1 justify-between [&::-webkit-scrollbar]:hidden"
           role="group"
@@ -74,12 +72,10 @@ export function SeletorSemana({
                 onClick={() => onSelectDay(key)}
                 className="flex min-w-[40px] flex-col items-center gap-0.5"
               >
-                {/* Abreviação do dia da semana */}
                 <span className="text-[10px] text-muted-foreground uppercase">
                   {DIAS_SEMANA_ABREV[day.getDay()]}
                 </span>
 
-                {/* Número do dia — pill verde quando selecionado */}
                 <span
                   className={cn(
                     "flex h-8 w-8 items-center justify-center rounded-full font-mono text-sm font-medium transition-colors",
@@ -94,7 +90,6 @@ export function SeletorSemana({
                   {day.getDate()}
                 </span>
 
-                {/* Ponto indicador — visível apenas nos dias com jogos */}
                 <span
                   className={cn(
                     "h-1 w-1 rounded-full",
@@ -107,7 +102,6 @@ export function SeletorSemana({
           })}
         </div>
 
-        {/* Próxima semana */}
         <button
           type="button"
           onClick={onNextWeek}

@@ -26,10 +26,8 @@ export default function AdminPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Aguarda o carregamento inicial da sessão Supabase.
     if (authLoading) return;
 
-    // Sem sessão → redireciona imediatamente.
     if (!user) {
       toast.error("Acesso restrito.");
       router.replace("/");
@@ -49,14 +47,10 @@ export default function AdminPage() {
     }
   }, [authLoading, user, isAdmin, router]);
 
-  // ---- Estados de UI ----
-
-  // Auth ainda carregando.
   if (authLoading) {
     return <AdminPageSkeleton />;
   }
 
-  // Sem sessão: redirect em andamento.
   if (!user) {
     return null;
   }
@@ -70,14 +64,9 @@ export default function AdminPage() {
   return <AdminContent />;
 }
 
-// ---------------------------------------------------------------------------
-// Skeleton de página (carregamento / verificação de acesso)
-// ---------------------------------------------------------------------------
-
 function AdminPageSkeleton() {
   return (
     <div className="space-y-4" aria-busy="true" aria-label="Verificando acesso...">
-      {/* Header skeleton */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-2">
           <div className="h-8 w-44 animate-pulse rounded-xl bg-muted" aria-hidden="true" />
@@ -86,13 +75,11 @@ function AdminPageSkeleton() {
         <div className="h-4 w-48 animate-pulse rounded-lg bg-muted" aria-hidden="true" />
       </div>
 
-      {/* Filtros skeleton */}
       <div className="flex gap-2">
         <div className="h-11 w-28 animate-pulse rounded-full bg-muted" aria-hidden="true" />
         <div className="h-11 w-28 animate-pulse rounded-full bg-muted" aria-hidden="true" />
       </div>
 
-      {/* Cards skeleton */}
       <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {[0, 1, 2].map((i) => (
           <li

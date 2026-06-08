@@ -1,10 +1,6 @@
 import { getSupabaseBrowserClient } from "@/shared/lib/supabase";
 import type { DestaqueRodada } from "@/entities/ranking";
 
-// ---------------------------------------------------------------------------
-// Tipo interno — formato bruto retornado pela RPC (snake_case do Postgres)
-// ---------------------------------------------------------------------------
-
 interface DestaqueRodadaRpc {
   rodada: number;
   participante_id: string;
@@ -12,10 +8,6 @@ interface DestaqueRodadaRpc {
   avatar_url: string | null;
   pontos_rodada: number;
 }
-
-// ---------------------------------------------------------------------------
-// Mapper snake_case → camelCase
-// ---------------------------------------------------------------------------
 
 function mapDestaqueRodada(rpc: DestaqueRodadaRpc): DestaqueRodada {
   return {
@@ -27,24 +19,12 @@ function mapDestaqueRodada(rpc: DestaqueRodadaRpc): DestaqueRodada {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Fetcher
-// ---------------------------------------------------------------------------
-
 /**
- * Chama a RPC get_destaque_rodada() do Supabase.
- *
  * @param rodada - Número da rodada a consultar. Se omitido (undefined), a RPC
  *   usa a última rodada que contém pelo menos um jogo encerrado/apurado.
  *
- * Retorna um array com um ou mais participantes empatados na liderança da
- * rodada. Array vazio significa que nenhum jogo da rodada foi encerrado ainda,
+ * Array vazio significa que nenhum jogo da rodada foi encerrado ainda,
  * ou que todos os participantes pontuaram 0 (sem destaque).
- *
- * DEPENDÊNCIA: get_destaque_rodada() é criada na migration 0006.
- * Enquanto a função não existir no banco, o Supabase retorna PGRST202 e o
- * React Query expõe isError = true — nenhum dado é exibido. Sem ajuste
- * necessário quando a migration for aplicada.
  */
 export async function listarDestaqueRodada(rodada?: number): Promise<DestaqueRodada[]> {
   const supabase = getSupabaseBrowserClient();

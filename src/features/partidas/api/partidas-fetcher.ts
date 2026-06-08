@@ -2,10 +2,6 @@ import { getSupabaseBrowserClient } from "@/shared/lib/supabase";
 import { nomeSelecaoPt } from "@/shared/lib/selecao-nomes-pt";
 import type { FaseCopa, Partida, Selecao, StatusPartida } from "@/entities/partida";
 
-// ---------------------------------------------------------------------------
-// Tipos internos — formato bruto retornado pelo Supabase (snake_case + joins)
-// ---------------------------------------------------------------------------
-
 interface SelecaoDb {
   id: string;
   nome: string;
@@ -31,10 +27,6 @@ interface PartidaDb {
   /** Join em selecoes pelo FK visitante_id (null quando ainda indefinido no mata-mata). */
   visitante: SelecaoDb | null;
 }
-
-// ---------------------------------------------------------------------------
-// Mappers snake_case → camelCase
-// ---------------------------------------------------------------------------
 
 /**
  * Constrói um Selecao a partir da linha do banco.
@@ -73,10 +65,6 @@ function mapPartida(db: PartidaDb): Partida {
     visitanteLabel: db.visitante_label,
   };
 }
-
-// ---------------------------------------------------------------------------
-// Fetcher
-// ---------------------------------------------------------------------------
 
 /**
  * Lê todas as partidas do Supabase com join nas seleções (mandante/visitante),

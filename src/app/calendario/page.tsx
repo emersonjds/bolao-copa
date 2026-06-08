@@ -6,10 +6,6 @@ export const metadata: Metadata = {
   description: "Calendário completo de jogos da Copa do Mundo 2026.",
 };
 
-/**
- * Rota /calendario — Agenda vertical agrupada por dia com seletor de semana.
- * Acesso primário: link "Ver agenda completa" no Dashboard (não está no bottom-nav).
- */
 export default function CalendarioPage() {
   return (
     <div>
@@ -18,7 +14,6 @@ export default function CalendarioPage() {
         <p className="text-sm text-muted-foreground">Copa do Mundo · Jun–Jul 2026</p>
       </header>
 
-      {/* CalendarioContent é "use client" e contém SeletorSemana + AgendaList */}
       <CalendarioContent />
     </div>
   );

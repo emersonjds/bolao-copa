@@ -7,21 +7,11 @@ import {
   type SalvarPalpiteInput,
 } from "./palpites-fetcher";
 
-// ---------------------------------------------------------------------------
-// Query keys — hierarquia clara para invalidação precisa
-// ---------------------------------------------------------------------------
-
 export const palpitesKeys = {
   all: ["palpites"] as const,
-  /** Chave interna para o participante_id resolvido a partir do userId. */
   participanteId: (userId: string) => ["participante-id", userId] as const,
-  /** Palpites do participante identificado pelo participante_id. */
   meus: (participanteId: string) => [...palpitesKeys.all, "meus", participanteId] as const,
 };
-
-// ---------------------------------------------------------------------------
-// Hook interno — resolve participante_id do usuário logado
-// ---------------------------------------------------------------------------
 
 /**
  * Resolve e cacheia o participante_id do usuário atual no bolão padrão.
@@ -40,18 +30,6 @@ function useParticipanteAtual() {
   });
 }
 
-// ---------------------------------------------------------------------------
-// Hooks públicos
-// ---------------------------------------------------------------------------
-
-/**
- * Retorna os palpites do participante logado.
- *
- * Assinatura: () => UseQueryResult<Palpite[], Error>
- *
- * Retorna `data: undefined` enquanto carrega ou se o usuário não estiver logado.
- * O componente consumidor deve tratar isLoading e o estado não-autenticado.
- */
 export function useMeusPalpites() {
   const { data: participanteId } = useParticipanteAtual();
 
@@ -68,10 +46,6 @@ export type { SalvarPalpiteInput };
 export type SalvarPalpiteVariables = Omit<SalvarPalpiteInput, "participanteId">;
 
 /**
- * Mutation para criar ou atualizar um palpite.
- *
- * Assinatura: () => UseMutationResult<void, Error, SalvarPalpiteVariables>
- *
  * Em caso de sucesso invalida a query de palpites do participante atual,
  * forçando refetch. Erros do trigger de trava de horário chegam em `error`
  * com a mensagem do banco (ex.: "Palpite encerrado: a partida já começou").

@@ -16,7 +16,6 @@ interface CardPalpiteProps {
   placarLocal: PlacarLocal | undefined;
   onChangeMandante: (valor: string) => void;
   onChangeVisitante: (valor: string) => void;
-  /** Desabilitado enquanto o salvamento está em andamento. */
   disabled: boolean;
 }
 
@@ -89,19 +88,16 @@ export function CardPalpite({
     );
   })();
 
-  // Salvo: palpite existe no servidor e não há alterações locais pendentes
   const hasSalvo = !!palpiteSalvo && !hasPendente;
 
   const badgeGrupo = partida.grupo
     ? `Grupo ${partida.grupo}`
     : (FASE_LABEL[partida.fase] ?? partida.fase);
 
-  // Horário local do usuário (spec: "horário local do usuário via Intl")
   const dataFormatada = formatadorData.format(new Date(partida.dataHora)).replace(" de ", " ");
   const horaFormatada = formatadorHora.format(new Date(partida.dataHora)).replace(":", "h");
   const horarioDisplay = `${dataFormatada} · ${horaFormatada}`;
 
-  // ── Estado: confronto indefinido (mata-mata sem times definidos) ──────────
   if (indefinido) {
     return (
       <article className="rounded-2xl border border-dashed border-border bg-muted/30 p-4">
@@ -118,7 +114,6 @@ export function CardPalpite({
     );
   }
 
-  // ── Estado: travado (partida iniciou ou encerrou) ─────────────────────────
   if (travado) {
     const temPlacarOficial = partida.golsMandante !== null && partida.golsVisitante !== null;
 
@@ -198,7 +193,6 @@ export function CardPalpite({
     );
   }
 
-  // ── Estado: aberto (editável, com ou sem alterações) ──────────────────────
   const wrapperClass = hasPendente
     ? "rounded-2xl border border-brand-400 bg-card p-4 shadow-sm ring-1 ring-brand-400/30"
     : hasSalvo

@@ -7,10 +7,6 @@ import type { FaseCopa, Partida, StatusPartida } from "@/entities/partida";
 import { useSalvarResultado } from "../api/mutations";
 import { DefinirConfrontoDialog } from "./definir-confronto-dialog";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 const FASE_LABEL: Record<FaseCopa, string> = {
   grupos: "Fase de Grupos",
   "trinta-e-dois": "Rodada de 32",
@@ -65,10 +61,6 @@ function formatGrupoOuFase(partida: Partida): string {
   return partida.grupo ? `Grupo ${partida.grupo}` : FASE_LABEL[partida.fase];
 }
 
-// ---------------------------------------------------------------------------
-// StatusPill interno
-// ---------------------------------------------------------------------------
-
 function StatusPill({ status }: { status: StatusPartida }) {
   return (
     <span
@@ -84,10 +76,6 @@ function StatusPill({ status }: { status: StatusPartida }) {
     </span>
   );
 }
-
-// ---------------------------------------------------------------------------
-// CardEdicao — partida com times definidos (agendada / ao-vivo / editando encerrada)
-// ---------------------------------------------------------------------------
 
 interface CardEdicaoProps {
   partida: Partida;
@@ -138,7 +126,6 @@ function CardEdicao({ partida, onCancelar }: CardEdicaoProps) {
 
   return (
     <div className="space-y-3">
-      {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <p className="min-w-0 truncate text-[11px] text-muted-foreground">
           {formatDataHora(partida.dataHora)} · {formatGrupoOuFase(partida)}
@@ -154,7 +141,6 @@ function CardEdicao({ partida, onCancelar }: CardEdicaoProps) {
       <div className="space-y-2.5">
         {/* Times — nomes não competem com os inputs por espaço horizontal */}
         <div className="flex items-center gap-2">
-          {/* Mandante */}
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <FlagIcon
               codigoFifa={partida.mandante.codigo}
@@ -166,7 +152,6 @@ function CardEdicao({ partida, onCancelar }: CardEdicaoProps) {
             </span>
           </div>
 
-          {/* Visitante */}
           <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
             <span className="truncate text-right text-sm font-medium text-foreground">
               {partida.visitante.nome}
@@ -179,7 +164,6 @@ function CardEdicao({ partida, onCancelar }: CardEdicaoProps) {
           </div>
         </div>
 
-        {/* Inputs de placar centralizados */}
         <div className="flex items-center justify-center gap-2">
           <label className="sr-only" htmlFor={`gols-mandante-${partida.id}`}>
             Gols de {partida.mandante.nome}
@@ -217,7 +201,6 @@ function CardEdicao({ partida, onCancelar }: CardEdicaoProps) {
         </div>
       </div>
 
-      {/* Checkbox "Marcar como encerrada" */}
       <label className="flex cursor-pointer items-center gap-2">
         <input
           type="checkbox"
@@ -229,7 +212,6 @@ function CardEdicao({ partida, onCancelar }: CardEdicaoProps) {
         <span className="text-sm font-medium text-foreground">Marcar como encerrada</span>
       </label>
 
-      {/* Campo de pênaltis — só mata-mata + encerrada + empate */}
       {mostrarPenaltis && (
         <fieldset className="space-y-2 rounded-xl bg-muted/50 p-3">
           <legend className="text-xs font-semibold text-muted-foreground">
@@ -257,7 +239,6 @@ function CardEdicao({ partida, onCancelar }: CardEdicaoProps) {
         </fieldset>
       )}
 
-      {/* Botão salvar + cancelar (edição de encerrada) */}
       <div className="flex flex-col gap-2">
         <button
           type="button"
@@ -292,10 +273,6 @@ function CardEdicao({ partida, onCancelar }: CardEdicaoProps) {
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// CardCompacto — partida encerrada (modo leitura com botão de edição)
-// ---------------------------------------------------------------------------
 
 interface CardCompactoProps {
   partida: Partida;
@@ -332,10 +309,6 @@ function CardCompacto({ partida, onEditar }: CardCompactoProps) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// CardConfronto — mata-mata com times ainda indefinidos
-// ---------------------------------------------------------------------------
-
 interface CardConfrontoProps {
   partida: Partida;
 }
@@ -346,7 +319,6 @@ function CardConfronto({ partida }: CardConfrontoProps) {
   return (
     <>
       <div className="space-y-3">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <p className="text-[11px] text-muted-foreground">
             {FASE_LABEL[partida.fase]} · {formatDataHora(partida.dataHora)}
@@ -354,7 +326,6 @@ function CardConfronto({ partida }: CardConfrontoProps) {
           <StatusPill status={partida.status} />
         </div>
 
-        {/* Times placeholder */}
         <div className="flex items-center gap-3">
           <div className="flex flex-1 flex-col items-center gap-1 text-center">
             <div
@@ -379,7 +350,6 @@ function CardConfronto({ partida }: CardConfrontoProps) {
           </div>
         </div>
 
-        {/* Botão abrir dialog */}
         <button
           type="button"
           onClick={() => setDialogAberto(true)}
@@ -398,17 +368,11 @@ function CardConfronto({ partida }: CardConfrontoProps) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// CardAdmin — componente público que escolhe o modo correto
-// ---------------------------------------------------------------------------
-
 interface CardAdminProps {
   partida: Partida;
 }
 
 /**
- * Card de resultado para o painel admin.
- *
  * Modos:
  * - confronto: mata-mata com times ainda indefinidos (mandante.id === "")
  * - compacto: partida encerrada em leitura, com botão de edição
@@ -447,10 +411,6 @@ export function CardAdmin({ partida }: CardAdminProps) {
     </li>
   );
 }
-
-// ---------------------------------------------------------------------------
-// CardAdmin skeleton (estado de carregamento)
-// ---------------------------------------------------------------------------
 
 export function CardAdminSkeleton() {
   return (

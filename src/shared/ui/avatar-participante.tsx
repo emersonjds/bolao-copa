@@ -10,7 +10,6 @@ interface AvatarParticipanteProps {
   className?: string;
 }
 
-// Quatro opções de cor selecionadas por hash simples do nome.
 const COLOR_OPTIONS = [
   "bg-brand-100 text-brand-700",
   "bg-brand-200 text-brand-800",

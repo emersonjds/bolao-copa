@@ -1,7 +1,6 @@
 import { Trophy } from "lucide-react";
 import { UserMenu } from "@/features/auth";
 
-/** Barra superior fixa: marca do bolão + menu do usuário. */
 export function TopBar() {
   return (
     <header className="sticky top-0 z-20 border-b border-border/70 bg-background/85 backdrop-blur">

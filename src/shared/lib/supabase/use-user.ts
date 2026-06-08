@@ -28,7 +28,6 @@ export function useSupabaseUser(): User | null {
       .then(({ data }) => setUser(data.session?.user ?? null))
       .catch(() => setUser(null));
 
-    // Mantém o estado atualizado em login/logout subsequentes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {

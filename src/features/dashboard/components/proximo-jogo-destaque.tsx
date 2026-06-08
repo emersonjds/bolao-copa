@@ -37,10 +37,7 @@ function encontrarProximoJogo(partidas: readonly Partida[]): Partida | null {
   return candidatos[0] ?? null;
 }
 
-/**
- * Card com borda dourada que destaca o próximo jogo nas próximas 24h.
- * Retorna null quando não há jogo iminente ou enquanto os dados carregam.
- */
+/** Retorna null quando não há jogo iminente nas próximas 24h ou enquanto os dados carregam. */
 export function ProximoJogoDestaque() {
   const { data: partidas, isLoading } = usePartidas();
 
@@ -77,7 +74,6 @@ export function ProximoJogoDestaque() {
       </div>
 
       <div className="flex items-center gap-2">
-        {/* Mandante */}
         <div className="flex flex-1 flex-col items-center gap-1.5">
           <FlagIcon codigoFifa={jogo.mandante.codigo} nome={jogo.mandante.nome} tamanho="lg" />
           <span className="max-w-[80px] truncate text-center text-sm font-semibold text-foreground">
@@ -85,7 +81,6 @@ export function ProximoJogoDestaque() {
           </span>
         </div>
 
-        {/* Centro: vs + horário */}
         <div className="flex flex-col items-center gap-0.5">
           <span className="font-mono text-base font-bold text-muted-foreground">vs</span>
           <time dateTime={jogo.dataHora} className="text-[11px] text-muted-foreground">
@@ -93,7 +88,6 @@ export function ProximoJogoDestaque() {
           </time>
         </div>
 
-        {/* Visitante */}
         <div className="flex flex-1 flex-col items-center gap-1.5">
           <FlagIcon codigoFifa={jogo.visitante.codigo} nome={jogo.visitante.nome} tamanho="lg" />
           <span className="max-w-[80px] truncate text-center text-sm font-semibold text-foreground">

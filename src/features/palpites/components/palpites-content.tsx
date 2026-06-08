@@ -14,7 +14,6 @@ import { SeletorVista, type VistaPalpites } from "./seletor-vista";
 import { HistoricoContent } from "./historico-content";
 import type { PlacarLocal } from "./card-palpite";
 
-// Fases na ordem de exibição das tabs
 const ORDEM_FASES: FaseCopa[] = [
   "grupos",
   "trinta-e-dois",
@@ -99,7 +98,6 @@ export function PalpitesContent() {
   }
 
   async function handleSalvar(): Promise<void> {
-    // Coleta todos os palpites pendentes válidos em TODAS as fases
     const pendentes = (partidas ?? []).filter((p) => !estaEmJogo(p) && ehPendente(p.id));
 
     if (pendentes.length === 0) return;
@@ -146,7 +144,6 @@ export function PalpitesContent() {
     }
   }
 
-  // ── Loading skeleton ───────────────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="space-y-4" aria-busy="true">
@@ -158,7 +155,6 @@ export function PalpitesContent() {
     );
   }
 
-  // ── Erro ao carregar partidas ──────────────────────────────────────────────
   if (isError) {
     return (
       <div className="flex flex-col items-center gap-3 py-12 text-center">
@@ -176,7 +172,6 @@ export function PalpitesContent() {
     );
   }
 
-  // ── Nenhuma partida cadastrada ─────────────────────────────────────────────
   if (!partidas || partidas.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-card px-6 py-12 text-center">
@@ -191,7 +186,6 @@ export function PalpitesContent() {
     );
   }
 
-  // ── Conteúdo principal ─────────────────────────────────────────────────────
   return (
     <div className="space-y-4">
       <SeletorVista vista={vista} onSelect={setVista} />
