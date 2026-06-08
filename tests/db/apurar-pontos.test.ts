@@ -30,28 +30,34 @@ const db = new Client({ connectionString: DB });
 const admin = createClient(SUPA_URL, SERVICE, { auth: { persistSession: false } });
 let participanteId: string;
 let userIdTeste: string;
+// Segundo usuário dedicado — necessário para os testes que exigem ≥2
+// participantes (eh_admin, get_ranking). Garante que o arquivo seja
+// auto-suficiente mesmo em banco recém-resetado (sem scenario:seed).
+let userIdTeste2: string;
 let selA: string;
 let selB: string;
+
+async function ensureUser(email: string, nome: string): Promise<string> {
+  const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  const existing = list.users.find((u) => u.email === email);
+  if (existing) return existing.id;
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    password: "Db-Teste-2026!",
+    email_confirm: true,
+    user_metadata: { full_name: nome },
+  });
+  if (error || !data.user) throw new Error(`createUser falhou: ${error?.message}`);
+  return data.user.id;
+}
 
 beforeAll(async () => {
   await db.connect();
   // Participante de teste dedicado (via Auth admin → handle_new_user cria o participante).
-  const email = "dbtest@bolao.test";
-  const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-  let userId = list.users.find((u) => u.email === email)?.id;
-  if (!userId) {
-    const { data, error } = await admin.auth.admin.createUser({
-      email,
-      password: "Db-Teste-2026!",
-      email_confirm: true,
-      user_metadata: { full_name: "DB Teste" },
-    });
-    if (error || !data.user) throw new Error(`createUser falhou: ${error?.message}`);
-    userId = data.user.id;
-  }
-  userIdTeste = userId;
+  userIdTeste = await ensureUser("dbtest@bolao.test", "DB Teste");
+  userIdTeste2 = await ensureUser("dbtest2@bolao.test", "DB Teste 2");
   const pa = await db.query("select id from participantes where user_id=$1 and bolao_id=$2", [
-    userId,
+    userIdTeste,
     BOLAO,
   ]);
   participanteId = pa.rows[0].id;
@@ -61,9 +67,10 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  // Remove o usuário de teste (cascata apaga participante/palpites) pra não
+  // Remove os usuários de teste (cascata apaga participante/palpites) pra não
   // poluir o ranking do cenário.
   if (userIdTeste) await admin.auth.admin.deleteUser(userIdTeste);
+  if (userIdTeste2) await admin.auth.admin.deleteUser(userIdTeste2);
   await db.end();
 });
 
@@ -74,11 +81,13 @@ afterEach(async () => {
   await db.query("ROLLBACK");
 });
 
-/** Cria uma partida agendada no futuro (a trava libera o palpite). */
+/** Cria uma partida HOJE (dentro da janela de palpite) na fase dada. */
 async function novaPartida(fase = "grupos"): Promise<string> {
   const r = await db.query(
     `insert into partidas (fase, data_hora, estadio, status, mandante_id, visitante_id)
-     values ($1, now() + interval '10 days', 'Estádio Teste', 'agendada', $2, $3) returning id`,
+     values ($1,
+       (date_trunc('day', now() at time zone 'America/Sao_Paulo') at time zone 'America/Sao_Paulo') + interval '23 hours',
+       'Estádio Teste', 'agendada', $2, $3) returning id`,
     [fase, selA, selB]
   );
   return r.rows[0].id;
