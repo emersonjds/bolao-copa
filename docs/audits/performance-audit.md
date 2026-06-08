@@ -2,7 +2,7 @@
 
 **Data**: 2026-06-07  
 **Stack**: Next.js 16.2.6 (Turbopack), React 19, `output: "export"`, Tailwind 4, Supabase browser client, TanStack Query 5  
-**Build**: `pnpm build` em produção com variáveis reais  
+**Build**: `pnpm build` em produção com variáveis reais
 
 ---
 
@@ -10,60 +10,60 @@
 
 ### A1. Bundle JavaScript por Rota — First Load JS (gzip)
 
-| Rota | First Load JS (gz) | Chunk específico (gz) | Notas |
-|---|---|---|---|
-| `/` (Home) | **274 KB** | +4 KB | HeroStats + ProximoJogo + ProximosJogos + Destaque |
-| `/palpites` | **278 KB** | +8 KB | PalpitesContent + formulário |
-| `/ranking` | **272 KB** | +2 KB | Menor rota |
-| `/calendario` | **283 KB** | +13 KB | SeletorSemana + AgendaList |
-| `/admin` | **288 KB** | +18 KB | Maior rota (lazy chunk OK) |
-| `/regras` | **270 KB** | 0 KB | Nenhum chunk exclusivo |
+| Rota          | First Load JS (gz) | Chunk específico (gz) | Notas                                              |
+| ------------- | ------------------ | --------------------- | -------------------------------------------------- |
+| `/` (Home)    | **274 KB**         | +4 KB                 | HeroStats + ProximoJogo + ProximosJogos + Destaque |
+| `/palpites`   | **278 KB**         | +8 KB                 | PalpitesContent + formulário                       |
+| `/ranking`    | **272 KB**         | +2 KB                 | Menor rota                                         |
+| `/calendario` | **283 KB**         | +13 KB                | SeletorSemana + AgendaList                         |
+| `/admin`      | **288 KB**         | +18 KB                | Maior rota (lazy chunk OK)                         |
+| `/regras`     | **270 KB**         | 0 KB                  | Nenhum chunk exclusivo                             |
 
 **Base compartilhada (todas as rotas)**: 270 KB gzip / ~900 KB descomprimido  
 **Total do deploy estático** (`out/`): 2.3 MB (assets + HTML)  
-**CSS**: 48 KB raw / **9 KB gzip** (Tailwind JIT ótimo)  
+**CSS**: 48 KB raw / **9 KB gzip** (Tailwind JIT ótimo)
 
 ### A2. Decomposição dos Maiores Chunks
 
-| Chunk | Raw | Gzip | Conteúdo identificado |
-|---|---|---|---|
-| `06wq.2hihlevh.js` | 320 KB | **70 KB** | `@supabase/ssr` + `@supabase/supabase-js` |
-| `0mic4x9ug0k3v.js` | 256 KB | **69 KB** | React DOM + internals Next.js |
-| `0rom9dut9n1cq.js` | 192 KB | **40 KB** | Next.js runtime (Turbopack) |
+| Chunk              | Raw    | Gzip      | Conteúdo identificado                       |
+| ------------------ | ------ | --------- | ------------------------------------------- |
+| `06wq.2hihlevh.js` | 320 KB | **70 KB** | `@supabase/ssr` + `@supabase/supabase-js`   |
+| `0mic4x9ug0k3v.js` | 256 KB | **69 KB** | React DOM + internals Next.js               |
+| `0rom9dut9n1cq.js` | 192 KB | **40 KB** | Next.js runtime (Turbopack)                 |
 | `03~yq9q893hmn.js` | 128 KB | **38 KB** | Bundle legacy `noModule` (browsers antigos) |
-| `121hn7wzzs2uo.js` | 56 KB | **13 KB** | TanStack Query + código da app |
-| `0_pxc4-htpjbz.js` | 40 KB | **10 KB** | Sonner (toasts) |
-| CSS | 48 KB | **9 KB** | Tailwind JIT completo |
+| `121hn7wzzs2uo.js` | 56 KB  | **13 KB** | TanStack Query + código da app              |
+| `0_pxc4-htpjbz.js` | 40 KB  | **10 KB** | Sonner (toasts)                             |
+| CSS                | 48 KB  | **9 KB**  | Tailwind JIT completo                       |
 
 ### A3. Supabase — Chamadas por Tela
 
-| Tela | Chamadas Supabase | Observações |
-|---|---|---|
-| `/` (home, autenticado) | **4** | `getSession` + `getUser` (auth) + `partidas` + `get_ranking` + `get_destaque_rodada` |
-| `/` (home, anônimo) | **2** | `getSession` + `getUser` apenas (ranking/partidas bloqueadas pelo auth guard) |
-| `/palpites` | **3–4** | auth (cache) + `participante-id` + `partidas` (cache ou fetch) + `palpites` |
-| `/ranking` | **3** | auth + `get_ranking` + `get_destaque_rodada` |
-| `/calendario` | **2** | auth + `partidas` (compartilhado pelo cache TQ se já na home) |
+| Tela                    | Chamadas Supabase | Observações                                                                          |
+| ----------------------- | ----------------- | ------------------------------------------------------------------------------------ |
+| `/` (home, autenticado) | **4**             | `getSession` + `getUser` (auth) + `partidas` + `get_ranking` + `get_destaque_rodada` |
+| `/` (home, anônimo)     | **2**             | `getSession` + `getUser` apenas (ranking/partidas bloqueadas pelo auth guard)        |
+| `/palpites`             | **3–4**           | auth (cache) + `participante-id` + `partidas` (cache ou fetch) + `palpites`          |
+| `/ranking`              | **3**             | auth + `get_ranking` + `get_destaque_rodada`                                         |
+| `/calendario`           | **2**             | auth + `partidas` (compartilhado pelo cache TQ se já na home)                        |
 
 ### A4. Configuração TanStack Query
 
-| Parâmetro | Valor configurado | Avaliação |
-|---|---|---|
-| `staleTime` (global) | 60 s | Aceitável, mas partidas poderiam ser mais |
-| `gcTime` | 5 min | OK |
-| `refetchOnWindowFocus` | `false` | Correto para este domínio |
-| `retry` | 1 | OK |
-| `staleTime` partidas | 60 s (default) | Baixo — partidas mudam ~3×/dia |
-| `staleTime` ranking | 2 min | Razoável |
-| `staleTime` palpites de destaque | 2 min | Razoável |
-| `staleTime` participante-id | `Infinity` | Perfeito |
+| Parâmetro                        | Valor configurado | Avaliação                                 |
+| -------------------------------- | ----------------- | ----------------------------------------- |
+| `staleTime` (global)             | 60 s              | Aceitável, mas partidas poderiam ser mais |
+| `gcTime`                         | 5 min             | OK                                        |
+| `refetchOnWindowFocus`           | `false`           | Correto para este domínio                 |
+| `retry`                          | 1                 | OK                                        |
+| `staleTime` partidas             | 60 s (default)    | Baixo — partidas mudam ~3×/dia            |
+| `staleTime` ranking              | 2 min             | Razoável                                  |
+| `staleTime` palpites de destaque | 2 min             | Razoável                                  |
+| `staleTime` participante-id      | `Infinity`        | Perfeito                                  |
 
 ### A5. Fontes
 
-| Fonte | Peso | Uso | Carregada em |
-|---|---|---|---|
-| Inter | latin subset | `font-sans` — corpo | **Todas as rotas** |
-| Hanken Grotesk | latin subset | `font-display` — títulos | **Todas as rotas** |
+| Fonte          | Peso         | Uso                             | Carregada em       |
+| -------------- | ------------ | ------------------------------- | ------------------ |
+| Inter          | latin subset | `font-sans` — corpo             | **Todas as rotas** |
+| Hanken Grotesk | latin subset | `font-display` — títulos        | **Todas as rotas** |
 | JetBrains Mono | latin subset | `font-mono` — placares e pontos | **Todas as rotas** |
 
 - `display: "swap"` configurado (sem FOIT) ✓
@@ -72,23 +72,23 @@
 
 ### A6. Imagens
 
-| Componente | Mecanismo | CLS | Observações |
-|---|---|---|---|
-| `FlagIcon` | `<img>` externo `flagcdn.com` | Baixo | Container com tamanho fixo (h-10 w-10). Sem width/height no `<img>`. `loading="lazy"` ✓ |
-| `AvatarParticipante` | `<img>` Google OAuth | Zero | `width`/`height` definidos ✓ |
-| `images.unoptimized: true` | Necessário para static export | — | Sem otimização automática |
+| Componente                 | Mecanismo                     | CLS   | Observações                                                                             |
+| -------------------------- | ----------------------------- | ----- | --------------------------------------------------------------------------------------- |
+| `FlagIcon`                 | `<img>` externo `flagcdn.com` | Baixo | Container com tamanho fixo (h-10 w-10). Sem width/height no `<img>`. `loading="lazy"` ✓ |
+| `AvatarParticipante`       | `<img>` Google OAuth          | Zero  | `width`/`height` definidos ✓                                                            |
+| `images.unoptimized: true` | Necessário para static export | —     | Sem otimização automática                                                               |
 
 **Flag-icons**: instalado como dependência (`^7.5.0`, 5.5 MB em disco) porém **zero bytes no bundle** — `FlagIcon` usa `flagcdn.com` diretamente. Dependência morta.
 
 ### A7. HTTP Cache / Deploy
 
-| Item | Status (resolvido nesta leva) |
-|---|---|
-| `_next/static/*` | ✅ Imutável (`max-age=31536000, immutable` em `public/_headers`) |
-| HTML pages (`index.html`, etc.) | ✅ `max-age=300, stale-while-revalidate=86400` em `public/_headers` |
-| Preconnect para Supabase | ✅ adicionado no `layout.tsx` |
-| Preconnect para `flagcdn.com` | ✅ adicionado no `layout.tsx` |
-| Headers de segurança (CSP, HSTS) | ✅ em `public/_headers` (Netlify) |
+| Item                             | Status (resolvido nesta leva)                                       |
+| -------------------------------- | ------------------------------------------------------------------- |
+| `_next/static/*`                 | ✅ Imutável (`max-age=31536000, immutable` em `public/_headers`)    |
+| HTML pages (`index.html`, etc.)  | ✅ `max-age=300, stale-while-revalidate=86400` em `public/_headers` |
+| Preconnect para Supabase         | ✅ adicionado no `layout.tsx`                                       |
+| Preconnect para `flagcdn.com`    | ✅ adicionado no `layout.tsx`                                       |
+| Headers de segurança (CSP, HSTS) | ✅ em `public/_headers` (Netlify)                                   |
 
 ---
 
@@ -115,8 +115,9 @@ Correção: filtrar dentro de `ProximosJogos` para mostrar apenas os N próximos
 **Esforço**: Médio
 
 A cadeia é:
+
 1. `useSupabaseUser()` → `getUser()` resolve (~100ms)
-2. Então `useParticipanteAtual()` dispara (`buscarParticipanteId`)  (~100ms)
+2. Então `useParticipanteAtual()` dispara (`buscarParticipanteId`) (~100ms)
 3. Então `useMeusPalpites()` dispara (`listarMeusPalpites`) (~100ms)
 
 Total: ~300ms de latência sequencial só de auth + dados antes de qualquer render de conteúdo. Em Supabase US com usuário no Brasil, isso é facilmente 400–600ms.
@@ -160,6 +161,7 @@ Correção: aumentar `staleTime` de partidas para `10 * 60 * 1000` (10 min) e ad
 Sem `<link rel="preconnect">` para o domínio Supabase (ex.: `xyz.supabase.co`) e para `flagcdn.com`, o browser faz DNS lookup + TLS handshake na primeira requisição de dados e na primeira flag visível. Para usuários no Brasil conectando a Supabase US-east, isso adiciona facilmente 150–300ms ao LCP.
 
 Correção: adicionar em `app/layout.tsx`:
+
 ```tsx
 <link rel="preconnect" href="https://[project].supabase.co" />
 <link rel="preconnect" href="https://flagcdn.com" crossOrigin="" />
@@ -240,13 +242,13 @@ O chunk `03~yq9q893hmn.js` com atributo `noModule` existe para suportar browsers
 
 Lista em ordem de impacto/esforço:
 
-| # | Ação | Arquivo | Impacto | Tempo estimado |
-|---|---|---|---|---|
-| 1 | Adicionar `preconnect` Supabase + flagcdn.com | `src/app/layout.tsx` | −150–300ms LCP | 5 min |
-| 2 | Filtrar ProximosJogos para 5 próximos | `src/features/partidas/components/proximos-jogos.tsx` | −70% DOM home, −90% flags | 15 min |
-| 3 | Aumentar staleTime de partidas para 10 min | `src/features/partidas/api/queries.ts` | −90% fetches desnecessários | 5 min |
-| 4 | Remover `flag-icons` do `package.json` | `package.json` | −5.5 MB install, sem impacto prod | 2 min |
-| 5 | `crossOrigin="anonymous"` no AvatarParticipante | `src/shared/ui/avatar-participante.tsx` | Cache CDN de avatares | 5 min |
+| #   | Ação                                            | Arquivo                                               | Impacto                           | Tempo estimado |
+| --- | ----------------------------------------------- | ----------------------------------------------------- | --------------------------------- | -------------- |
+| 1   | Adicionar `preconnect` Supabase + flagcdn.com   | `src/app/layout.tsx`                                  | −150–300ms LCP                    | 5 min          |
+| 2   | Filtrar ProximosJogos para 5 próximos           | `src/features/partidas/components/proximos-jogos.tsx` | −70% DOM home, −90% flags         | 15 min         |
+| 3   | Aumentar staleTime de partidas para 10 min      | `src/features/partidas/api/queries.ts`                | −90% fetches desnecessários       | 5 min          |
+| 4   | Remover `flag-icons` do `package.json`          | `package.json`                                        | −5.5 MB install, sem impacto prod | 2 min          |
+| 5   | `crossOrigin="anonymous"` no AvatarParticipante | `src/shared/ui/avatar-participante.tsx`               | Cache CDN de avatares             | 5 min          |
 
 ---
 
@@ -254,13 +256,13 @@ Lista em ordem de impacto/esforço:
 
 Baseadas na análise de bundle, waterfall de dados e estrutura DOM:
 
-| Métrica | Estimativa (4G, device mid-range) | Alvo | Status |
-|---|---|---|---|
-| **LCP** (usuário logado) | 3.5–5.0 s | < 2.5 s | Ruim |
-| **LCP** (usuário anônimo) | 2.0–2.5 s | < 2.5 s | Borderline |
-| **CLS** | < 0.05 | < 0.1 | Bom |
-| **INP** (edição de palpite) | 100–200 ms | < 200 ms | Borderline |
-| **TBT** (proxy TTI) | 150–400 ms | < 200 ms | Borderline/Ruim |
+| Métrica                     | Estimativa (4G, device mid-range) | Alvo     | Status          |
+| --------------------------- | --------------------------------- | -------- | --------------- |
+| **LCP** (usuário logado)    | 3.5–5.0 s                         | < 2.5 s  | Ruim            |
+| **LCP** (usuário anônimo)   | 2.0–2.5 s                         | < 2.5 s  | Borderline      |
+| **CLS**                     | < 0.05                            | < 0.1    | Bom             |
+| **INP** (edição de palpite) | 100–200 ms                        | < 200 ms | Borderline      |
+| **TBT** (proxy TTI)         | 150–400 ms                        | < 200 ms | Borderline/Ruim |
 
 **Principal ofensor do LCP**: waterfall de 3 requests sequenciais para dados após hydration (auth → participante-id → palpites). O conteúdo significativo da home depende da sessão Supabase, forçando LCP > 3s em condições de rede móvel brasileira.
 

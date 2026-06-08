@@ -21,12 +21,12 @@ engano (relógio adiantado, bug), o Postgres **recusa** o palpite fora da janela
 
 ### Decisões de produto (travadas)
 
-| Decisão | Escolha |
-|---|---|
+| Decisão                 | Escolha                                       |
+| ----------------------- | --------------------------------------------- |
 | Campos de jogos futuros | **Digitar e guardar rascunho** (localStorage) |
-| Horizonte visível | **Só o próximo dia (D+1)** |
+| Horizonte visível       | **Só o próximo dia (D+1)**                    |
 | Fuso que define "o dia" | **Horário de Brasília** (`America/Sao_Paulo`) |
-| Incentivo nesta versão | **Só o essencial** (sem streak/push) |
+| Incentivo nesta versão  | **Só o essencial** (sem streak/push)          |
 
 ---
 
@@ -71,11 +71,11 @@ $$;
 
 ## 3. Arquitetura: onde mora cada responsabilidade
 
-| Responsabilidade | Dono |
-|---|---|
-| Definir "o dia" (BRT → instante) | **Postgres** — `janela_palpite_inicio()` |
-| Expor o instante de abertura | **View** sobre `partidas` (`janela_inicio`) |
-| Decidir o estado pra pintar a UI | **Front** — compara instantes (epoch) |
+| Responsabilidade                    | Dono                                                  |
+| ----------------------------------- | ----------------------------------------------------- |
+| Definir "o dia" (BRT → instante)    | **Postgres** — `janela_palpite_inicio()`              |
+| Expor o instante de abertura        | **View** sobre `partidas` (`janela_inicio`)           |
+| Decidir o estado pra pintar a UI    | **Front** — compara instantes (epoch)                 |
 | **Recusar** gravação fora da janela | **Trigger** `enforce_palpite_lock` (fonte de verdade) |
 
 ### Contrato (shape do payload)
@@ -151,10 +151,10 @@ Ordem das checagens dentro do trigger:
 
 ### Códigos de erro → mensagem PT-BR
 
-| Código (`message`) | Quando | Mensagem na UI |
-|---|---|---|
+| Código (`message`)     | Quando                                 | Mensagem na UI                                    |
+| ---------------------- | -------------------------------------- | ------------------------------------------------- |
 | `palpite_nao_liberado` | antes da meia-noite BRT do dia do jogo | "Os palpites deste jogo abrem no dia da partida." |
-| `palpite_encerrado` | após o apito | "Esta partida já começou." |
+| `palpite_encerrado`    | após o apito                           | "Esta partida já começou."                        |
 
 ---
 
@@ -166,17 +166,20 @@ Sem empilhar badges.
 ### Os 3 estados do card
 
 **A — Hoje, liberado**
+
 - Borda `border-brand-500` + `ring-1 ring-brand-500/20` (verde-gramado).
 - Pill `HOJE · 20h` (`bg-brand-100 text-brand-700`).
 - Inputs ativos; botão funciona.
 
 **B — Futuro (amanhã), travado mas preenchível**
+
 - Borda `border-amber-200 border-dashed`; fundo `bg-amber-50/40`.
 - Pill âmbar com ícone `Clock`: `Libera amanhã`.
 - **Inputs ativos** — digita rascunho.
 - Sem cadeado (cadeado é exclusivo do estado "encerrado").
 
 **C — Encerrado / já apitou**
+
 - `bg-card/60 opacity-80`, badge `Lock + Encerrado` (estilo atual).
 - Se houver resultado + pontos: faixa de rodapé com placar oficial e pill de pts.
 
@@ -289,21 +292,21 @@ Novo arquivo `tests/db/palpite-janela.test.ts` (estilo do `apurar-pontos.test.ts
 
 ## 8. Arquivos afetados (mapeamento)
 
-| Arquivo | Mudança |
-|---|---|
-| `supabase/migrations/0019_*.sql` | **novo** — função `janela_palpite_inicio`, view `partidas_com_janela`, `CREATE OR REPLACE enforce_palpite_lock` |
-| `src/entities/partida/model/partida.ts` | + `janelaInicio: string` |
-| `src/features/partidas/api/partidas-fetcher.ts` | seleciona de `partidas_com_janela` (+ `janela_inicio`) |
-| `src/features/partidas/api/queries.ts` | timer de borda + `refetchOnWindowFocus` |
-| `src/features/palpites/lib/estado-palpite.ts` | **novo** — `estadoPalpite()` + filtro D+1 |
-| `src/features/palpites/lib/rascunho-local.ts` | **novo** — persistência localStorage |
-| `src/features/palpites/components/card-palpite.tsx` | 3 estados visuais + inputs de rascunho |
-| `src/features/palpites/components/palpites-content.tsx` | inclui D+1; deriva estado por card |
-| `src/features/palpites/components/lista-palpites.tsx` | cabeçalho com pill de status |
-| `src/features/palpites/components/botao-salvar.tsx` | escopo "só hoje" + label |
-| `src/features/palpites/lib/traduzir-erro-salvar.ts` | ramo `palpite_nao_liberado` |
-| `tests/db/palpite-janela.test.ts` | **novo** — cobertura de banco |
-| testes unit/componente/e2e | conforme seção 7 |
+| Arquivo                                                 | Mudança                                                                                                         |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `supabase/migrations/0019_*.sql`                        | **novo** — função `janela_palpite_inicio`, view `partidas_com_janela`, `CREATE OR REPLACE enforce_palpite_lock` |
+| `src/entities/partida/model/partida.ts`                 | + `janelaInicio: string`                                                                                        |
+| `src/features/partidas/api/partidas-fetcher.ts`         | seleciona de `partidas_com_janela` (+ `janela_inicio`)                                                          |
+| `src/features/partidas/api/queries.ts`                  | timer de borda + `refetchOnWindowFocus`                                                                         |
+| `src/features/palpites/lib/estado-palpite.ts`           | **novo** — `estadoPalpite()` + filtro D+1                                                                       |
+| `src/features/palpites/lib/rascunho-local.ts`           | **novo** — persistência localStorage                                                                            |
+| `src/features/palpites/components/card-palpite.tsx`     | 3 estados visuais + inputs de rascunho                                                                          |
+| `src/features/palpites/components/palpites-content.tsx` | inclui D+1; deriva estado por card                                                                              |
+| `src/features/palpites/components/lista-palpites.tsx`   | cabeçalho com pill de status                                                                                    |
+| `src/features/palpites/components/botao-salvar.tsx`     | escopo "só hoje" + label                                                                                        |
+| `src/features/palpites/lib/traduzir-erro-salvar.ts`     | ramo `palpite_nao_liberado`                                                                                     |
+| `tests/db/palpite-janela.test.ts`                       | **novo** — cobertura de banco                                                                                   |
+| testes unit/componente/e2e                              | conforme seção 7                                                                                                |
 
 ---
 

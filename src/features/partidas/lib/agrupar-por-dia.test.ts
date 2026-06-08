@@ -2,7 +2,11 @@ import { describe, it, expect } from "vitest";
 import type { Partida } from "@/entities/partida";
 import { agruparProximosDias } from "./agrupar-por-dia";
 
-function makePartida(id: string, dataHora: string, status: Partida["status"] = "agendada"): Partida {
+function makePartida(
+  id: string,
+  dataHora: string,
+  status: Partida["status"] = "agendada"
+): Partida {
   return {
     id,
     fase: "grupos",
@@ -56,14 +60,14 @@ describe("agruparProximosDias", () => {
         makePartida("d2", "2026-06-12T19:00:00.000Z"),
         makePartida("d3", "2026-06-13T19:00:00.000Z"),
       ],
-      3,
+      3
     );
     expect(grupos).toHaveLength(3);
   });
 
   it("retorna vazio quando não há jogos futuros", () => {
-    expect(agruparProximosDias([makePartida("a", "2026-06-11T19:00:00.000Z", "encerrada")])).toEqual(
-      [],
-    );
+    expect(
+      agruparProximosDias([makePartida("a", "2026-06-11T19:00:00.000Z", "encerrada")])
+    ).toEqual([]);
   });
 });

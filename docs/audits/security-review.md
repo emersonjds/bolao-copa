@@ -5,17 +5,17 @@
 
 ## Status dos achados
 
-| # | Severidade | Achado | Status |
-|---|---|---|---|
-| C-1 | 🔴 Crítico | `profiles.is_admin` gravável por qualquer `authenticated` (auto-promoção a admin → fraude de placar) | ✅ Corrigido (migration `0016`, revoke/grant de coluna) + teste de regressão |
-| A-1 | 🟠 Alto | Open redirect em `/auth/callback` via `?next=` | ✅ Corrigido (`next` só aceita caminho interno) |
-| A-2 | 🟠 Alto | `signInDev`/senha de dev no bundle de produção | ✅ Corrigido (`signInDev` lança erro em produção) |
-| A-3 | 🟠 Alto | Ausência de security headers | ✅ Corrigido (`public/_headers`: CSP, HSTS, XFO, nosniff, Referrer/Permissions-Policy) |
-| M-2 | 🟡 Médio | `peso_fase`/`bump_palpite_updated_at` sem `search_path` | ✅ Corrigido (migration `0016`) |
-| M-1 | 🟡 Médio | `is_admin` legível por todos os autenticados (enumeração de admins) | ✅ Corrigido (migration `0018`: coluna `is_admin` não-legível pelo cliente; checagem via RPC `eh_admin` SECURITY DEFINER) |
-| M-3 | 🟡 Médio | `palpites_select` sem filtro por `bolao_id` (bomba-relógio multi-bolão) | ⏳ Pendente (irrelevante com 1 bolão; documentar p/ quando houver vários) |
-| M-4 | 🟡 Médio | PostCSS < 8.5.10 (CVE) | ✅ N/A — projeto já em `^8.5.15` |
-| B-1 | 🔵 Baixo | Convite sem uso único (link reutilizável) | ⏸️ Adiado (YAGNI: convites não são usados — entrada é por auto-inscrição no cadastro; implementar junto com o fluxo de convite) |
+| #   | Severidade | Achado                                                                                               | Status                                                                                                                          |
+| --- | ---------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| C-1 | 🔴 Crítico | `profiles.is_admin` gravável por qualquer `authenticated` (auto-promoção a admin → fraude de placar) | ✅ Corrigido (migration `0016`, revoke/grant de coluna) + teste de regressão                                                    |
+| A-1 | 🟠 Alto    | Open redirect em `/auth/callback` via `?next=`                                                       | ✅ Corrigido (`next` só aceita caminho interno)                                                                                 |
+| A-2 | 🟠 Alto    | `signInDev`/senha de dev no bundle de produção                                                       | ✅ Corrigido (`signInDev` lança erro em produção)                                                                               |
+| A-3 | 🟠 Alto    | Ausência de security headers                                                                         | ✅ Corrigido (`public/_headers`: CSP, HSTS, XFO, nosniff, Referrer/Permissions-Policy)                                          |
+| M-2 | 🟡 Médio   | `peso_fase`/`bump_palpite_updated_at` sem `search_path`                                              | ✅ Corrigido (migration `0016`)                                                                                                 |
+| M-1 | 🟡 Médio   | `is_admin` legível por todos os autenticados (enumeração de admins)                                  | ✅ Corrigido (migration `0018`: coluna `is_admin` não-legível pelo cliente; checagem via RPC `eh_admin` SECURITY DEFINER)       |
+| M-3 | 🟡 Médio   | `palpites_select` sem filtro por `bolao_id` (bomba-relógio multi-bolão)                              | ⏳ Pendente (irrelevante com 1 bolão; documentar p/ quando houver vários)                                                       |
+| M-4 | 🟡 Médio   | PostCSS < 8.5.10 (CVE)                                                                               | ✅ N/A — projeto já em `^8.5.15`                                                                                                |
+| B-1 | 🔵 Baixo   | Convite sem uso único (link reutilizável)                                                            | ⏸️ Adiado (YAGNI: convites não são usados — entrada é por auto-inscrição no cadastro; implementar junto com o fluxo de convite) |
 
 ## O que está correto (não mexer)
 

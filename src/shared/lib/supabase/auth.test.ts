@@ -61,9 +61,7 @@ describe("auth helpers", () => {
 
     it("lança erro ao ser chamado quando NODE_ENV === 'production'", async () => {
       vi.stubEnv("NODE_ENV", "production");
-      await expect(signInDev("x@x.com", "y")).rejects.toThrow(
-        "signInDev indisponível em produção"
-      );
+      await expect(signInDev("x@x.com", "y")).rejects.toThrow("signInDev indisponível em produção");
       expect(signInWithPassword).not.toHaveBeenCalled();
     });
   });

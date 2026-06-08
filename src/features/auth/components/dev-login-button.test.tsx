@@ -95,9 +95,7 @@ describe("DevLoginButton", () => {
 
     await userEvent.click(screen.getByRole("button", { name: /logar em dev/i }));
 
-    await waitFor(() =>
-      expect(screen.getByText("Credenciais inválidas")).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByText("Credenciais inválidas")).toBeInTheDocument());
     // O botão deve voltar a estar disponível após o erro.
     expect(screen.getByRole("button", { name: /logar em dev/i })).not.toBeDisabled();
   });
@@ -108,8 +106,6 @@ describe("DevLoginButton", () => {
 
     await userEvent.click(screen.getByRole("button", { name: /logar em dev/i }));
 
-    await waitFor(() =>
-      expect(screen.getByText("Falha no login dev")).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByText("Falha no login dev")).toBeInTheDocument());
   });
 });
