@@ -49,11 +49,11 @@ Funções-chave: `apurar_pontos()` (trigger ao encerrar partida), `peso_fase()`,
 
 ## 6. Testes (3 camadas — todas verdes)
 
-| Camada                              | Comando         | O que cobre                                                                            | Estado             |
-| ----------------------------------- | --------------- | -------------------------------------------------------------------------------------- | ------------------ |
-| Unit/integração (Vitest+MSW, jsdom) | `pnpm test:run` | componentes/hooks/fetchers (mocks); inclui integridade do PIX (CRC16/anti-adulteração) | ~502 testes (~99%) |
-| Banco (Vitest+`pg`, node)           | `pnpm test:db`  | regra de pontos, multiplicador, pênalti, idempotência, trava, **desempate**, grants    | 29 testes          |
-| E2E (Playwright)                    | `pnpm test:e2e` | telas fase a fase, ranking/vencedor, palpitar (dia a dia), navegação                   | 72 testes          |
+| Camada                              | Comando         | O que cobre                                                                             | Estado                         |
+| ----------------------------------- | --------------- | --------------------------------------------------------------------------------------- | ------------------------------ |
+| Unit/integração (Vitest+MSW, jsdom) | `pnpm test:run` | componentes/hooks/fetchers (mocks); inclui integridade do PIX (CRC16/anti-adulteração)  | 507 testes (100% linhas/funcs) |
+| Banco (Vitest+`pg`, node)           | `pnpm test:db`  | regra de pontos, multiplicador, pênalti, idempotência, trava, **desempate**, grants     | 29 testes                      |
+| E2E (Playwright)                    | `pnpm test:e2e` | telas fase a fase, ranking/vencedor, palpitar (dia a dia), navegação, premiação, regras | 84 testes                      |
 
 - **Pré-requisito e2e/banco:** `supabase start` + `pnpm scenario:seed` (cria 5 contas + palpites + resultados + ranking; senha `Senha-Demo-2026!`). Plano do cenário: `docs/superpowers/specs/2026-06-06-validacao-cenarios-todas-fases-design.md`.
 - **Login em dev:** o app só tem Google OAuth (não roda no local) → use o botão **"Logar em dev"** (`/palpites`, só em `NODE_ENV=development`) ou `pnpm scenario:open [email]`.

@@ -18,7 +18,7 @@ _Quanto mais perto da taça, mais cada palpite vale. Dá pra virar o bolão na f
 
 <p align="center">
   <img alt="Cobertura 100%" src="https://img.shields.io/badge/cobertura-100%25_linhas-22c55e?style=flat-square" />
-  <img alt="Testes" src="https://img.shields.io/badge/testes-535_verdes-22c55e?style=flat-square" />
+  <img alt="Testes" src="https://img.shields.io/badge/testes-620_verdes-22c55e?style=flat-square" />
   <img alt="PT-BR" src="https://img.shields.io/badge/UI-PT--BR-009b3a?style=flat-square" />
   <img alt="Licença MIT" src="https://img.shields.io/badge/licença-MIT-green?style=flat-square" />
 </p>
@@ -38,6 +38,7 @@ SPA estática (Next.js, `output: "export"`) que conversa **direto com o Supabase
 - 🏆 **Ranking ao vivo** com desempate justo (placares cravados → resultados certos)
 - 📅 **Home inteligente** — mostra os jogos dos próximos 2 dias com partida
 - 📜 **Histórico** de palpites com os pontos de cada jogo
+- 💰 **Premiação transparente** — pote ao vivo, divisão 50/30/20 e inscrição via PIX (QR + copia e cola)
 - 🛡️ **Área admin** pra lançar resultados (apuração automática no banco)
 - 📱 **Mobile-first** e acessível
 
@@ -92,11 +93,11 @@ pnpm dev:local                 # http://localhost:3000 apontando pro Supabase LO
 
 Três camadas, todas verdes — **100% de linhas e funções**:
 
-| Camada               | Comando         | Cobre                                                    |
-| :------------------- | :-------------- | :------------------------------------------------------- |
-| 🧩 Unit / integração | `pnpm test:run` | componentes, hooks e fetchers (MSW)                      |
-| 🗄️ Banco             | `pnpm test:db`  | regra de pontos, RLS/grants e desempate (Postgres local) |
-| 🎭 E2E               | `pnpm test:e2e` | telas fase a fase, ranking, palpitar (Playwright)        |
+| Camada               | Comando         | Cobre                                                                 | Testes |
+| :------------------- | :-------------- | :-------------------------------------------------------------------- | :----: |
+| 🧩 Unit / integração | `pnpm test:run` | componentes, hooks, fetchers (MSW) e integridade do PIX (CRC16)       |  507   |
+| 🗄️ Banco             | `pnpm test:db`  | regra de pontos, RLS/grants e desempate (Postgres local)              |   29   |
+| 🎭 E2E               | `pnpm test:e2e` | telas fase a fase, ranking, palpitar, premiação e regras (Playwright) |   84   |
 
 ```bash
 pnpm test:coverage   # relatório de cobertura
