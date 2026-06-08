@@ -18,13 +18,6 @@ describe("PremiacaoContent", () => {
     expect(screen.getByText(/30%/)).toBeInTheDocument();
     expect(screen.getByText(/20%/)).toBeInTheDocument();
   });
-  it("mostra o card do campeão (camisa OU dinheiro)", () => {
-    mock.mockReturnValue({ data: undefined, isLoading: false, isError: false } as ReturnType<
-      typeof useContagemInscritos
-    >);
-    render(<PremiacaoContent />);
-    expect(screen.getByText(/camisa oficial/i)).toBeInTheDocument();
-  });
   it("com contagem, mostra o pote e os valores por colocação", () => {
     mock.mockReturnValue({ data: 87, isLoading: false, isError: false } as ReturnType<
       typeof useContagemInscritos

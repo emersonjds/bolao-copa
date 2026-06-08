@@ -1,6 +1,6 @@
 "use client";
 
-import { Trophy, Shirt } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { VALOR_INSCRICAO, DIVISAO_PREMIO } from "@/shared/lib/constants";
 import { dividirPote } from "../lib/calcular-divisao";
 import { useContagemInscritos } from "../api/queries";
@@ -84,20 +84,6 @@ export function PremiacaoContent() {
             </div>
           ))}
         </div>
-      </section>
-
-      <section
-        aria-labelledby="campeao"
-        className="rounded-2xl border border-brand-200 bg-brand-50 p-4"
-      >
-        <h2 id="campeao" className="flex items-center gap-2 text-sm font-semibold text-brand-800">
-          <Shirt className="h-4 w-4 shrink-0" aria-hidden="true" />O campeão escolhe
-        </h2>
-        <p className="mt-1.5 text-xs leading-relaxed text-brand-700">
-          O 1º lugar pode levar uma <span className="font-semibold">camisa oficial</span> da seleção
-          que quiser <span className="font-semibold">mais a diferença em dinheiro</span>, ou receber
-          todo o prêmio em dinheiro. 2º e 3º recebem em dinheiro.
-        </p>
       </section>
 
       <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-3">
