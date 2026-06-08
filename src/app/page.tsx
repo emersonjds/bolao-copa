@@ -11,27 +11,20 @@ export default function DashboardPage() {
       <ProximoJogoDestaque />
 
       <section aria-labelledby="proximos-jogos-titulo">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <h2 id="proximos-jogos-titulo" className="font-display text-lg font-bold text-foreground">
             Próximos jogos
           </h2>
 
           <Link
             href="/calendario"
-            className="hidden text-sm font-medium text-brand-600 underline-offset-2 hover:text-brand-800 hover:underline sm:block"
+            className="shrink-0 text-sm font-medium whitespace-nowrap text-brand-600 underline-offset-2 hover:text-brand-800 hover:underline"
           >
             Ver agenda completa
           </Link>
         </div>
 
         <ProximosJogos />
-
-        <Link
-          href="/calendario"
-          className="mt-4 flex min-h-11 w-full items-center justify-center rounded-xl border border-brand-200 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-50 sm:hidden"
-        >
-          Ver agenda completa da Copa
-        </Link>
       </section>
 
       <DestaqueRodadaCard />

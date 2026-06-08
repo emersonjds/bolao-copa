@@ -23,9 +23,7 @@ test.describe("Home — estado público", () => {
 
   test("oferece atalho para a agenda completa", async ({ page }) => {
     await page.goto("/");
-    const linksAgenda = page.getByRole("link", { name: /Ver agenda completa/ });
-    // Há dois atalhos (um sm+ inline, um mobile abaixo da lista); ao menos um existe.
-    await expect(linksAgenda.first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Ver agenda completa" })).toBeVisible();
   });
 
   test("o atalho da agenda leva para /calendario", async ({ page }) => {
