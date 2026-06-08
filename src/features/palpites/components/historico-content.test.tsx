@@ -18,6 +18,7 @@ const partidaTravada: Partida = {
   fase: "grupos",
   grupo: "A",
   dataHora: "2026-06-01T19:00:00.000Z", // passado — travada
+  janelaInicio: "2020-01-01T03:00:00Z",
   estadio: "Estadio X",
   status: "encerrada",
   mandante: { id: "sel-bra", nome: "Brasil", codigo: "BRA" },

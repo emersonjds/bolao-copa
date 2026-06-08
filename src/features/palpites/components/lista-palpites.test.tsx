@@ -17,6 +17,7 @@ function criarPartida(id: string, dataHora: string): Partida {
     fase: "grupos",
     grupo: "A",
     dataHora,
+    janelaInicio: "2020-01-01T03:00:00Z",
     estadio: "Estadio X",
     status: "agendada",
     mandante: { id: "sel-bra", nome: "Brasil", codigo: "BRA" },

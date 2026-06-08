@@ -20,6 +20,7 @@ function makePartidaIndefinida(): Partida {
     fase: "oitavas",
     grupo: null,
     dataHora: "2026-07-04T19:00:00.000Z",
+    janelaInicio: "2026-07-04T03:00:00Z",
     estadio: "MetLife",
     status: "agendada",
     mandante: { id: "", nome: "1A", codigo: "1A" },

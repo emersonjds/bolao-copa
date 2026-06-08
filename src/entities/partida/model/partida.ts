@@ -22,6 +22,8 @@ export interface Partida {
   grupo: string | null;
   /** ISO 8601 (UTC) do início da partida. */
   dataHora: string;
+  /** ISO 8601 (UTC) da abertura da janela de palpite (meia-noite BRT do dia do jogo). */
+  janelaInicio: string;
   estadio: string;
   status: StatusPartida;
   mandante: Selecao;

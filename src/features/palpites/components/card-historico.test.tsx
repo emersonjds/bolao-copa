@@ -18,6 +18,7 @@ const partida: Partida = {
   fase: "grupos",
   grupo: "A",
   dataHora: "2026-06-11T19:00:00.000Z",
+  janelaInicio: "2020-01-01T03:00:00Z",
   estadio: "Estadio X",
   status: "encerrada",
   mandante: { id: "sel-bra", nome: "Brasil", codigo: "BRA" },

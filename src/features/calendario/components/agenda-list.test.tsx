@@ -10,6 +10,7 @@ function makePartida(overrides: Partial<Partida> = {}): Partida {
     fase: "grupos",
     grupo: "A",
     dataHora: "2026-06-11T16:00:00",
+    janelaInicio: "2026-06-11T03:00:00Z",
     estadio: "Mexico City",
     status: "agendada",
     mandante: { id: "sel-mex", nome: "México", codigo: "MEX" },

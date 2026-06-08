@@ -13,6 +13,7 @@ function partida(over: Partial<Partida> & Pick<Partida, "id" | "dataHora">): Par
   return {
     fase: "grupos",
     grupo: "A",
+    janelaInicio: "2020-01-01T03:00:00Z",
     estadio: "Estádio",
     status: "agendada",
     mandante: selecao("Brasil"),

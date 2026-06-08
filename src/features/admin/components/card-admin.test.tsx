@@ -41,6 +41,7 @@ function makePartida(over: Partial<Partida> = {}): Partida {
     fase: "grupos",
     grupo: "A",
     dataHora: "2026-06-11T19:00:00.000Z",
+    janelaInicio: "2020-01-01T03:00:00Z",
     estadio: "Estádio Azteca",
     status: "agendada",
     mandante: { id: "sel-mex", nome: "México", codigo: "MEX" },

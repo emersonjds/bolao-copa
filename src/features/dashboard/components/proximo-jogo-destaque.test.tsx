@@ -24,6 +24,7 @@ function makePartida(overrides: Partial<Partida> = {}): Partida {
     fase: "grupos",
     grupo: "A",
     dataHora: new Date(Date.now() + 2 * HORA).toISOString(),
+    janelaInicio: "2020-01-01T03:00:00Z",
     estadio: "Mexico City",
     status: "agendada",
     mandante: { id: "sel-mex", nome: "México", codigo: "MEX" },

@@ -16,6 +16,7 @@ describe("listarPartidas (integração Supabase via MSW)", () => {
         fase: "grupos",
         grupo: "A",
         dataHora: "2026-06-11T19:00:00.000Z",
+        janelaInicio: "2026-06-11T03:00:00Z",
         estadio: "Mexico City",
         status: "agendada",
         mandante: { id: "sel-mex", nome: "México", codigo: "MEX" },
@@ -27,6 +28,14 @@ describe("listarPartidas (integração Supabase via MSW)", () => {
         visitanteLabel: null,
       },
     ]);
+  });
+
+  it("expõe janelaInicio mapeado de janela_inicio do banco", async () => {
+    server.use(restList("partidas", [partidaDb]));
+
+    const [partida] = await listarPartidas();
+
+    expect(partida.janelaInicio).toBe("2026-06-11T03:00:00Z");
   });
 
   it("mantém o nome original quando o código FIFA é desconhecido (fallback)", async () => {

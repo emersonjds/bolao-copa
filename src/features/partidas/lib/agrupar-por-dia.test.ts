@@ -8,6 +8,7 @@ function makePartida(id: string, dataHora: string, status: Partida["status"] = "
     fase: "grupos",
     grupo: "A",
     dataHora,
+    janelaInicio: "2020-01-01T03:00:00Z",
     estadio: "Estádio",
     status,
     mandante: { id: "m", nome: "Mandante", codigo: "MAN" },

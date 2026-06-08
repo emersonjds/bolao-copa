@@ -13,6 +13,7 @@ export const partidaDb = {
   fase: "grupos",
   grupo: "A",
   data_hora: "2026-06-11T19:00:00.000Z",
+  janela_inicio: "2026-06-11T03:00:00Z",
   estadio: "Mexico City",
   status: "agendada",
   mandante_id: "sel-mex",

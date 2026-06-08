@@ -13,6 +13,7 @@ interface PartidaDb {
   fase: string;
   grupo: string | null;
   data_hora: string;
+  janela_inicio: string;
   estadio: string;
   status: string;
   mandante_id: string | null;
@@ -54,6 +55,7 @@ function mapPartida(db: PartidaDb): Partida {
     fase: db.fase as FaseCopa,
     grupo: db.grupo,
     dataHora: db.data_hora,
+    janelaInicio: db.janela_inicio,
     estadio: db.estadio,
     status: db.status as StatusPartida,
     mandante: mapSelecao(db.mandante, db.mandante_label),
@@ -84,6 +86,7 @@ export async function listarPartidas(): Promise<Partida[]> {
       fase,
       grupo,
       data_hora,
+      janela_inicio,
       estadio,
       status,
       mandante_id,

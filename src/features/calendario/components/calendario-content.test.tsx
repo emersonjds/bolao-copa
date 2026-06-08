@@ -44,6 +44,7 @@ function makePartidaHoje(): Partida {
     fase: "grupos",
     grupo: "A",
     dataHora: `${dataHojeLocal()}T12:00:00`,
+    janelaInicio: "2020-01-01T03:00:00Z",
     estadio: "Mexico City",
     status: "agendada",
     mandante: { id: "sel-mex", nome: "México", codigo: "MEX" },
