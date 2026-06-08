@@ -235,6 +235,27 @@ describe("segurança — grants de profiles (anti-escalonamento de admin)", () =
       db.query("update public.profiles set nome = 'x' where id = $1", [userIdTeste])
     ).resolves.toBeDefined();
   });
+
+  it("authenticated NÃO pode LER a coluna is_admin", async () => {
+    await db.query("set role authenticated");
+    await expect(db.query("select is_admin from public.profiles limit 1")).rejects.toThrow(
+      /permission denied/i
+    );
+  });
+
+  it("eh_admin() reflete o is_admin do participante", async () => {
+    await db.query("update public.profiles set is_admin = true where id = $1", [userIdTeste]);
+    const admin = await db.query<{ ok: boolean }>("select public.eh_admin($1) as ok", [userIdTeste]);
+    expect(admin.rows[0].ok).toBe(true);
+
+    const sel = await db.query("select id from public.profiles where id <> $1 limit 1", [
+      userIdTeste,
+    ]);
+    const outro = await db.query<{ ok: boolean }>("select public.eh_admin($1) as ok", [
+      sel.rows[0].id,
+    ]);
+    expect(outro.rows[0].ok).toBe(false);
+  });
 });
 
 describe("get_ranking — desempate", () => {

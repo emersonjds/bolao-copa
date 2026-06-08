@@ -4,12 +4,11 @@ import type { ReactNode } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import type { User } from "@supabase/supabase-js";
 import { server } from "@/test/msw/server";
-import { restSingle, restError } from "@/test/msw/handlers";
+import { rpc, rpcError } from "@/test/msw/handlers";
 import { createTestQueryClient, fakeUser } from "@/test/render";
 
-// useIsAdmin lê o usuário via useSupabaseUser (Supabase direto) e busca o
-// perfil via getSupabaseBrowserClient (real → interceptado pelo MSW). Por isso
-// mockamos só useSupabaseUser, preservando o resto do módulo.
+// useIsAdmin lê o usuário via useSupabaseUser e chama a RPC eh_admin (real →
+// interceptada pelo MSW). Mockamos só useSupabaseUser, preservando o resto.
 const { useSupabaseUser } = vi.hoisted(() => ({ useSupabaseUser: vi.fn<() => User | null>() }));
 vi.mock("@/shared/lib/supabase", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/shared/lib/supabase")>();
@@ -31,35 +30,26 @@ describe("useIsAdmin", () => {
     useSupabaseUser.mockReset();
   });
 
-  it("retorna true quando o perfil tem is_admin = true", async () => {
+  it("retorna true quando eh_admin retorna true", async () => {
     useSupabaseUser.mockReturnValue(fakeUser());
-    server.use(restSingle("profiles", { is_admin: true }));
+    server.use(rpc("eh_admin", true));
 
     const { result } = renderUseIsAdmin();
     await waitFor(() => expect(result.current).toBe(true));
   });
 
-  it("retorna false quando is_admin = false", async () => {
+  it("retorna false quando eh_admin retorna false", async () => {
     useSupabaseUser.mockReturnValue(fakeUser());
-    server.use(restSingle("profiles", { is_admin: false }));
+    server.use(rpc("eh_admin", false));
 
     const { result } = renderUseIsAdmin();
-    // Resolve a query e garante que continua false.
     await waitFor(() => expect(result.current).toBe(false));
     expect(result.current).toBe(false);
   });
 
-  it("retorna false quando is_admin = null", async () => {
+  it("retorna false quando a RPC falha", async () => {
     useSupabaseUser.mockReturnValue(fakeUser());
-    server.use(restSingle("profiles", { is_admin: null }));
-
-    const { result } = renderUseIsAdmin();
-    await waitFor(() => expect(result.current).toBe(false));
-  });
-
-  it("retorna false quando a busca do perfil falha", async () => {
-    useSupabaseUser.mockReturnValue(fakeUser());
-    server.use(restError("profiles", { status: 403, code: "42501", message: "permission denied" }));
+    server.use(rpcError("eh_admin", { status: 403, message: "permission denied" }));
 
     const { result } = renderUseIsAdmin();
     await waitFor(() => expect(result.current).toBe(false));
