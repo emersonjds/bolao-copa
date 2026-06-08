@@ -13,7 +13,7 @@ Bolão de palpites da Copa do Mundo FIFA 2026 para grupos de amigos. SPA estáti
 
 `app → widgets → features → entities → shared` (só importa de camadas abaixo, nunca lateral).
 
-- `app/` rotas/layout · `features/` casos de uso (palpites, ranking, calendario, partidas, admin, auth, dashboard)
+- `app/` rotas/layout · `features/` casos de uso (palpites, ranking, calendario, partidas, premiacao, admin, auth, dashboard)
 - `entities/` modelos de domínio · `shared/` infra (ui, lib, supabase client, hooks).
 - Dados do banco vêm em snake_case PT-BR; os **fetchers** (`*/api/*-fetcher.ts`) mapeiam para o modelo camelCase.
 
@@ -48,11 +48,11 @@ Funções-chave: `apurar_pontos()` (trigger ao encerrar partida), `peso_fase()`,
 
 ## 6. Testes (3 camadas — todas verdes)
 
-| Camada                              | Comando         | O que cobre                                                                         | Estado             |
-| ----------------------------------- | --------------- | ----------------------------------------------------------------------------------- | ------------------ |
-| Unit/integração (Vitest+MSW, jsdom) | `pnpm test:run` | componentes/hooks/fetchers (mocks)                                                  | ~411 testes (~99%) |
-| Banco (Vitest+`pg`, node)           | `pnpm test:db`  | regra de pontos, multiplicador, pênalti, idempotência, trava, **desempate**, grants | 20 testes          |
-| E2E (Playwright)                    | `pnpm test:e2e` | telas fase a fase, ranking/vencedor, palpitar, navegação                            | 72 testes          |
+| Camada                              | Comando         | O que cobre                                                                            | Estado             |
+| ----------------------------------- | --------------- | -------------------------------------------------------------------------------------- | ------------------ |
+| Unit/integração (Vitest+MSW, jsdom) | `pnpm test:run` | componentes/hooks/fetchers (mocks); inclui integridade do PIX (CRC16/anti-adulteração) | ~502 testes (~99%) |
+| Banco (Vitest+`pg`, node)           | `pnpm test:db`  | regra de pontos, multiplicador, pênalti, idempotência, trava, **desempate**, grants    | 29 testes          |
+| E2E (Playwright)                    | `pnpm test:e2e` | telas fase a fase, ranking/vencedor, palpitar (dia a dia), navegação                   | 72 testes          |
 
 - **Pré-requisito e2e/banco:** `supabase start` + `pnpm scenario:seed` (cria 5 contas + palpites + resultados + ranking; senha `Senha-Demo-2026!`). Plano do cenário: `docs/superpowers/specs/2026-06-06-validacao-cenarios-todas-fases-design.md`.
 - **Login em dev:** o app só tem Google OAuth (não roda no local) → use o botão **"Logar em dev"** (`/palpites`, só em `NODE_ENV=development`) ou `pnpm scenario:open [email]`.
@@ -61,6 +61,8 @@ Funções-chave: `apurar_pontos()` (trigger ao encerrar partida), `peso_fase()`,
 ## 7. Segurança
 
 Ver `docs/audits/security-review.md`. C-1 (crítico, auto-promoção a admin) corrigido na 0016 + headers em `public/_headers`. `service_role` nunca vai pro frontend; proteção real = RLS.
+
+- **Integridade do PIX da inscrição:** o destino do pagamento mora numa constante canônica (`src/shared/lib/pix-inscricao.ts`); o QR (`qrcode.react`) e o "copia e cola" derivam do mesmo `brCode`. `verificarCrcPix()` recalcula o CRC16 — adulterar chave/recebedor sem recomputar o checksum quebra o teste. CSP endurecida (sem `data:` em `img-src`, `object-src 'none'`, COOP/CORP) + `--frozen-lockfile` no Netlify (anti supply-chain).
 
 ## 8. Performance
 
@@ -78,9 +80,11 @@ Feitos: home só próximos jogos, `getSession` local (sem round-trip), paginaç�
 - ✅ Pontuação com multiplicador por fase + desempate (em prod via `db push`).
 - ✅ Segurança: C-1/A-1/A-2/A-3/M-1/M-2 corrigidos (migrations 0016/0018 + headers).
 - ✅ Performance: quick-wins + alto impacto aplicados.
-- ✅ **Cobertura**: 100% de linhas e funções (442+ testes; ~3% de branches são fallbacks defensivos inalcançáveis, documentados).
+- ✅ **Cobertura**: 100% de linhas e funções (500+ testes; ~3% de branches são fallbacks defensivos inalcançáveis, documentados).
 - ✅ Home "jogos por dia" — agrupa os 2 próximos dias com jogo (spec `docs/design/home-jogos-por-dia.md`).
+- ✅ **Premiação — pagamento da inscrição (PIX):** bloco em `/premiacao` com QR + copia e cola + prazo (10/06/2026) e envio de comprovante. Pote conta cada participante que logou (1 login = 1). Integridade do payload em §7.
 - ✅ Comentários: limpos (só o "porquê" não-óbvio).
 - ⏳ B-1 (convite uso único) e M-3 (filtro por `bolao_id`): adiados — só relevantes quando houver fluxo de convite / múltiplos bolões. Habilitar **PITR** em prod (ação no painel).
 - ⏳ Refactor de identificadores p/ inglês: **descartado** (baixo valor / alto custo; UI e domínio seguem PT-BR).
-- ⚠️ Migrations novas (0015–0018) precisam de `supabase db push` quando ainda não aplicadas em prod (0015–0017 já foram; 0018 pendente).
+- ⏳ **PIX:** `brCode` atual é um estático válido gerado pela chave do recebedor; substituir pelo "copia e cola" oficial do banco quando disponível (os testes validam igual).
+- ⚠️ Migrations precisam de `supabase db push` quando ainda não aplicadas em prod (0015–0017 e 0019 já foram; confirmar 0018).
