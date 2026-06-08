@@ -12,6 +12,7 @@
  * Uso: pnpm scenario:seed   (lê .env.test, nunca prod)
  */
 import { createClient } from "@supabase/supabase-js";
+import { Client } from "pg";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -28,6 +29,12 @@ const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const PASSWORD = process.env.E2E_TEST_PASSWORD ?? "Senha-Demo-2026!";
 const BOLAO = "00000000-0000-0000-0000-000000000b01";
+// Conexão direta ao Postgres local (porta 54322 é o padrão da CLI do Supabase).
+// Usada exclusivamente no passo de inserção de palpites, onde desabilitamos
+// temporariamente os triggers via session_replication_role para que o seed possa
+// inserir palpites em jogos cujas janelas ainda não abriram (futuro).
+const DB_URL =
+  process.env.DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
 // Quantos jogos de grupos deixar ABERTOS (sem placar) pra dar pra palpitar.
 const GRUPOS_ABERTOS = 9;
 
@@ -103,6 +110,17 @@ async function ensureUser(email: string, nome: string): Promise<string> {
 }
 
 async function main() {
+  const pgClient = new Client({ connectionString: DB_URL });
+  await pgClient.connect();
+
+  try {
+    await run(pgClient);
+  } finally {
+    await pgClient.end();
+  }
+}
+
+async function run(pgClient: Client) {
   console.log("→ garantindo contas de teste…");
   const participantes: { nome: string; participanteId: string }[] = [];
   for (const c of CONTAS) {
@@ -167,10 +185,31 @@ async function main() {
       };
     })
   );
-  // insere em lotes pra não estourar payload
-  for (let i = 0; i < rows.length; i += 500) {
-    const { error } = await admin.from("palpites").insert(rows.slice(i, i + 500));
-    if (error) throw new Error(`Falha ao inserir palpites: ${error.message}`);
+
+  // Insere palpites via conexão pg direta com triggers desabilitados para a
+  // sessão. Necessário porque a janela de palpites (0019) bloqueia inserts antes
+  // da meia-noite BRT do dia do jogo: jogos futuros da Copa ainda não têm a
+  // janela aberta no momento do seed. A desabilitação é cirúrgica: só cobre
+  // esta sessão, só este bloco, e é sempre revertida no finally. Não toca na
+  // conexão supabase-js usada nas outras etapas — o trigger trg_apurar_pontos
+  // (AFTER UPDATE em partidas, etapa seguinte) não é afetado.
+  await pgClient.query("SET session_replication_role = replica");
+  try {
+    for (let i = 0; i < rows.length; i += 500) {
+      const batch = rows.slice(i, i + 500);
+      await pgClient.query(
+        `INSERT INTO palpites (participante_id, partida_id, gols_mandante, gols_visitante)
+         SELECT * FROM unnest($1::uuid[], $2::uuid[], $3::int[], $4::int[])`,
+        [
+          batch.map((r) => r.participante_id),
+          batch.map((r) => r.partida_id),
+          batch.map((r) => r.gols_mandante),
+          batch.map((r) => r.gols_visitante),
+        ]
+      );
+    }
+  } finally {
+    await pgClient.query("SET session_replication_role = DEFAULT");
   }
 
   console.log(`→ encerrando ${fechados.length} jogos com placar (dispara a apuração)…`);
