@@ -7,10 +7,15 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
   # CSP: 'unsafe-inline' em script/style é necessário no static export do Next
   # (sem servidor não há nonce). connect-src libera Supabase (REST + Realtime);
-  # img-src libera bandeiras (flagcdn) e avatares do Google.
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://flagcdn.com https://lh3.googleusercontent.com; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  # img-src libera bandeiras (flagcdn) e avatares do Google. Sem `data:` em
+  # img-src: o QR do PIX é SVG inline (qrcode.react), não data-URI — remover
+  # fecha a janela de trocar a imagem por um data-URI via XSS. object-src 'none'
+  # bloqueia plugins; upgrade-insecure-requests reforça HTTPS-only.
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://flagcdn.com https://lh3.googleusercontent.com; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
 
 # HTML: cache curto + revalidação em segundo plano (conteúdo pode mudar a cada deploy).
 /*.html
