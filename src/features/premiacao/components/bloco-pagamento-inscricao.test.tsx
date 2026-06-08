@@ -30,15 +30,22 @@ describe("BlocoPagamentoInscricao", () => {
   it("mostra recebedor, chave e o prazo de pagamento", () => {
     render(<BlocoPagamentoInscricao />);
     expect(screen.getByText(PIX_INSCRICAO.recebedor)).toBeInTheDocument();
-    // A chave aparece tanto no bloco de dados quanto na nota do comprovante.
+    // A chave e o prazo aparecem em mais de um parágrafo do bloco.
     expect(screen.getAllByText(PIX_INSCRICAO.chaveFormatada).length).toBeGreaterThan(0);
-    expect(screen.getByText(new RegExp(PIX_INSCRICAO.prazo))).toBeInTheDocument();
+    expect(screen.getAllByText(new RegExp(PIX_INSCRICAO.prazo)).length).toBeGreaterThan(0);
   });
 
   it("orienta enviar o comprovante para o contato do organizador", () => {
     render(<BlocoPagamentoInscricao />);
-    expect(screen.getByText(/comprovante/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/comprovante/i).length).toBeGreaterThan(0);
     expect(screen.getByText(PIX_INSCRICAO.contatoComprovanteFormatado)).toBeInTheDocument();
+  });
+
+  it("avisa que não pagantes são removidos do bolão na data do bate-confere", () => {
+    render(<BlocoPagamentoInscricao />);
+    // "removido do bolão" está num <span> destacado dentro do parágrafo.
+    expect(screen.getAllByText(/removido do bolão/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/não participa/i)).toBeInTheDocument();
   });
 
   it("o campo copia e cola contém o BR Code exato", () => {

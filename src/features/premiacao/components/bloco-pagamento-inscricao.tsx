@@ -111,6 +111,13 @@ export function BlocoPagamentoInscricao() {
         Gustavo (<span className="font-semibold">{PIX_INSCRICAO.chaveFormatada}</span>) — assim
         confirmamos seu pagamento mais rápido.
       </p>
+
+      <p className="mt-2 rounded-xl border border-gold-400/40 bg-gold-400/10 p-3 text-xs leading-relaxed text-foreground">
+        <span className="font-semibold">Atenção:</span> em {PIX_INSCRICAO.prazo} conferimos os
+        pagamentos. Quem <span className="font-semibold">não enviar o comprovante</span> ao
+        recebedor até lá é <span className="font-semibold">removido do bolão</span> e não participa
+        — só fica quem comprovou o pagamento.
+      </p>
     </section>
   );
 }
