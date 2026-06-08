@@ -18,7 +18,7 @@ _Quanto mais perto da taça, mais cada palpite vale. Dá pra virar o bolão na f
 
 <p align="center">
   <img alt="Cobertura 100%" src="https://img.shields.io/badge/cobertura-100%25_linhas-22c55e?style=flat-square" />
-  <img alt="Testes" src="https://img.shields.io/badge/testes-620_verdes-22c55e?style=flat-square" />
+  <img alt="Testes" src="https://img.shields.io/badge/testes-620_passando-22c55e?style=flat-square" />
   <img alt="PT-BR" src="https://img.shields.io/badge/UI-PT--BR-009b3a?style=flat-square" />
   <img alt="Licença MIT" src="https://img.shields.io/badge/licença-MIT-green?style=flat-square" />
 </p>
