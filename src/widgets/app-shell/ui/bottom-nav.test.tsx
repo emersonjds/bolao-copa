@@ -17,21 +17,27 @@ describe("BottomNav", () => {
     useIsAdmin.mockReturnValue(false);
   });
 
-  it("renderiza as quatro abas base", () => {
+  it("renderiza as abas base", () => {
     render(<BottomNav />);
     expect(screen.getByRole("link", { name: /início/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /palpites/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /ranking/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /premiação/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /regras/i })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /admin/i })).not.toBeInTheDocument();
-    expect(screen.getAllByRole("link")).toHaveLength(4);
+    expect(screen.getAllByRole("link")).toHaveLength(5);
+  });
+
+  it("mostra o item Premiação apontando para /premiacao", () => {
+    render(<BottomNav />);
+    expect(screen.getByRole("link", { name: /premiação/i })).toHaveAttribute("href", "/premiacao");
   });
 
   it("exibe a aba Admin quando o usuário é admin", () => {
     useIsAdmin.mockReturnValue(true);
     render(<BottomNav />);
     expect(screen.getByRole("link", { name: /admin/i })).toBeInTheDocument();
-    expect(screen.getAllByRole("link")).toHaveLength(5);
+    expect(screen.getAllByRole("link")).toHaveLength(6);
   });
 
   it("marca a aba Início como ativa na raiz", () => {
