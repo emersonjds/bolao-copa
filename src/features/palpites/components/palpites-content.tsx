@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Target } from "lucide-react";
 import { toast } from "sonner";
 import { usePartidas } from "@/features/partidas";
+import { useSupabaseUser } from "@/shared/lib/supabase";
 import { useMeusPalpites, useSalvarPalpite } from "../api/queries";
 import { traduzirErroSalvar } from "../lib/traduzir-erro-salvar";
-import type { FaseCopa, Partida } from "@/entities/partida";
+import { estadoPalpite, filtrarHojeEProximoDia } from "../lib/estado-palpite";
+import { lerRascunho, salvarRascunho, limparRascunho } from "../lib/rascunho-local";
+import { useRefetchNaBorda } from "../api/use-refetch-na-borda";
+import type { FaseCopa } from "@/entities/partida";
 import { FiltroFase } from "./filtro-fase";
 import { ListaPalpites } from "./lista-palpites";
 import { BotaoSalvar } from "./botao-salvar";
@@ -23,11 +27,6 @@ const ORDEM_FASES: FaseCopa[] = [
   "terceiro-lugar",
   "final",
 ];
-
-/** Regra de trava (client-side): agendada E ainda no futuro → pode editar. */
-function estaEmJogo(partida: Partida): boolean {
-  return partida.status !== "agendada" || new Date(partida.dataHora) <= new Date();
-}
 
 /**
  * Conteúdo principal da tela de palpites (renderizado apenas quando autenticado).
@@ -47,6 +46,16 @@ export function PalpitesContent() {
   const [placaresLocais, setPlacaresLocais] = useState<Record<string, PlacarLocal>>({});
   const [isSaving, setIsSaving] = useState(false);
 
+  const userId = useSupabaseUser()?.id ?? null;
+  // Instante de referência reativo: a borda (meia-noite / apito) atualiza este
+  // estado, fazendo a derivação de estados dos jogos reagir sem polling.
+  const [agora, setAgora] = useState<number>(() => Date.now());
+  const onBorda = useCallback(() => {
+    setAgora(Date.now());
+    void refetch();
+  }, [refetch]);
+  useRefetchNaBorda(partidas ?? [], onBorda);
+
   const isLoading = isLoadingPartidas || isPendingPalpites;
 
   // "Fase de Grupos" sempre visível; outras apenas se houver partidas nelas
@@ -54,10 +63,28 @@ export function PalpitesContent() {
     (fase) => fase === "grupos" || (partidas ?? []).some((p) => p.fase === fase)
   );
 
-  // Aba "Palpitar": só jogos abertos (editáveis). Os travados moram no Histórico.
-  const partidasFiltradas = (partidas ?? []).filter(
-    (p) => p.fase === faseSelecionada && !estaEmJogo(p)
+  // Aba "Palpitar": jogos liberados hoje + o próximo dia (mecânica dia a dia).
+  const partidasFiltradas = filtrarHojeEProximoDia(
+    (partidas ?? []).filter((p) => p.fase === faseSelecionada),
+    agora
   );
+
+  // Hidrata rascunhos locais dos jogos futuros visíveis (uma vez por partidas/user).
+  useEffect(() => {
+    if (!userId) return;
+    const futuras = (partidas ?? []).filter((p) => estadoPalpite(p, agora) === "futuro");
+    if (futuras.length === 0) return;
+    setPlacaresLocais((prev) => {
+      const next = { ...prev };
+      for (const partida of futuras) {
+        if (next[partida.id]) continue;
+        const rascunho = lerRascunho(userId, partida.id);
+        if (rascunho) next[partida.id] = rascunho;
+      }
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, partidas]);
 
   /**
    * Um palpite é "pendente" quando placarLocal existe, ambos os campos estão
@@ -76,29 +103,42 @@ export function PalpitesContent() {
     );
   }
 
-  // Verifica pendências em TODAS as fases para não perder alterações ao trocar tab
-  const hasPendingChanges = (partidas ?? []).some((p) => !estaEmJogo(p) && ehPendente(p.id));
+  // Só os jogos liberados (de hoje) contam como pendência salvável.
+  const hasPendingChanges = (partidas ?? []).some(
+    (p) => estadoPalpite(p, agora) === "liberado" && ehPendente(p.id)
+  );
 
   function handleChangePlacar(
     partidaId: string,
     campo: "mandante" | "visitante",
     valor: string
   ): void {
+    let valorNormalizado: string;
+    if (valor === "") {
+      valorNormalizado = "";
+    } else {
+      const num = parseInt(valor, 10);
+      valorNormalizado = isNaN(num) ? "" : String(Math.min(20, Math.max(0, num)));
+    }
+
+    let atualizado: PlacarLocal = { mandante: "", visitante: "" };
     setPlacaresLocais((prev) => {
-      let valorNormalizado: string;
-      if (valor === "") {
-        valorNormalizado = "";
-      } else {
-        const num = parseInt(valor, 10);
-        valorNormalizado = isNaN(num) ? "" : String(Math.min(20, Math.max(0, num)));
-      }
       const anterior = prev[partidaId] ?? { mandante: "", visitante: "" };
-      return { ...prev, [partidaId]: { ...anterior, [campo]: valorNormalizado } };
+      atualizado = { ...anterior, [campo]: valorNormalizado };
+      return { ...prev, [partidaId]: atualizado };
     });
+
+    // Jogos futuros: persiste o rascunho no localStorage para sobreviver a reloads.
+    const partida = (partidas ?? []).find((p) => p.id === partidaId);
+    if (userId && partida && estadoPalpite(partida, agora) === "futuro") {
+      salvarRascunho(userId, partidaId, atualizado);
+    }
   }
 
   async function handleSalvar(): Promise<void> {
-    const pendentes = (partidas ?? []).filter((p) => !estaEmJogo(p) && ehPendente(p.id));
+    const pendentes = (partidas ?? []).filter(
+      (p) => estadoPalpite(p, agora) === "liberado" && ehPendente(p.id)
+    );
 
     if (pendentes.length === 0) return;
 
@@ -127,7 +167,12 @@ export function PalpitesContent() {
         return next;
       });
 
-      toast.success("Palpites salvos!", { id: toastId });
+      // Limpa qualquer rascunho local das partidas já gravadas no servidor.
+      for (const p of pendentes) {
+        if (userId) limparRascunho(userId, p.id);
+      }
+
+      toast.success("Palpites de hoje salvos!", { id: toastId });
     } catch (err) {
       const bruto = err instanceof Error ? err.message : "";
       const { tipo, texto } = traduzirErroSalvar(bruto);
@@ -199,7 +244,7 @@ export function PalpitesContent() {
           />
 
           <ListaPalpites
-            agora={Date.now()}
+            agora={agora}
             partidas={partidasFiltradas}
             meusPalpites={meusPalpites ?? []}
             placaresLocais={placaresLocais}

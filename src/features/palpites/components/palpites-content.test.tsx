@@ -71,6 +71,35 @@ const palpiteSalvo: Palpite = {
   pontos: null,
 };
 
+const HORA = 60 * 60 * 1000;
+
+/** Cria uma partida de grupos agendada com janela/horário relativos a `agora`. */
+function fazerPartida(
+  id: string,
+  mandante: string,
+  visitante: string,
+  janelaOffsetMs: number,
+  dataHoraOffsetMs: number,
+  agora: number
+): Partida {
+  return {
+    id,
+    fase: "grupos",
+    grupo: "A",
+    dataHora: new Date(agora + dataHoraOffsetMs).toISOString(),
+    janelaInicio: new Date(agora + janelaOffsetMs).toISOString(),
+    estadio: "Estadio X",
+    status: "agendada",
+    mandante: { id: `${id}-m`, nome: mandante, codigo: mandante.slice(0, 3).toUpperCase() },
+    visitante: { id: `${id}-v`, nome: visitante, codigo: visitante.slice(0, 3).toUpperCase() },
+    golsMandante: null,
+    golsVisitante: null,
+    vencedorPenaltis: null,
+    mandanteLabel: null,
+    visitanteLabel: null,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Helpers de mock
 // ---------------------------------------------------------------------------
@@ -284,7 +313,7 @@ describe("PalpitesContent", () => {
       });
     });
 
-    expect(toast.success).toHaveBeenCalledWith("Palpites salvos!", {
+    expect(toast.success).toHaveBeenCalledWith("Palpites de hoje salvos!", {
       id: "mock-toast-id",
     });
   });
@@ -456,5 +485,62 @@ describe("PalpitesContent", () => {
 
     // Sem pendências e sem salvamento em curso → BotaoSalvar não renderiza.
     expect(screen.queryByRole("button", { name: /salvar palpites/i })).not.toBeInTheDocument();
+  });
+
+  // ── Mecânica dia a dia: filtro hoje + amanhã ──────────────────────────────
+
+  it("mostra jogos de hoje e de amanhã, mas não de depois de amanhã", () => {
+    const agora = Date.now();
+    // HOJE/liberado: janela no passado, jogo ~1h no futuro
+    const hoje = fazerPartida("p-hoje", "Brasil", "Argentina", -2 * HORA, 1 * HORA, agora);
+    // AMANHÃ/futuro: janela em ~24h, jogo em ~25h
+    const amanha = fazerPartida("p-amanha", "França", "Alemanha", 24 * HORA, 25 * HORA, agora);
+    // DEPOIS/futuro: janela em ~48h, jogo em ~49h
+    const depois = fazerPartida("p-depois", "Japão", "Coreia", 48 * HORA, 49 * HORA, agora);
+
+    mockPartidasOk([hoje, amanha, depois]);
+    mockPalpitesOk();
+    mockSalvarOk();
+
+    render(<PalpitesContent />);
+
+    // Hoje e amanhã têm inputs editáveis renderizados
+    expect(screen.getByRole("spinbutton", { name: /gols do brasil/i })).toBeInTheDocument();
+    expect(screen.getByRole("spinbutton", { name: /gols do frança/i })).toBeInTheDocument();
+    // Depois de amanhã não entra na lista
+    expect(screen.queryByRole("spinbutton", { name: /gols do japão/i })).not.toBeInTheDocument();
+  });
+
+  // ── Mecânica dia a dia: salvar só envia os jogos de hoje ───────────────────
+
+  it("ao salvar, só envia os jogos de hoje (não os futuros)", async () => {
+    const user = userEvent.setup();
+    const agora = Date.now();
+    const hoje = fazerPartida("p-hoje", "Brasil", "Argentina", -2 * HORA, 1 * HORA, agora);
+    const amanha = fazerPartida("p-amanha", "França", "Alemanha", 24 * HORA, 25 * HORA, agora);
+
+    mockPartidasOk([hoje, amanha]);
+    mockPalpitesOk();
+    const { mutateAsync } = mockSalvarOk();
+
+    render(<PalpitesContent />);
+
+    // Preenche o jogo de hoje
+    await user.type(screen.getByRole("spinbutton", { name: /gols do brasil/i }), "2");
+    await user.type(screen.getByRole("spinbutton", { name: /gols do argentina/i }), "1");
+    // Preenche o jogo de amanhã (rascunho — não deve ser enviado)
+    await user.type(screen.getByRole("spinbutton", { name: /gols do frança/i }), "3");
+    await user.type(screen.getByRole("spinbutton", { name: /gols do alemanha/i }), "3");
+
+    await user.click(screen.getByRole("button", { name: /salvar palpites de hoje/i }));
+
+    await waitFor(() => {
+      expect(mutateAsync).toHaveBeenCalledTimes(1);
+    });
+    expect(mutateAsync).toHaveBeenCalledWith({
+      partidaId: "p-hoje",
+      golsMandante: 2,
+      golsVisitante: 1,
+    });
   });
 });
