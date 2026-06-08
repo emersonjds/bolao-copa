@@ -117,6 +117,29 @@ const MULTIPLICADORES: MultiplicadorFase[] = [
   },
 ];
 
+interface PesoFase {
+  rotulo: string;
+  multiplicador: number;
+}
+
+interface AcertoBase {
+  rotulo: string;
+  base: number;
+}
+
+const PESOS_FASE: PesoFase[] = [
+  { rotulo: "Grupos · 32-avos · 3º lugar", multiplicador: 1 },
+  { rotulo: "Oitavas · Quartas", multiplicador: 2 },
+  { rotulo: "Semifinal · Final", multiplicador: 3 },
+];
+
+const ACERTOS_BASE: AcertoBase[] = [
+  { rotulo: "Cravou a vitória", base: 5 },
+  { rotulo: "Cravou o empate", base: 4 },
+  { rotulo: "Acertou o vencedor", base: 3 },
+  { rotulo: "Acertou o empate", base: 2 },
+];
+
 function getPalpiteBadgeClasses(pontos: number): string {
   if (pontos >= 3) return "bg-brand-800 text-gold-400";
   if (pontos > 0) return "bg-brand-600 text-white";
@@ -205,6 +228,69 @@ export default function RegrasPage() {
         <p className="mt-2 text-xs text-muted-foreground">
           O 3º lugar conta como fase inicial (×1). O multiplicador vale para todas as faixas de
           pontos da partida (placar cravado, vencedor certo e empate certo).
+        </p>
+      </section>
+
+      <section aria-labelledby="titulo-pontos-fase">
+        <h2
+          id="titulo-pontos-fase"
+          className="mb-1 font-display text-base font-bold text-foreground"
+        >
+          Pontos por fase
+        </h2>
+        <p className="mb-3 text-xs text-muted-foreground">
+          Tabela completa: quanto cada acerto vale em cada fase, já com o peso aplicado.
+        </p>
+        <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
+          <table className="w-full border-collapse text-center text-xs">
+            <caption className="sr-only">Pontos por tipo de acerto em cada fase do torneio</caption>
+            <thead>
+              <tr className="border-b border-border bg-brand-50">
+                <th scope="col" className="px-3 py-2 text-left font-semibold text-foreground">
+                  Seu acerto
+                </th>
+                {PESOS_FASE.map((fase) => (
+                  <th
+                    key={fase.multiplicador}
+                    scope="col"
+                    className="px-2 py-2 font-semibold text-foreground"
+                  >
+                    <span className="block">{fase.rotulo}</span>
+                    <span className="font-mono text-[10px] text-brand-700">
+                      ×{fase.multiplicador}
+                    </span>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {ACERTOS_BASE.map((acerto) => (
+                <tr key={acerto.base} className="border-b border-border last:border-0">
+                  <th
+                    scope="row"
+                    className="px-3 py-2 text-left text-xs font-medium whitespace-nowrap text-foreground"
+                  >
+                    {acerto.rotulo}
+                    <span className="ml-1 font-mono text-[10px] text-muted-foreground">
+                      ({acerto.base} base)
+                    </span>
+                  </th>
+                  {PESOS_FASE.map((fase) => (
+                    <td
+                      key={fase.multiplicador}
+                      className="px-2 py-2 font-mono text-sm font-bold text-brand-800"
+                    >
+                      {acerto.base * fase.multiplicador}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Errar o resultado é sempre <span className="font-semibold">0</span>, em qualquer fase.
+          Pênaltis não contam — vale o placar dos 90 minutos.
         </p>
       </section>
 
