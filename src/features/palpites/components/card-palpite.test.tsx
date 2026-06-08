@@ -346,6 +346,7 @@ describe("CardPalpite — futuro", () => {
       />
     );
     expect(screen.getByText(/libera amanhã/i)).toBeInTheDocument();
+    expect(screen.getByText(/você pode preparar seu palpite aqui/i)).toBeInTheDocument();
     expect(screen.getAllByLabelText(/Gols do/i)[0]).not.toBeDisabled();
   });
 

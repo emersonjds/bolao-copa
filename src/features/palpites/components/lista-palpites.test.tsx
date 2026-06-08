@@ -31,6 +31,7 @@ function criarPartida(id: string, dataHora: string): Partida {
 }
 
 const defaultProps = {
+  agora: Date.now(),
   meusPalpites: [],
   placaresLocais: {},
   onChangePlacar: vi.fn(),
@@ -76,5 +77,17 @@ describe("ListaPalpites", () => {
 
     expect(screen.getByText(/rodada 1/i)).toBeInTheDocument();
     expect(screen.getByText(/rodada 2/i)).toBeInTheDocument();
+  });
+
+  it("exibe badge 'Libera amanhã' quando a janela de palpite ainda não abriu", () => {
+    const futura: Partida = {
+      ...criarPartida("part-fut", "2099-07-10T19:00:00.000Z"),
+      status: "agendada",
+      janelaInicio: "2099-07-09T03:00:00Z",
+    };
+
+    render(<ListaPalpites {...defaultProps} agora={Date.now()} partidas={[futura]} />);
+
+    expect(screen.getByText(/libera amanhã/i)).toBeInTheDocument();
   });
 });

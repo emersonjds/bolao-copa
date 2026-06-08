@@ -7,6 +7,7 @@ import type { PlacarLocal } from "./card-palpite";
 import { estadoPalpite } from "../lib/estado-palpite";
 
 interface ListaPalpitesProps {
+  agora: number;
   partidas: Partida[];
   meusPalpites: Palpite[];
   placaresLocais: Record<string, PlacarLocal>;
@@ -36,6 +37,7 @@ function formatarCabecalho(dataStr: string, rodada: number): string {
 }
 
 export function ListaPalpites({
+  agora,
   partidas,
   meusPalpites,
   placaresLocais,
@@ -83,7 +85,7 @@ export function ListaPalpites({
                 <CardPalpite
                   key={partida.id}
                   partida={partida}
-                  estado={estadoPalpite(partida, Date.now())}
+                  estado={estadoPalpite(partida, agora)}
                   palpiteSalvo={meusPalpites.find((p) => p.partidaId === partida.id)}
                   placarLocal={placaresLocais[partida.id]}
                   onChangeMandante={(valor) => onChangePlacar(partida.id, "mandante", valor)}

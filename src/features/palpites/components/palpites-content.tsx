@@ -199,6 +199,7 @@ export function PalpitesContent() {
           />
 
           <ListaPalpites
+            agora={Date.now()}
             partidas={partidasFiltradas}
             meusPalpites={meusPalpites ?? []}
             placaresLocais={placaresLocais}
