@@ -123,10 +123,10 @@ describe("enforce_palpite_lock — borda inferior (dia a dia)", () => {
     await palpita(p); // 1x0, dentro da janela → ok
     await db.query("update partidas set data_hora = now() + interval '10 days' where id=$1", [p]);
     await expect(
-      db.query(
-        "update palpites set gols_mandante=3 where participante_id=$1 and partida_id=$2",
-        [participanteId, p]
-      )
+      db.query("update palpites set gols_mandante=3 where participante_id=$1 and partida_id=$2", [
+        participanteId,
+        p,
+      ])
     ).rejects.toThrow(/nao_liberado|não liberado|abrem no dia/i);
   });
 });

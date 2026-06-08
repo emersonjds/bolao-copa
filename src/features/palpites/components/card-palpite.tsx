@@ -207,23 +207,35 @@ export function CardPalpite({
 
         <div className="flex items-center gap-2">
           <div className="flex flex-1 flex-col items-center gap-1.5">
-            <FlagIcon codigoFifa={partida.mandante.codigo} nome={partida.mandante.nome} tamanho="md" />
+            <FlagIcon
+              codigoFifa={partida.mandante.codigo}
+              nome={partida.mandante.nome}
+              tamanho="md"
+            />
             <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
               {partida.mandante.nome}
             </span>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <input
-              type="number" min={0} max={20} inputMode="numeric"
+              type="number"
+              min={0}
+              max={20}
+              inputMode="numeric"
               value={valorMandante}
               onChange={(e) => onChangeMandante(e.target.value)}
               disabled={disabled}
               aria-label={`Gols do ${partida.mandante.nome}`}
               className={INPUT_BASE}
             />
-            <span className="font-mono text-lg font-bold text-muted-foreground" aria-hidden="true">×</span>
+            <span className="font-mono text-lg font-bold text-muted-foreground" aria-hidden="true">
+              ×
+            </span>
             <input
-              type="number" min={0} max={20} inputMode="numeric"
+              type="number"
+              min={0}
+              max={20}
+              inputMode="numeric"
               value={valorVisitante}
               onChange={(e) => onChangeVisitante(e.target.value)}
               disabled={disabled}
@@ -232,7 +244,11 @@ export function CardPalpite({
             />
           </div>
           <div className="flex flex-1 flex-col items-center gap-1.5">
-            <FlagIcon codigoFifa={partida.visitante.codigo} nome={partida.visitante.nome} tamanho="md" />
+            <FlagIcon
+              codigoFifa={partida.visitante.codigo}
+              nome={partida.visitante.nome}
+              tamanho="md"
+            />
             <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
               {partida.visitante.nome}
             </span>
@@ -240,7 +256,9 @@ export function CardPalpite({
         </div>
 
         <p className="mt-3 text-center text-xs text-amber-700">
-          {temRascunho ? "Rascunho guardado · salva quando liberar" : "Você pode preparar seu palpite aqui"}
+          {temRascunho
+            ? "Rascunho guardado · salva quando liberar"
+            : "Você pode preparar seu palpite aqui"}
         </p>
       </article>
     );

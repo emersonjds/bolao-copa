@@ -111,12 +111,15 @@ describe("HistoricoContent", () => {
 
   /** Gera N partidas encerradas com IDs únicos, distribuídas em datas passadas. */
   function gerarPartidasEncerradas(quantidade: number): Partida[] {
-    return Array.from({ length: quantidade }, (_, i): Partida => ({
-      ...partidaTravada,
-      id: `part-pag-${i}`,
-      // Cicla entre 2026-06-01 e 2026-06-06 (todas no passado)
-      dataHora: `2026-06-${String((i % 6) + 1).padStart(2, "0")}T19:00:00.000Z`,
-    }));
+    return Array.from(
+      { length: quantidade },
+      (_, i): Partida => ({
+        ...partidaTravada,
+        id: `part-pag-${i}`,
+        // Cicla entre 2026-06-01 e 2026-06-06 (todas no passado)
+        dataHora: `2026-06-${String((i % 6) + 1).padStart(2, "0")}T19:00:00.000Z`,
+      })
+    );
   }
 
   it("renderiza os primeiros 20 itens e exibe botão 'Ver mais jogos' quando há mais de 20 partidas", () => {

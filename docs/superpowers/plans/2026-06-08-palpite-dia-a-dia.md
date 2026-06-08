@@ -10,28 +10,28 @@
 
 **Spec:** `docs/superpowers/specs/2026-06-08-palpite-dia-a-dia-design.md`
 
-**Refinamento sobre o spec:** o spec citava uma *view* para expor `janela_inicio`. Durante o planejamento ficou claro que os embeds do PostgREST (`mandante:selecoes!mandante_id`) só funcionam na **tabela base**, não em view. Usamos então uma **coluna computada** (função `janela_inicio(public.partidas)`) — mesmo resultado, sem quebrar os joins.
+**Refinamento sobre o spec:** o spec citava uma _view_ para expor `janela_inicio`. Durante o planejamento ficou claro que os embeds do PostgREST (`mandante:selecoes!mandante_id`) só funcionam na **tabela base**, não em view. Usamos então uma **coluna computada** (função `janela_inicio(public.partidas)`) — mesmo resultado, sem quebrar os joins.
 
 ---
 
 ## File Structure
 
-| Arquivo | Responsabilidade |
-|---|---|
-| `supabase/migrations/0019_palpite_janela_dia.sql` | **novo** — função `janela_palpite_inicio`, coluna computada `janela_inicio`, `enforce_palpite_lock` com a borda inferior |
-| `tests/db/palpite-janela.test.ts` | **novo** — cobertura da regra no Postgres |
-| `tests/db/apurar-pontos.test.ts` | ajuste do helper `novaPartida` (jogo dentro da janela) |
-| `src/entities/partida/model/partida.ts` | + campo `janelaInicio: string` |
-| `src/features/partidas/api/partidas-fetcher.ts` | seleciona e mapeia `janela_inicio` |
-| `src/features/palpites/lib/estado-palpite.ts` | **novo** — `estadoPalpite`, `filtrarHojeEProximoDia`, `proximaBorda` |
-| `src/features/palpites/lib/rascunho-local.ts` | **novo** — persistência de rascunho no `localStorage` |
-| `src/features/palpites/api/use-refetch-na-borda.ts` | **novo** — hook do timer de virada do dia |
-| `src/features/partidas/api/queries.ts` | + `refetchOnWindowFocus` |
-| `src/features/palpites/lib/traduzir-erro-salvar.ts` | + ramo `palpite_nao_liberado` |
-| `src/features/palpites/components/card-palpite.tsx` | 3 estados (liberado/futuro/encerrado) |
-| `src/features/palpites/components/palpites-content.tsx` | inclui D+1, deriva estado, rascunho, salva só hoje |
-| `src/features/palpites/components/botao-salvar.tsx` | label "Salvar palpites de hoje" |
-| `tests/e2e/palpite-dia-a-dia.spec.ts` | **novo** — fluxo em tela |
+| Arquivo                                                 | Responsabilidade                                                                                                         |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `supabase/migrations/0019_palpite_janela_dia.sql`       | **novo** — função `janela_palpite_inicio`, coluna computada `janela_inicio`, `enforce_palpite_lock` com a borda inferior |
+| `tests/db/palpite-janela.test.ts`                       | **novo** — cobertura da regra no Postgres                                                                                |
+| `tests/db/apurar-pontos.test.ts`                        | ajuste do helper `novaPartida` (jogo dentro da janela)                                                                   |
+| `src/entities/partida/model/partida.ts`                 | + campo `janelaInicio: string`                                                                                           |
+| `src/features/partidas/api/partidas-fetcher.ts`         | seleciona e mapeia `janela_inicio`                                                                                       |
+| `src/features/palpites/lib/estado-palpite.ts`           | **novo** — `estadoPalpite`, `filtrarHojeEProximoDia`, `proximaBorda`                                                     |
+| `src/features/palpites/lib/rascunho-local.ts`           | **novo** — persistência de rascunho no `localStorage`                                                                    |
+| `src/features/palpites/api/use-refetch-na-borda.ts`     | **novo** — hook do timer de virada do dia                                                                                |
+| `src/features/partidas/api/queries.ts`                  | + `refetchOnWindowFocus`                                                                                                 |
+| `src/features/palpites/lib/traduzir-erro-salvar.ts`     | + ramo `palpite_nao_liberado`                                                                                            |
+| `src/features/palpites/components/card-palpite.tsx`     | 3 estados (liberado/futuro/encerrado)                                                                                    |
+| `src/features/palpites/components/palpites-content.tsx` | inclui D+1, deriva estado, rascunho, salva só hoje                                                                       |
+| `src/features/palpites/components/botao-salvar.tsx`     | label "Salvar palpites de hoje"                                                                                          |
+| `tests/e2e/palpite-dia-a-dia.spec.ts`                   | **novo** — fluxo em tela                                                                                                 |
 
 **Pré-requisito de toda execução de teste de banco:** `supabase start` rodando + `.env.test` presente (mesmo setup do `apurar-pontos.test.ts`). Comando: `pnpm test:db`.
 
@@ -40,6 +40,7 @@
 ## Task 1: Migration 0019 — a regra no servidor
 
 **Files:**
+
 - Create: `supabase/migrations/0019_palpite_janela_dia.sql`
 - Test: `tests/db/palpite-janela.test.ts`
 
@@ -147,7 +148,8 @@ import path from "node:path";
 
 for (const l of fs.readFileSync(path.join(process.cwd(), ".env.test"), "utf-8").split("\n")) {
   const m = l.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
-  if (m && !l.trimStart().startsWith("#")) process.env[m[1]] = m[2].trim().replace(/^["']|["']$/g, "");
+  if (m && !l.trimStart().startsWith("#"))
+    process.env[m[1]] = m[2].trim().replace(/^["']|["']$/g, "");
 }
 
 const DB = process.env.DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
@@ -178,7 +180,10 @@ beforeAll(async () => {
     userId = data.user.id;
   }
   userIdTeste = userId;
-  const pa = await db.query("select id from participantes where user_id=$1 and bolao_id=$2", [userId, BOLAO]);
+  const pa = await db.query("select id from participantes where user_id=$1 and bolao_id=$2", [
+    userId,
+    BOLAO,
+  ]);
   participanteId = pa.rows[0].id;
   const sel = await db.query("select id from selecoes order by codigo limit 2");
   selA = sel.rows[0].id;
@@ -190,8 +195,12 @@ afterAll(async () => {
   await db.end();
 });
 
-beforeEach(async () => { await db.query("BEGIN"); });
-afterEach(async () => { await db.query("ROLLBACK"); });
+beforeEach(async () => {
+  await db.query("BEGIN");
+});
+afterEach(async () => {
+  await db.query("ROLLBACK");
+});
 
 /** Insere uma partida com data_hora explícita e devolve o id. */
 async function partidaEm(dataHoraSql: string): Promise<string> {
@@ -302,6 +311,7 @@ git commit -m "add lower-bound betting window to palpite lock"
 ## Task 2: Entity + fetcher — expor `janelaInicio` no front
 
 **Files:**
+
 - Modify: `src/entities/partida/model/partida.ts`
 - Modify: `src/features/partidas/api/partidas-fetcher.ts`
 - Test: `src/features/partidas/api/partidas-fetcher.test.ts`
@@ -311,8 +321,8 @@ git commit -m "add lower-bound betting window to palpite lock"
 In `src/entities/partida/model/partida.ts`, dentro de `interface Partida`, após `dataHora`:
 
 ```ts
-  /** ISO 8601 (UTC) da abertura da janela de palpite (meia-noite BRT do dia do jogo). */
-  janelaInicio: string;
+/** ISO 8601 (UTC) da abertura da janela de palpite (meia-noite BRT do dia do jogo). */
+janelaInicio: string;
 ```
 
 - [ ] **Step 2: Escrever/ajustar o teste do fetcher**
@@ -331,6 +341,7 @@ Expected: FAIL (`janelaInicio` undefined).
 - [ ] **Step 4: Mapear no fetcher**
 
 In `src/features/partidas/api/partidas-fetcher.ts`:
+
 - Em `interface PartidaDb`, adicione após `data_hora`: `janela_inicio: string;`
 - No `.select(...)`, adicione a linha `janela_inicio,` logo após `data_hora,`.
 - Em `mapPartida`, adicione após `dataHora: db.data_hora,`: `janelaInicio: db.janela_inicio,`.
@@ -357,6 +368,7 @@ git commit -m "expose janela_inicio on partida payload"
 ## Task 3: `estado-palpite.ts` — derivação dos 3 estados
 
 **Files:**
+
 - Create: `src/features/palpites/lib/estado-palpite.ts`
 - Test: `src/features/palpites/lib/estado-palpite.test.ts`
 
@@ -374,11 +386,20 @@ const DIA = 24 * HORA;
 
 function partida(over: Partial<Partida>): Partida {
   return {
-    id: "p1", fase: "grupos", grupo: "A", dataHora: "", estadio: "x", status: "agendada",
+    id: "p1",
+    fase: "grupos",
+    grupo: "A",
+    dataHora: "",
+    estadio: "x",
+    status: "agendada",
     mandante: { id: "a", nome: "A", codigo: "AAA" },
     visitante: { id: "b", nome: "B", codigo: "BBB" },
-    golsMandante: null, golsVisitante: null, vencedorPenaltis: null,
-    mandanteLabel: null, visitanteLabel: null, janelaInicio: "",
+    golsMandante: null,
+    golsVisitante: null,
+    vencedorPenaltis: null,
+    mandanteLabel: null,
+    visitanteLabel: null,
+    janelaInicio: "",
     ...over,
   };
 }
@@ -386,19 +407,32 @@ function partida(over: Partial<Partida>): Partida {
 describe("estadoPalpite", () => {
   const agora = 1_000_000_000_000;
   it("liberado: janela aberta e antes do apito", () => {
-    const p = partida({ janelaInicio: new Date(agora - HORA).toISOString(), dataHora: new Date(agora + HORA).toISOString() });
+    const p = partida({
+      janelaInicio: new Date(agora - HORA).toISOString(),
+      dataHora: new Date(agora + HORA).toISOString(),
+    });
     expect(estadoPalpite(p, agora)).toBe("liberado");
   });
   it("futuro: janela ainda não abriu", () => {
-    const p = partida({ janelaInicio: new Date(agora + HORA).toISOString(), dataHora: new Date(agora + 5 * HORA).toISOString() });
+    const p = partida({
+      janelaInicio: new Date(agora + HORA).toISOString(),
+      dataHora: new Date(agora + 5 * HORA).toISOString(),
+    });
     expect(estadoPalpite(p, agora)).toBe("futuro");
   });
   it("encerrado: apito já passou", () => {
-    const p = partida({ janelaInicio: new Date(agora - 5 * HORA).toISOString(), dataHora: new Date(agora - HORA).toISOString() });
+    const p = partida({
+      janelaInicio: new Date(agora - 5 * HORA).toISOString(),
+      dataHora: new Date(agora - HORA).toISOString(),
+    });
     expect(estadoPalpite(p, agora)).toBe("encerrado");
   });
   it("encerrado: status não agendada mesmo antes do apito", () => {
-    const p = partida({ status: "encerrada", janelaInicio: new Date(agora - HORA).toISOString(), dataHora: new Date(agora + HORA).toISOString() });
+    const p = partida({
+      status: "encerrada",
+      janelaInicio: new Date(agora - HORA).toISOString(),
+      dataHora: new Date(agora + HORA).toISOString(),
+    });
     expect(estadoPalpite(p, agora)).toBe("encerrado");
   });
 });
@@ -406,14 +440,30 @@ describe("estadoPalpite", () => {
 describe("filtrarHojeEProximoDia", () => {
   const agora = 1_000_000_000_000;
   it("retorna liberados + só o grupo futuro de menor janela_inicio", () => {
-    const hoje = partida({ id: "hoje", janelaInicio: new Date(agora - HORA).toISOString(), dataHora: new Date(agora + HORA).toISOString() });
-    const amanha = partida({ id: "amanha", janelaInicio: new Date(agora + DIA).toISOString(), dataHora: new Date(agora + DIA + HORA).toISOString() });
-    const depois = partida({ id: "depois", janelaInicio: new Date(agora + 2 * DIA).toISOString(), dataHora: new Date(agora + 2 * DIA + HORA).toISOString() });
+    const hoje = partida({
+      id: "hoje",
+      janelaInicio: new Date(agora - HORA).toISOString(),
+      dataHora: new Date(agora + HORA).toISOString(),
+    });
+    const amanha = partida({
+      id: "amanha",
+      janelaInicio: new Date(agora + DIA).toISOString(),
+      dataHora: new Date(agora + DIA + HORA).toISOString(),
+    });
+    const depois = partida({
+      id: "depois",
+      janelaInicio: new Date(agora + 2 * DIA).toISOString(),
+      dataHora: new Date(agora + 2 * DIA + HORA).toISOString(),
+    });
     const r = filtrarHojeEProximoDia([hoje, amanha, depois], agora);
     expect(r.map((p) => p.id).sort()).toEqual(["amanha", "hoje"]);
   });
   it("sem futuros, retorna só os liberados", () => {
-    const hoje = partida({ id: "hoje", janelaInicio: new Date(agora - HORA).toISOString(), dataHora: new Date(agora + HORA).toISOString() });
+    const hoje = partida({
+      id: "hoje",
+      janelaInicio: new Date(agora - HORA).toISOString(),
+      dataHora: new Date(agora + HORA).toISOString(),
+    });
     expect(filtrarHojeEProximoDia([hoje], agora).map((p) => p.id)).toEqual(["hoje"]);
   });
 });
@@ -421,12 +471,21 @@ describe("filtrarHojeEProximoDia", () => {
 describe("proximaBorda", () => {
   const agora = 1_000_000_000_000;
   it("retorna o menor instante futuro (abertura de futuro ou apito de liberado)", () => {
-    const liberado = partida({ janelaInicio: new Date(agora - HORA).toISOString(), dataHora: new Date(agora + 3 * HORA).toISOString() });
-    const futuro = partida({ janelaInicio: new Date(agora + HORA).toISOString(), dataHora: new Date(agora + 6 * HORA).toISOString() });
+    const liberado = partida({
+      janelaInicio: new Date(agora - HORA).toISOString(),
+      dataHora: new Date(agora + 3 * HORA).toISOString(),
+    });
+    const futuro = partida({
+      janelaInicio: new Date(agora + HORA).toISOString(),
+      dataHora: new Date(agora + 6 * HORA).toISOString(),
+    });
     expect(proximaBorda([liberado, futuro], agora)).toBe(agora + HORA);
   });
   it("null quando não há borda futura", () => {
-    const encerrado = partida({ janelaInicio: new Date(agora - 5 * HORA).toISOString(), dataHora: new Date(agora - HORA).toISOString() });
+    const encerrado = partida({
+      janelaInicio: new Date(agora - 5 * HORA).toISOString(),
+      dataHora: new Date(agora - HORA).toISOString(),
+    });
     expect(proximaBorda([encerrado], agora)).toBeNull();
   });
 });
@@ -501,6 +560,7 @@ git commit -m "add estadoPalpite derivation and day filter"
 ## Task 4: `rascunho-local.ts` — rascunho no localStorage
 
 **Files:**
+
 - Create: `src/features/palpites/lib/rascunho-local.ts`
 - Test: `src/features/palpites/lib/rascunho-local.test.ts`
 
@@ -623,6 +683,7 @@ git commit -m "add local draft persistence for palpites"
 ## Task 5: Timer de borda + refetch no foco
 
 **Files:**
+
 - Create: `src/features/palpites/api/use-refetch-na-borda.ts`
 - Test: `src/features/palpites/api/use-refetch-na-borda.test.tsx`
 - Modify: `src/features/partidas/api/queries.ts`
@@ -648,10 +709,21 @@ import { useRefetchNaBorda } from "./use-refetch-na-borda";
 const HORA = 60 * 60 * 1000;
 function partida(over: Partial<Partida>): Partida {
   return {
-    id: "p", fase: "grupos", grupo: "A", dataHora: "", estadio: "x", status: "agendada",
-    mandante: { id: "a", nome: "A", codigo: "AAA" }, visitante: { id: "b", nome: "B", codigo: "BBB" },
-    golsMandante: null, golsVisitante: null, vencedorPenaltis: null,
-    mandanteLabel: null, visitanteLabel: null, janelaInicio: "", ...over,
+    id: "p",
+    fase: "grupos",
+    grupo: "A",
+    dataHora: "",
+    estadio: "x",
+    status: "agendada",
+    mandante: { id: "a", nome: "A", codigo: "AAA" },
+    visitante: { id: "b", nome: "B", codigo: "BBB" },
+    golsMandante: null,
+    golsVisitante: null,
+    vencedorPenaltis: null,
+    mandanteLabel: null,
+    visitanteLabel: null,
+    janelaInicio: "",
+    ...over,
   };
 }
 
@@ -661,7 +733,10 @@ afterEach(() => vi.useRealTimers());
 describe("useRefetchNaBorda", () => {
   it("dispara onBorda ao cruzar a próxima borda", () => {
     const agora = Date.now();
-    const futuro = partida({ janelaInicio: new Date(agora + HORA).toISOString(), dataHora: new Date(agora + 5 * HORA).toISOString() });
+    const futuro = partida({
+      janelaInicio: new Date(agora + HORA).toISOString(),
+      dataHora: new Date(agora + 5 * HORA).toISOString(),
+    });
     const onBorda = vi.fn();
     renderHook(() => useRefetchNaBorda([futuro], onBorda));
     expect(onBorda).not.toHaveBeenCalled();
@@ -728,6 +803,7 @@ git commit -m "add boundary timer and window-focus refetch"
 ## Task 6: `traduzir-erro-salvar` — ramo "não liberado"
 
 **Files:**
+
 - Modify: `src/features/palpites/lib/traduzir-erro-salvar.ts`
 - Test: `src/features/palpites/lib/traduzir-erro-salvar.test.ts`
 
@@ -737,7 +813,9 @@ In `src/features/palpites/lib/traduzir-erro-salvar.test.ts`, adicione:
 
 ```ts
 it("traduz palpite_nao_liberado para aviso de dia da partida", () => {
-  const r = traduzirErroSalvar("palpite_nao_liberado: os palpites deste jogo abrem no dia da partida");
+  const r = traduzirErroSalvar(
+    "palpite_nao_liberado: os palpites deste jogo abrem no dia da partida"
+  );
   expect(r.tipo).toBe("lock");
   expect(r.texto).toMatch(/abrem no dia|ainda não é o dia/i);
 });
@@ -753,14 +831,13 @@ Expected: FAIL (cai no genérico).
 In `src/features/palpites/lib/traduzir-erro-salvar.ts`, antes do bloco `if (msg.includes("começou")...`:
 
 ```ts
-  // Borda inferior: o jogo ainda não liberou (antes da meia-noite BRT do dia).
-  if (msg.includes("nao_liberado") || msg.includes("não liberado") || msg.includes("abrem no dia")) {
-    return {
-      tipo: "lock",
-      texto: "Ainda não é o dia! Os palpites deste jogo abrem na data da partida.",
-    };
-  }
-
+// Borda inferior: o jogo ainda não liberou (antes da meia-noite BRT do dia).
+if (msg.includes("nao_liberado") || msg.includes("não liberado") || msg.includes("abrem no dia")) {
+  return {
+    tipo: "lock",
+    texto: "Ainda não é o dia! Os palpites deste jogo abrem na data da partida.",
+  };
+}
 ```
 
 - [ ] **Step 4: Rodar — passa**
@@ -780,6 +857,7 @@ git commit -m "translate palpite_nao_liberado error to friendly pt-br"
 ## Task 7: `CardPalpite` — estado "futuro" (âmbar, preenchível)
 
 **Files:**
+
 - Modify: `src/features/palpites/components/card-palpite.tsx`
 - Test: `src/features/palpites/components/card-palpite.test.tsx`
 
@@ -837,61 +915,78 @@ In `src/features/palpites/components/card-palpite.tsx`:
 4. Antes do `return` do card aberto (liberado), adicione o ramo futuro:
 
 ```tsx
-  if (estado === "futuro") {
-    const temRascunho =
-      !!placarLocal && placarLocal.mandante !== "" && placarLocal.visitante !== "";
-    return (
-      <article className="rounded-2xl border border-dashed border-amber-200 bg-amber-50/40 p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] font-semibold text-brand-700">
-            {badgeGrupo}
-          </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
-            <Clock className="h-3 w-3" aria-hidden="true" />
-            Libera amanhã
+if (estado === "futuro") {
+  const temRascunho = !!placarLocal && placarLocal.mandante !== "" && placarLocal.visitante !== "";
+  return (
+    <article className="rounded-2xl border border-dashed border-amber-200 bg-amber-50/40 p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] font-semibold text-brand-700">
+          {badgeGrupo}
+        </span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+          <Clock className="h-3 w-3" aria-hidden="true" />
+          Libera amanhã
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <div className="flex flex-1 flex-col items-center gap-1.5">
+          <FlagIcon
+            codigoFifa={partida.mandante.codigo}
+            nome={partida.mandante.nome}
+            tamanho="md"
+          />
+          <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
+            {partida.mandante.nome}
           </span>
         </div>
-
-        <div className="flex items-center gap-2">
-          <div className="flex flex-1 flex-col items-center gap-1.5">
-            <FlagIcon codigoFifa={partida.mandante.codigo} nome={partida.mandante.nome} tamanho="md" />
-            <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
-              {partida.mandante.nome}
-            </span>
-          </div>
-          <div className="flex shrink-0 items-center gap-1.5">
-            <input
-              type="number" min={0} max={20} inputMode="numeric"
-              value={valorMandante}
-              onChange={(e) => onChangeMandante(e.target.value)}
-              disabled={disabled}
-              aria-label={`Gols do ${partida.mandante.nome}`}
-              className={INPUT_BASE}
-            />
-            <span className="font-mono text-lg font-bold text-muted-foreground" aria-hidden="true">×</span>
-            <input
-              type="number" min={0} max={20} inputMode="numeric"
-              value={valorVisitante}
-              onChange={(e) => onChangeVisitante(e.target.value)}
-              disabled={disabled}
-              aria-label={`Gols do ${partida.visitante.nome}`}
-              className={INPUT_BASE}
-            />
-          </div>
-          <div className="flex flex-1 flex-col items-center gap-1.5">
-            <FlagIcon codigoFifa={partida.visitante.codigo} nome={partida.visitante.nome} tamanho="md" />
-            <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
-              {partida.visitante.nome}
-            </span>
-          </div>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <input
+            type="number"
+            min={0}
+            max={20}
+            inputMode="numeric"
+            value={valorMandante}
+            onChange={(e) => onChangeMandante(e.target.value)}
+            disabled={disabled}
+            aria-label={`Gols do ${partida.mandante.nome}`}
+            className={INPUT_BASE}
+          />
+          <span className="font-mono text-lg font-bold text-muted-foreground" aria-hidden="true">
+            ×
+          </span>
+          <input
+            type="number"
+            min={0}
+            max={20}
+            inputMode="numeric"
+            value={valorVisitante}
+            onChange={(e) => onChangeVisitante(e.target.value)}
+            disabled={disabled}
+            aria-label={`Gols do ${partida.visitante.nome}`}
+            className={INPUT_BASE}
+          />
         </div>
+        <div className="flex flex-1 flex-col items-center gap-1.5">
+          <FlagIcon
+            codigoFifa={partida.visitante.codigo}
+            nome={partida.visitante.nome}
+            tamanho="md"
+          />
+          <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
+            {partida.visitante.nome}
+          </span>
+        </div>
+      </div>
 
-        <p className="mt-3 text-center text-xs text-amber-700">
-          {temRascunho ? "Rascunho guardado · salva quando liberar" : "Você pode preparar seu palpite aqui"}
-        </p>
-      </article>
-    );
-  }
+      <p className="mt-3 text-center text-xs text-amber-700">
+        {temRascunho
+          ? "Rascunho guardado · salva quando liberar"
+          : "Você pode preparar seu palpite aqui"}
+      </p>
+    </article>
+  );
+}
 ```
 
 5. No ramo travado existente, troque a condição `if (travado)` por `if (estado === "encerrado")`.
@@ -913,12 +1008,14 @@ git commit -m "add future state to palpite card"
 ## Task 8: `ListaPalpites` — passar o estado por card
 
 **Files:**
+
 - Modify: `src/features/palpites/components/lista-palpites.tsx`
 - Test: `src/features/palpites/components/lista-palpites.test.tsx`
 
 - [ ] **Step 1: Ajustar a assinatura e o repasse**
 
 In `src/features/palpites/components/lista-palpites.tsx`:
+
 - Importe: `import { estadoPalpite } from "../lib/estado-palpite";`
 - Adicione `agora: number;` à `interface ListaPalpitesProps` e ao destructuring.
 - No `<CardPalpite ... />`, adicione a prop `estado={estadoPalpite(partida, agora)}`.
@@ -944,6 +1041,7 @@ git commit -m "thread palpite state through lista-palpites"
 ## Task 9: `BotaoSalvar` — escopo "só hoje"
 
 **Files:**
+
 - Modify: `src/features/palpites/components/botao-salvar.tsx`
 - Test: `src/features/palpites/components/botao-salvar.test.tsx`
 
@@ -977,6 +1075,7 @@ git commit -m "scope save button to today's palpites"
 ## Task 10: `PalpitesContent` — orquestração (D+1, estado, rascunho, salvar só hoje)
 
 **Files:**
+
 - Modify: `src/features/palpites/components/palpites-content.tsx`
 - Test: `src/features/palpites/components/palpites-content.test.tsx`
 
@@ -1008,6 +1107,7 @@ Expected: FAIL.
 In `src/features/palpites/components/palpites-content.tsx`:
 
 1. Imports novos:
+
 ```ts
 import { useEffect, useState } from "react";
 import { useSupabaseUser } from "@/shared/lib/supabase";
@@ -1015,21 +1115,30 @@ import { estadoPalpite, filtrarHojeEProximoDia } from "../lib/estado-palpite";
 import { lerRascunho, salvarRascunho, limparRascunho } from "../lib/rascunho-local";
 import { useRefetchNaBorda } from "../api/use-refetch-na-borda";
 ```
+
 2. Remova a função local `estaEmJogo` e troque seus usos por `estadoPalpite(p, agora) === "encerrado"`. Onde antes era `!estaEmJogo(p)` (liberado p/ edição), passa a ser `estadoPalpite(p, agora) !== "encerrado"`; onde a regra de salvar exige "hoje", use `estadoPalpite(p, agora) === "liberado"`.
 3. Estado de tempo e usuário:
+
 ```ts
 const userId = useSupabaseUser()?.id ?? null;
 const [agora, setAgora] = useState<number>(() => Date.now());
-useRefetchNaBorda(partidas ?? [], () => { setAgora(Date.now()); void refetch(); });
+useRefetchNaBorda(partidas ?? [], () => {
+  setAgora(Date.now());
+  void refetch();
+});
 ```
+
 4. Filtro da aba "Palpitar" (D+1 dentro da fase):
+
 ```ts
 const partidasFiltradas = filtrarHojeEProximoDia(
   (partidas ?? []).filter((p) => p.fase === faseSelecionada),
   agora
 );
 ```
+
 5. Hidratar rascunhos dos jogos FUTUROS visíveis (quando há userId):
+
 ```ts
 useEffect(() => {
   if (!userId) return;
@@ -1048,9 +1157,15 @@ useEffect(() => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [userId, partidas]);
 ```
+
 6. Persistir rascunho ao editar um jogo futuro — em `handleChangePlacar`, após calcular `next`, persista se o jogo for futuro:
+
 ```ts
-function handleChangePlacar(partidaId: string, campo: "mandante" | "visitante", valor: string): void {
+function handleChangePlacar(
+  partidaId: string,
+  campo: "mandante" | "visitante",
+  valor: string
+): void {
   setPlacaresLocais((prev) => {
     let valorNormalizado: string;
     if (valor === "") valorNormalizado = "";
@@ -1068,7 +1183,9 @@ function handleChangePlacar(partidaId: string, campo: "mandante" | "visitante", 
   });
 }
 ```
+
 7. `ehPendente` / `hasPendingChanges` / `pendentes` em `handleSalvar`: restrinja a LIBERADO:
+
 ```ts
 const hasPendingChanges = (partidas ?? []).some(
   (p) => estadoPalpite(p, agora) === "liberado" && ehPendente(p.id)
@@ -1078,14 +1195,17 @@ const pendentes = (partidas ?? []).filter(
   (p) => estadoPalpite(p, agora) === "liberado" && ehPendente(p.id)
 );
 ```
+
 8. Após salvar com sucesso, limpe o rascunho local das partidas salvas:
+
 ```ts
 for (const p of pendentes) {
   if (userId) limparRascunho(userId, p.id);
 }
 ```
-(coloque junto ao bloco que dá `delete next[p.id]`).
-9. Passe `agora` para a `ListaPalpites`:
+
+(coloque junto ao bloco que dá `delete next[p.id]`). 9. Passe `agora` para a `ListaPalpites`:
+
 ```tsx
 <ListaPalpites
   partidas={partidasFiltradas}
@@ -1096,7 +1216,9 @@ for (const p of pendentes) {
   agora={agora}
 />
 ```
+
 10. Atualize o toast de sucesso para refletir os rascunhos:
+
 ```ts
 toast.success("Palpites de hoje salvos!", { id: toastId });
 ```
@@ -1123,11 +1245,13 @@ git commit -m "wire day-by-day mechanic into palpites screen"
 ## Task 11: E2E (Playwright)
 
 **Files:**
+
 - Create: `tests/e2e/palpite-dia-a-dia.spec.ts`
 
 - [ ] **Step 1: Escrever o teste E2E**
 
 Create `tests/e2e/palpite-dia-a-dia.spec.ts` seguindo o padrão de `tests/e2e/palpites.spec.ts` (mesmo `auth.setup`/login demo). Cobertura:
+
 - Pré-condição: cenário com pelo menos um jogo HOJE (status agendada, dentro da janela) e um AMANHÃ.
 - Jogo de hoje: digitar placar, clicar "Salvar palpites de hoje", ver toast de sucesso e badge "Salvo".
 - Jogo de amanhã: ver o badge "Libera amanhã"; o campo aceita digitação; após `page.reload()` o valor digitado continua lá (rascunho).

@@ -123,7 +123,7 @@ describe("ProximosJogos", () => {
   it("mostra badge de contagem quando o dia tem 3 ou mais jogos", () => {
     mockUsePartidas({
       data: Array.from({ length: 4 }, (_, index) =>
-        makePartida({ id: `g-${index}`, dataHora: "2026-06-11T19:00:00.000Z" }),
+        makePartida({ id: `g-${index}`, dataHora: "2026-06-11T19:00:00.000Z" })
       ),
     });
     render(<ProximosJogos />);

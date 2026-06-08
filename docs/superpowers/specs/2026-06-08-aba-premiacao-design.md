@@ -16,19 +16,19 @@ Feature **independente** da mecânica "palpite dia a dia" (spec separado).
 
 ### Decisões de produto (travadas)
 
-| Decisão | Escolha |
-|---|---|
-| Valor da inscrição | **R$ 10 por pessoa** (acessível) |
-| Destino do arrecadado | **100% revertido em prêmios** (organização não retém) |
-| Divisão entre os 3 primeiros | **50% / 30% / 20%** |
-| Camisa oficial | **1º lugar escolhe: camisa oficial OU dinheiro**; 2º e 3º sempre em dinheiro |
-| Localização | **Aba própria** na navegação principal |
+| Decisão                      | Escolha                                                                      |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| Valor da inscrição           | **R$ 10 por pessoa** (acessível)                                             |
+| Destino do arrecadado        | **100% revertido em prêmios** (organização não retém)                        |
+| Divisão entre os 3 primeiros | **50% / 30% / 20%**                                                          |
+| Camisa oficial               | **1º lugar escolhe: camisa oficial OU dinheiro**; 2º e 3º sempre em dinheiro |
+| Localização                  | **Aba própria** na navegação principal                                       |
 
 ### Números de referência (~100 jogadores)
 
-| Pote | 🥇 1º (50%) | 🥈 2º (30%) | 🥉 3º (20%) |
-|---|---|---|---|
-| ~R$ 1.000 | R$ 500 | R$ 300 | R$ 200 |
+| Pote      | 🥇 1º (50%) | 🥈 2º (30%) | 🥉 3º (20%) |
+| --------- | ----------- | ----------- | ----------- |
+| ~R$ 1.000 | R$ 500      | R$ 300      | R$ 200      |
 
 O 1º lugar pode trocar os R$ 500 por uma **camisa oficial** (~R$ 350-400) **+ a
 diferença em dinheiro**, ou levar tudo em dinheiro.
@@ -107,13 +107,13 @@ regra (50/30/20) sem quebrar. **Não** é bloqueante para a v1.
 
 ## 4. Arquitetura / arquivos
 
-| Arquivo | Mudança |
-|---|---|
-| `src/app/premiacao/page.tsx` | **nova rota** estática |
-| `src/widgets/app-shell/ui/bottom-nav.tsx` | + item `Premiação` (`/premiacao`), ícone `Gift` ou `Award` — **não** `Trophy` (já é do Ranking) |
-| `src/features/premiacao/components/premiacao-content.tsx` | **novo** — conteúdo da página |
-| `src/features/premiacao/lib/calcular-divisao.ts` | **novo** — `dividirPote(pote)` → `{ primeiro, segundo, terceiro }` (50/30/20) |
-| `src/features/premiacao/api/*` (opcional) | contagem de inscritos para o pote ao vivo (reusa fonte do ranking) |
+| Arquivo                                                   | Mudança                                                                                         |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `src/app/premiacao/page.tsx`                              | **nova rota** estática                                                                          |
+| `src/widgets/app-shell/ui/bottom-nav.tsx`                 | + item `Premiação` (`/premiacao`), ícone `Gift` ou `Award` — **não** `Trophy` (já é do Ranking) |
+| `src/features/premiacao/components/premiacao-content.tsx` | **novo** — conteúdo da página                                                                   |
+| `src/features/premiacao/lib/calcular-divisao.ts`          | **novo** — `dividirPote(pote)` → `{ primeiro, segundo, terceiro }` (50/30/20)                   |
+| `src/features/premiacao/api/*` (opcional)                 | contagem de inscritos para o pote ao vivo (reusa fonte do ranking)                              |
 
 Constantes de configuração (`src/shared/lib/constants.ts`): `VALOR_INSCRICAO = 10`,
 `DIVISAO_PREMIO = { primeiro: 0.5, segundo: 0.3, terceiro: 0.2 }` — centralizadas
@@ -131,11 +131,13 @@ a implementação; não bloqueia o design.
 ## 5. Plano de testes (cobertura total)
 
 ### Unit
+
 - `dividirPote(pote)` → 50/30/20 corretos; arredondamento de centavos sem
   "vazar"/sobrar do pote (a soma das partes = pote); pote 0 → tudo 0.
 - Constantes de configuração consistentes (somam 100%).
 
 ### Componente (Testing Library)
+
 - `premiacao-content` renderiza: regra de divisão, valor de inscrição, card do
   campeão (camisa OU dinheiro), nota de pagamento.
 - Com contagem de inscritos → mostra pote calculado e valores por colocação.
@@ -144,10 +146,12 @@ a implementação; não bloqueia o design.
   `/premiacao` (sem colidir com o estado ativo de `/ranking`).
 
 ### E2E (Playwright)
+
 - Navegar até `/premiacao` pela bottom-nav; conteúdo de premiação visível;
   pódio 50/30/20 presente.
 
 ### Portões
+
 - ~100% de linhas nos módulos novos; `pnpm validate` verde.
 
 ---

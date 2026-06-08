@@ -27,7 +27,9 @@ describe("traduzirErroSalvar", () => {
   });
 
   it("traduz palpite_nao_liberado para aviso de dia da partida", () => {
-    const r = traduzirErroSalvar("palpite_nao_liberado: os palpites deste jogo abrem no dia da partida");
+    const r = traduzirErroSalvar(
+      "palpite_nao_liberado: os palpites deste jogo abrem no dia da partida"
+    );
     expect(r.tipo).toBe("lock");
     expect(r.texto).toMatch(/abrem no dia|ainda não é o dia/i);
   });

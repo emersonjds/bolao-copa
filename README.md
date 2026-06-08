@@ -45,31 +45,31 @@ SPA estática (Next.js, `output: "export"`) que conversa **direto com o Supabase
 
 A base de cada jogo (tempo normal de 90' — **pênalti não conta**):
 
-| Acerto | Pontos (base) |
-| :-- | :-: |
-| 🎯 Cravou o placar de uma **vitória** | **5** |
-| 🤝 Cravou o placar de um **empate** | **4** |
-| ✅ Acertou **quem ganhou** (placar errado) | **3** |
-| ➖ Acertou que foi **empate** (placar errado) | **2** |
-| ❌ Errou o resultado | **0** |
+| Acerto                                        | Pontos (base) |
+| :-------------------------------------------- | :-----------: |
+| 🎯 Cravou o placar de uma **vitória**         |     **5**     |
+| 🤝 Cravou o placar de um **empate**           |     **4**     |
+| ✅ Acertou **quem ganhou** (placar errado)    |     **3**     |
+| ➖ Acertou que foi **empate** (placar errado) |     **2**     |
+| ❌ Errou o resultado                          |     **0**     |
 
 …multiplicada pelo **peso da fase**:
 
-| Fase | Multiplicador | Cravar a vitória vale |
-| :-- | :-: | :-: |
-| Grupos · 32-avos · 3º lugar | **×1** | 5 |
-| Oitavas · Quartas | **×2** | 10 |
-| **Semifinal · Final** | **×3** | **15** 🏅 |
+| Fase                        | Multiplicador | Cravar a vitória vale |
+| :-------------------------- | :-----------: | :-------------------: |
+| Grupos · 32-avos · 3º lugar |    **×1**     |           5           |
+| Oitavas · Quartas           |    **×2**     |          10           |
+| **Semifinal · Final**       |    **×3**     |       **15** 🏅       |
 
 ## 🛠️ Stack
 
-| | |
-| :-- | :-- |
-| **Front** | Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 |
-| **Dados** | Supabase (Postgres + RLS + Auth) · TanStack Query v5 |
-| **Forms** | React Hook Form + Zod |
-| **Testes** | Vitest · Testing Library · MSW · Playwright · pgTAP-style (pg) |
-| **Deploy** | Netlify (static export) |
+|            |                                                                  |
+| :--------- | :--------------------------------------------------------------- |
+| **Front**  | Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 |
+| **Dados**  | Supabase (Postgres + RLS + Auth) · TanStack Query v5             |
+| **Forms**  | React Hook Form + Zod                                            |
+| **Testes** | Vitest · Testing Library · MSW · Playwright · pgTAP-style (pg)   |
+| **Deploy** | Netlify (static export)                                          |
 
 ## 🚀 Rodando localmente (via Docker)
 
@@ -83,20 +83,20 @@ pnpm scenario:seed             # popula um cenário de teste (5 contas, todas as
 pnpm dev:local                 # http://localhost:3000 apontando pro Supabase LOCAL
 ```
 
-| | |
-| :-- | :-- |
+|                     |                                                                                                                                                       |
+| :------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 🔑 **Login em dev** | O login real é Google OAuth (não roda local). Na aba **Palpites**, use o botão **"Logar em dev"** (só em desenvolvimento) — senha `Senha-Demo-2026!`. |
-| 🔍 **Ver o banco** | Supabase Studio em `http://127.0.0.1:54323` ou DBeaver/psql em `127.0.0.1:54322` (`postgres`/`postgres`). |
+| 🔍 **Ver o banco**  | Supabase Studio em `http://127.0.0.1:54323` ou DBeaver/psql em `127.0.0.1:54322` (`postgres`/`postgres`).                                             |
 
 ## 🧪 Testes & cobertura
 
 Três camadas, todas verdes — **100% de linhas e funções**:
 
-| Camada | Comando | Cobre |
-| :-- | :-- | :-- |
-| 🧩 Unit / integração | `pnpm test:run` | componentes, hooks e fetchers (MSW) |
-| 🗄️ Banco | `pnpm test:db` | regra de pontos, RLS/grants e desempate (Postgres local) |
-| 🎭 E2E | `pnpm test:e2e` | telas fase a fase, ranking, palpitar (Playwright) |
+| Camada               | Comando         | Cobre                                                    |
+| :------------------- | :-------------- | :------------------------------------------------------- |
+| 🧩 Unit / integração | `pnpm test:run` | componentes, hooks e fetchers (MSW)                      |
+| 🗄️ Banco             | `pnpm test:db`  | regra de pontos, RLS/grants e desempate (Postgres local) |
+| 🎭 E2E               | `pnpm test:e2e` | telas fase a fase, ranking, palpitar (Playwright)        |
 
 ```bash
 pnpm test:coverage   # relatório de cobertura
@@ -106,12 +106,12 @@ pnpm test:coverage   # relatório de cobertura
 
 ## 📜 Scripts
 
-| Comando | O que faz |
-| :-- | :-- |
-| `pnpm dev:local` | Dev server apontando pro Supabase local |
-| `pnpm build` | Build estático (gera `out/`) |
-| `pnpm validate` | type-check + lint + format + testes |
-| `pnpm scenario:seed` | (Re)cria o cenário de teste no banco local |
+| Comando              | O que faz                                    |
+| :------------------- | :------------------------------------------- |
+| `pnpm dev:local`     | Dev server apontando pro Supabase local      |
+| `pnpm build`         | Build estático (gera `out/`)                 |
+| `pnpm validate`      | type-check + lint + format + testes          |
+| `pnpm scenario:seed` | (Re)cria o cenário de teste no banco local   |
 | `pnpm scenario:open` | Abre um Chrome já logado numa conta de teste |
 
 ## 🗂️ Arquitetura
@@ -126,12 +126,12 @@ Backend é Supabase: schema, RLS e RPCs versionados em `supabase/migrations/`.
 
 ## 📚 Documentação
 
-| Doc | Para quê |
-| :-- | :-- |
+| Doc                                     | Para quê                                                              |
+| :-------------------------------------- | :-------------------------------------------------------------------- |
 | 📘 [`docs/PROJETO.md`](docs/PROJETO.md) | **Handbook** — leia primeiro (visão geral, regras, ambientes, testes) |
-| 🗺️ [`docs/README.md`](docs/README.md) | Índice de toda a documentação |
-| 🔒 [`docs/audits/`](docs/audits/) | Auditorias de segurança e performance |
-| 📐 [`CLAUDE.md`](CLAUDE.md) | Regras de desenvolvimento do projeto |
+| 🗺️ [`docs/README.md`](docs/README.md)   | Índice de toda a documentação                                         |
+| 🔒 [`docs/audits/`](docs/audits/)       | Auditorias de segurança e performance                                 |
+| 📐 [`CLAUDE.md`](CLAUDE.md)             | Regras de desenvolvimento do projeto                                  |
 
 ## ☁️ Deploy
 

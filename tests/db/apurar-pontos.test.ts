@@ -252,7 +252,9 @@ describe("segurança — grants de profiles (anti-escalonamento de admin)", () =
 
   it("eh_admin() reflete o is_admin do participante", async () => {
     await db.query("update public.profiles set is_admin = true where id = $1", [userIdTeste]);
-    const admin = await db.query<{ ok: boolean }>("select public.eh_admin($1) as ok", [userIdTeste]);
+    const admin = await db.query<{ ok: boolean }>("select public.eh_admin($1) as ok", [
+      userIdTeste,
+    ]);
     expect(admin.rows[0].ok).toBe(true);
 
     const sel = await db.query("select id from public.profiles where id <> $1 limit 1", [
