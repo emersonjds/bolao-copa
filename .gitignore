@@ -64,3 +64,8 @@ next-env.d.ts
 .mcp.json.local
 .serena/
 skills-lock.json
+
+# Vídeos de demonstração (gerados localmente, não versionados)
+demo/*.webm
+test-results/demo-raw/
+demo/*.mp4
