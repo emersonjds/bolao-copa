@@ -39,8 +39,18 @@ describe("AvatarParticipante", () => {
     expect(screen.getByText("AC")).toBeInTheDocument();
   });
 
+  it("ignora pontuação no início das palavras (nome com parênteses)", () => {
+    render(<AvatarParticipante nome="Você (Demo)" />);
+    expect(screen.getByText("VD")).toBeInTheDocument();
+  });
+
   it("mostra '?' para nome vazio ou só espaços", () => {
     render(<AvatarParticipante nome="   " />);
+    expect(screen.getByText("?")).toBeInTheDocument();
+  });
+
+  it("mostra '?' para nome só de pontuação", () => {
+    render(<AvatarParticipante nome="(...)" />);
     expect(screen.getByText("?")).toBeInTheDocument();
   });
 
