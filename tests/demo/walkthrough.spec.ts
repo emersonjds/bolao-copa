@@ -1,4 +1,4 @@
-import { test, devices } from "@playwright/test";
+import { test } from "@playwright/test";
 import { loginComo } from "../e2e/helpers/login-demo";
 
 /**
@@ -10,11 +10,17 @@ import { loginComo } from "../e2e/helpers/login-demo";
  * Rode com: `pnpm demo` (config playwright.demo.config.ts).
  */
 
+// Viewport mobile explícito; o vídeo é gravado EXATAMENTE neste tamanho para a
+// página preencher o quadro inteiro (sem faixa cinza). Não usamos preset de
+// device: eles reduzem a altura útil do viewport (descontam a barra do navegador).
 const VIEWPORT = { width: 390, height: 844 };
 
 test("walkthrough do app (mobile)", async ({ browser }) => {
   const context = await browser.newContext({
-    ...devices["iPhone 13"],
+    viewport: VIEWPORT,
+    deviceScaleFactor: 2,
+    isMobile: true,
+    hasTouch: true,
     recordVideo: { dir: "test-results/demo-raw", size: VIEWPORT },
   });
   await loginComo(context, "demo@bolao.test");
