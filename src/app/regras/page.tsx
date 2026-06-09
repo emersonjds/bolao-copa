@@ -253,12 +253,9 @@ export default function RegrasPage() {
                   <th
                     key={fase.multiplicador}
                     scope="col"
-                    className="px-2 py-2 font-semibold text-foreground"
+                    className="px-2 py-2 font-mono text-sm font-bold text-brand-700"
                   >
-                    <span className="block">{fase.rotulo}</span>
-                    <span className="font-mono text-[10px] text-brand-700">
-                      ×{fase.multiplicador}
-                    </span>
+                    ×{fase.multiplicador}
                   </th>
                 ))}
               </tr>
@@ -288,6 +285,14 @@ export default function RegrasPage() {
             </tbody>
           </table>
         </div>
+        <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">
+          {PESOS_FASE.map((fase) => (
+            <li key={fase.multiplicador}>
+              <span className="font-mono font-semibold text-brand-700">×{fase.multiplicador}</span>{" "}
+              — {fase.rotulo}
+            </li>
+          ))}
+        </ul>
         <p className="mt-2 text-xs text-muted-foreground">
           Errar o resultado é sempre <span className="font-semibold">0</span>, em qualquer fase.
           Pênaltis não contam — vale o placar dos 90 minutos.
