@@ -25,7 +25,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
-    "demo": "playwright test -c playwright.demo.config.ts",
+    "demo": "playwright test -c playwright.demo.config.ts && tsx scripts/demo-to-mp4.ts",
     "validate": "pnpm type-check && pnpm lint && pnpm format:check && pnpm test:run",
     "prepare": "git config --local core.hooksPath .githooks || true"
   },
