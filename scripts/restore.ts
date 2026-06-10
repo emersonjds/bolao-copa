@@ -58,7 +58,9 @@ async function main() {
     process.env.DATABASE_URL ??
     (ehLocal ? "postgresql://postgres:postgres@127.0.0.1:54322/postgres" : null);
   if (!dbUrl) {
-    throw new Error("Defina DATABASE_URL (connection string do Postgres de destino — pooler do dashboard).");
+    throw new Error(
+      "Defina DATABASE_URL (connection string do Postgres de destino — pooler do dashboard)."
+    );
   }
 
   const admin = createClient(url, serviceKey, {

@@ -68,13 +68,25 @@ describe("gerarBackup", () => {
       clienteFake({
         linhasPorTabela: LINHAS_MINIMAS,
         ranking: [
-          { participante_id: "pa1", nome: "Ana", avatar_url: null, pontos_totais: 5, jogos_pontuados: 1 },
+          {
+            participante_id: "pa1",
+            nome: "Ana",
+            avatar_url: null,
+            pontos_totais: 5,
+            jogos_pontuados: 1,
+          },
         ],
         authUsers: [{ id: "u1", email: "ana@bolao.test" }],
       })
     );
     expect(backup.contagens).toEqual({
-      profiles: 1, selecoes: 1, partidas: 1, boloes: 1, participantes: 1, convites: 0, palpites: 1,
+      profiles: 1,
+      selecoes: 1,
+      partidas: 1,
+      boloes: 1,
+      participantes: 1,
+      convites: 0,
+      palpites: 1,
     });
     expect(backup.ranking[0]).toMatchObject({ posicao: 1, nome: "Ana", pontos_totais: 5 });
     expect(backup.auth_users).toEqual([{ id: "u1", email: "ana@bolao.test" }]);

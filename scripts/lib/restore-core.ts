@@ -110,7 +110,10 @@ export interface DestinoRestore {
  * de palpites de jogos já iniciados; `pontos` entra direto do backup — o role
  * postgres é dono da tabela). Qualquer erro → ROLLBACK, banco intacto.
  */
-export async function restaurarBackup(backup: Backup, { admin, db }: DestinoRestore): Promise<void> {
+export async function restaurarBackup(
+  backup: Backup,
+  { admin, db }: DestinoRestore
+): Promise<void> {
   const mapa = await garantirUsuarios(admin, db, backup.auth_users);
   const remapeado = remapearBackup(backup, mapa);
 
