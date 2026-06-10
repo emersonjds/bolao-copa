@@ -25,7 +25,7 @@ export function remapearBackup(backup: Backup, mapa: Map<string, string>): Backu
       const nova: LinhaTabela = { ...linha };
       for (const campo of campos) {
         const antigo = nova[campo];
-        if (antigo == null) continue; // organizador_id nulo (bolão da casa)
+        if (antigo === null || antigo === undefined) continue; // organizador_id nulo (bolão da casa)
         const novo = mapa.get(String(antigo));
         if (!novo) {
           throw new Error(`Sem usuário no destino para ${tabela}.${campo}=${String(antigo)}`);
