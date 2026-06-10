@@ -10,3 +10,6 @@ coverage/
 public/
 *.min.js
 *.min.css
+
+# Skills vendoradas (conteúdo de terceiros — não formatamos nem checamos)
+docs/superpowers/
