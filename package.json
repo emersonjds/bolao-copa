@@ -11,6 +11,7 @@
     "scenario:seed": "tsx scripts/scenario-e2e.ts",
     "scenario:open": "tsx scripts/dev-login.ts",
     "backup": "tsx scripts/backup.ts",
+    "restore": "tsx scripts/restore.ts",
     "build": "next build",
     "start": "next start",
     "preview": "next build && npx serve out",
