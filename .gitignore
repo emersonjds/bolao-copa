@@ -69,3 +69,6 @@ skills-lock.json
 demo/*.webm
 test-results/demo-raw/
 demo/*.mp4
+
+# backups locais de teste (os reais vivem no repo privado backup-bolao-da-copa)
+/backups/
