@@ -43,6 +43,13 @@ Funções-chave: `apurar_pontos()` (trigger ao encerrar partida), `peso_fase()`,
   projeto novo: `supabase db push` antes — religa usuários por e-mail). Round-trip
   testado em `tests/db/backup-restore.test.ts`. Spec:
   `docs/superpowers/specs/2026-06-10-backup-diario-json-design.md`.
+- **Lembrete diário de palpites (e-mail):** todo dia 09:00 BRT (GitHub Actions no
+  repo `backup-bolao-da-copa`) um e-mail só pra quem ainda não palpitou nos jogos
+  do dia, via SMTP do Gmail (`nodemailer`, conta `Resenha Bolão da Copa`). Núcleo
+  testável em `scripts/lib/notificar-core.ts`/`email-template.ts`; CLI
+  `pnpm notificar [data] [--dry-run]` (`scripts/notificar.ts`). Anti-duplicata na
+  tabela `lembretes_enviados` (migration 0020). Spec:
+  `docs/superpowers/specs/2026-06-10-lembrete-palpites-email-design.md`.
 
 ## 5. Ambientes
 
