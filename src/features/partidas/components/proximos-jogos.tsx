@@ -147,9 +147,7 @@ export function ProximosJogos({ excluirProximoDestaque = false }: ProximosJogosP
   const grupos = agruparProximosDias(visiveis, 2);
 
   if (grupos.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">Os próximos jogos vão aparecer aqui.</p>
-    );
+    return <p className="text-sm text-muted-foreground">Os próximos jogos vão aparecer aqui.</p>;
   }
 
   return (

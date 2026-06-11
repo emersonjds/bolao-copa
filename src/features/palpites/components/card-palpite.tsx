@@ -102,7 +102,9 @@ export function CardPalpite({
           <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] font-semibold text-brand-700">
             {badgeGrupo}
           </span>
-          <span className="rounded-full bg-sky-700 px-2 py-0.5 text-[11px] font-medium text-white">{horarioDisplay}</span>
+          <span className="rounded-full bg-sky-700 px-2 py-0.5 text-[11px] font-medium text-white">
+            {horarioDisplay}
+          </span>
         </div>
         <p className="py-2 text-center text-sm text-muted-foreground">
           Classificados após os jogos de grupos
@@ -277,7 +279,9 @@ export function CardPalpite({
           {badgeGrupo}
         </span>
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-sky-700 px-2 py-0.5 text-[11px] font-medium text-white">{horarioDisplay}</span>
+          <span className="rounded-full bg-sky-700 px-2 py-0.5 text-[11px] font-medium text-white">
+            {horarioDisplay}
+          </span>
           {hasSalvo && (
             <span className="inline-flex items-center gap-1 rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold text-brand-700">
               <Check className="h-3 w-3" aria-hidden="true" />

@@ -47,7 +47,9 @@ export function renderLembrete(dados: DadosLembrete): EmailRenderizado {
 <tr><td style="padding:16px 24px;border-top:1px solid #e5e7eb;font-size:12px;color:#9ca3af;">Não quer mais estes lembretes? É só responder este e-mail.</td></tr>
 </table></td></tr></table></body></html>`;
 
-  const linhasTexto = dados.jogos.map((jogo) => `- ${jogo.mandante} x ${jogo.visitante} (${jogo.horaBrt})`).join("\n");
+  const linhasTexto = dados.jogos
+    .map((jogo) => `- ${jogo.mandante} x ${jogo.visitante} (${jogo.horaBrt})`)
+    .join("\n");
   const texto =
     `Fala, ${dados.nome}!\n\n` +
     `Os palpites de hoje abriram e você ainda não palpitou em ${n} jogo(s):\n${linhasTexto}\n\n` +

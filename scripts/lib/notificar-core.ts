@@ -52,13 +52,21 @@ function horaBrt(dataHora: string): string {
   }).format(new Date(dataHora));
 }
 
-function nomeLado(selecaoId: string | null, label: string | null, porId: Map<string, string>): string {
+function nomeLado(
+  selecaoId: string | null,
+  label: string | null,
+  porId: Map<string, string>
+): string {
   if (selecaoId) return porId.get(selecaoId) ?? label ?? "A definir";
   return label ?? "A definir";
 }
 
 /** Jogos AGENDADOS cuja data BRT é hoje, com nomes resolvidos e ordenados pelo apito. */
-export function jogosDeHoje(partidas: Partida[], selecoes: Selecao[], agora = new Date()): JogoView[] {
+export function jogosDeHoje(
+  partidas: Partida[],
+  selecoes: Selecao[],
+  agora = new Date()
+): JogoView[] {
   const hoje = dataBrtHoje(agora);
   const porId = new Map(selecoes.map((s) => [s.id, s.nome]));
   return partidas
@@ -94,7 +102,12 @@ export function pendencias(
     if (faltantes.length === 0) continue;
     const perfil = perfilPorUser.get(part.user_id);
     if (!perfil || !perfil.email) continue;
-    lista.push({ participanteId: part.id, email: perfil.email, nome: perfil.nome, jogos: faltantes });
+    lista.push({
+      participanteId: part.id,
+      email: perfil.email,
+      nome: perfil.nome,
+      jogos: faltantes,
+    });
   }
   return lista;
 }

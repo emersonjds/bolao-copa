@@ -74,7 +74,9 @@ async function main() {
     .then(unwrap<Palpite>("palpites"));
 
   const lista = pendencias(participantes, jogos, palpites, perfisCompletos);
-  console.log(`→ ${jogos.length} jogo(s) hoje · ${lista.length} participante(s) com palpite pendente`);
+  console.log(
+    `→ ${jogos.length} jogo(s) hoje · ${lista.length} participante(s) com palpite pendente`
+  );
 
   if (dryRun) {
     for (const p of lista) {
@@ -110,15 +112,25 @@ async function main() {
     appUrl: APP_URL,
     jaEnviado: (id) => jaEnviadoSet.has(id),
     enviar: async (para, assunto, html, texto) => {
-      await transporte.sendMail({ from: `"${REMETENTE}" <${gmailUser}>`, to: para, subject: assunto, html, text: texto });
+      await transporte.sendMail({
+        from: `"${REMETENTE}" <${gmailUser}>`,
+        to: para,
+        subject: assunto,
+        html,
+        text: texto,
+      });
     },
     registrar: async (id) => {
-      const { error } = await admin.from("lembretes_enviados").insert({ data: hoje, participante_id: id });
+      const { error } = await admin
+        .from("lembretes_enviados")
+        .insert({ data: hoje, participante_id: id });
       if (error) throw new Error(`registrar ${id}: ${error.message}`);
     },
   });
 
-  console.log(`\n✅ enviados ${resumo.enviados} · pulados ${resumo.pulados} · falhas ${resumo.falhas}`);
+  console.log(
+    `\n✅ enviados ${resumo.enviados} · pulados ${resumo.pulados} · falhas ${resumo.falhas}`
+  );
 }
 
 /** Desempacota { data, error } do supabase-js, com erro claro por tabela. */

@@ -47,7 +47,14 @@ describe("jogosDeHoje", () => {
 
   it("usa label quando não há seleção (mata-mata)", () => {
     const jogos = jogosDeHoje(
-      [partida({ mandante_id: null, visitante_id: null, mandante_label: "1A", visitante_label: "2B" })],
+      [
+        partida({
+          mandante_id: null,
+          visitante_id: null,
+          mandante_label: "1A",
+          visitante_label: "2B",
+        }),
+      ],
       SELECOES,
       AGORA
     );
@@ -55,7 +62,9 @@ describe("jogosDeHoje", () => {
   });
 
   it("dia sem jogo retorna vazio", () => {
-    expect(jogosDeHoje([partida({ data_hora: "2026-07-01T20:00:00Z" })], SELECOES, AGORA)).toEqual([]);
+    expect(jogosDeHoje([partida({ data_hora: "2026-07-01T20:00:00Z" })], SELECOES, AGORA)).toEqual(
+      []
+    );
   });
 });
 
@@ -102,7 +111,11 @@ describe("pendencias", () => {
       ]
     );
     expect(lista).toHaveLength(1);
-    expect(lista[0]).toMatchObject({ participanteId: "part-falta", email: "ana@x.com", nome: "Ana" });
+    expect(lista[0]).toMatchObject({
+      participanteId: "part-falta",
+      email: "ana@x.com",
+      nome: "Ana",
+    });
     expect(lista[0].jogos.map((j) => j.id)).toEqual(["j2"]);
   });
 });
@@ -113,7 +126,15 @@ describe("enviarPendencias", () => {
       participanteId: id,
       email: `${id}@x.com`,
       nome: id,
-      jogos: [{ id: "j1", dataHora: "2026-06-25T20:00:00Z", mandante: "Brasil", visitante: "Sérvia", horaBrt: "17:00" }],
+      jogos: [
+        {
+          id: "j1",
+          dataHora: "2026-06-25T20:00:00Z",
+          mandante: "Brasil",
+          visitante: "Sérvia",
+          horaBrt: "17:00",
+        },
+      ],
     };
   }
 
