@@ -72,3 +72,6 @@ demo/*.mp4
 
 # backups locais de teste (os reais vivem no repo privado backup-bolao-da-copa)
 /backups/
+
+# credenciais de teste de envio (local, nunca versionar)
+.env.teste*
