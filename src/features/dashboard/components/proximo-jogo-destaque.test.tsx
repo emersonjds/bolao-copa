@@ -92,7 +92,7 @@ describe("ProximoJogoDestaque", () => {
     expect(screen.getByText("Em breve")).toBeInTheDocument();
     expect(screen.getByText("México")).toBeInTheDocument();
     expect(screen.getByText("África do Sul")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Dar palpite" })).toHaveAttribute("href", "/palpites");
+    expect(screen.getByRole("link", { name: "Fazer palpite" })).toHaveAttribute("href", "/palpites");
   });
 
   it("escolhe o jogo mais próximo entre vários candidatos", () => {

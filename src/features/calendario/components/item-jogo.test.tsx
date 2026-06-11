@@ -105,7 +105,7 @@ describe("ItemJogo", () => {
   it("exibe o CTA de palpite em partida agendada quando mostrarCta é true", () => {
     render(<ItemJogo partida={makePartida({ id: "abc" })} mostrarCta />);
     const link = screen.getByRole("link", {
-      name: "Dar palpite para México vs África do Sul",
+      name: "Fazer palpite para México vs África do Sul",
     });
     expect(link).toHaveAttribute("href", "/palpites#abc");
   });

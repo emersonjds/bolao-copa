@@ -74,8 +74,8 @@ export function ItemJogo({ partida, mostrarCta }: ItemJogoProps) {
       {mostrarCta && estaAgendada ? (
         <Link
           href={`/palpites#${partida.id}`}
-          aria-label={`Dar palpite para ${partida.mandante.nome} vs ${partida.visitante.nome}`}
-          title={`Dar palpite para ${partida.mandante.nome} vs ${partida.visitante.nome}`}
+          aria-label={`Fazer palpite para ${partida.mandante.nome} vs ${partida.visitante.nome}`}
+          title={`Fazer palpite para ${partida.mandante.nome} vs ${partida.visitante.nome}`}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-brand-200 bg-brand-50 transition-colors hover:bg-brand-100"
         >
           <Target className="h-4 w-4 text-brand-700" aria-hidden="true" />

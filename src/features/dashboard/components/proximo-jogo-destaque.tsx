@@ -87,7 +87,7 @@ export function ProximoJogoDestaque() {
         href="/palpites"
         className="mt-4 flex min-h-11 w-full items-center justify-center rounded-xl bg-brand-800 text-sm font-semibold text-white transition-colors hover:bg-brand-900"
       >
-        Dar palpite
+        Fazer palpite
       </Link>
     </section>
   );
