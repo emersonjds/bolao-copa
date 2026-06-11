@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePartidas } from "../api/queries";
 import { agruparProximosDias } from "../lib/agrupar-por-dia";
+import { encontrarProximoJogo } from "../lib/proximo-jogo";
 import { FlagIcon } from "@/shared/ui/flag-icon";
 import type { Partida, StatusPartida } from "@/entities/partida";
 
@@ -91,10 +92,15 @@ function CardJogo({ partida }: { partida: Partida }) {
       <div className="flex items-center gap-2">
         <Selecao codigo={partida.mandante.codigo} nome={partida.mandante.nome} />
         <div className="flex flex-col items-center px-1">
-          <span className="font-mono text-lg font-bold text-foreground">
+          <span
+            className={`font-mono text-lg text-foreground ${temPlacar ? "font-bold" : "font-medium"}`}
+          >
             {temPlacar ? `${partida.golsMandante} : ${partida.golsVisitante}` : "x"}
           </span>
-          <time className="mt-0.5 text-[11px] text-muted-foreground" dateTime={partida.dataHora}>
+          <time
+            className="mt-1 rounded-full bg-sky-700 px-2 py-0.5 text-[11px] font-medium text-white"
+            dateTime={partida.dataHora}
+          >
             {formatadorData.format(new Date(partida.dataHora))}
           </time>
         </div>
@@ -113,7 +119,12 @@ function CardJogo({ partida }: { partida: Partida }) {
   );
 }
 
-export function ProximosJogos() {
+interface ProximosJogosProps {
+  /** Na home, esconde o jogo já mostrado no card de destaque para não duplicar a visão. */
+  excluirProximoDestaque?: boolean;
+}
+
+export function ProximosJogos({ excluirProximoDestaque = false }: ProximosJogosProps = {}) {
   const { data: partidas, isLoading, isError } = usePartidas();
 
   if (isLoading) {
@@ -130,10 +141,15 @@ export function ProximosJogos() {
     return <p className="text-sm text-destructive">Não foi possível carregar os jogos.</p>;
   }
 
-  const grupos = agruparProximosDias(partidas, 2);
+  // Na home, o próximo jogo já aparece no card de destaque — tira ele daqui pra não duplicar.
+  const destaque = excluirProximoDestaque ? encontrarProximoJogo(partidas) : null;
+  const visiveis = destaque ? partidas.filter((partida) => partida.id !== destaque.id) : partidas;
+  const grupos = agruparProximosDias(visiveis, 2);
 
   if (grupos.length === 0) {
-    return <p className="text-sm text-muted-foreground">Nenhum jogo por aqui ainda.</p>;
+    return (
+      <p className="text-sm text-muted-foreground">Os próximos jogos vão aparecer aqui.</p>
+    );
   }
 
   return (

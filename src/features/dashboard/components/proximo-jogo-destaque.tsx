@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePartidas } from "@/features/partidas";
+import { encontrarProximoJogo } from "@/features/partidas/lib/proximo-jogo";
 import { FlagIcon } from "@/shared/ui/flag-icon";
-import type { FaseCopa, Partida } from "@/entities/partida";
+import type { FaseCopa } from "@/entities/partida";
 
 const FASE_LABEL: Record<FaseCopa, string> = {
   grupos: "Fase de Grupos",
@@ -19,23 +20,6 @@ const horarioFmt = new Intl.DateTimeFormat("pt-BR", {
   hour: "2-digit",
   minute: "2-digit",
 });
-
-/** Retorna o primeiro jogo agendado dentro das próximas 24h, ou null. */
-function encontrarProximoJogo(partidas: readonly Partida[]): Partida | null {
-  const agora = Date.now();
-  const limite24h = agora + 24 * 60 * 60 * 1000;
-
-  const candidatos = partidas
-    .filter((p) => {
-      if (p.status !== "agendada") return false;
-      const t = new Date(p.dataHora).getTime();
-      return t >= agora && t <= limite24h;
-    })
-    .slice()
-    .sort((a, b) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime());
-
-  return candidatos[0] ?? null;
-}
 
 /** Retorna null quando não há jogo iminente nas próximas 24h ou enquanto os dados carregam. */
 export function ProximoJogoDestaque() {
@@ -82,8 +66,11 @@ export function ProximoJogoDestaque() {
         </div>
 
         <div className="flex flex-col items-center gap-0.5">
-          <span className="font-mono text-base font-bold text-muted-foreground">vs</span>
-          <time dateTime={jogo.dataHora} className="text-[11px] text-muted-foreground">
+          <span className="font-mono text-base font-medium text-muted-foreground">vs</span>
+          <time
+            dateTime={jogo.dataHora}
+            className="rounded-full bg-sky-700 px-2 py-0.5 text-[11px] font-medium text-white"
+          >
             {horario}
           </time>
         </div>

@@ -72,7 +72,7 @@ describe("ProximosJogos", () => {
     mockUsePartidas({ data: [] });
     render(<ProximosJogos />);
 
-    expect(screen.getByText("Nenhum jogo por aqui ainda.")).toBeInTheDocument();
+    expect(screen.getByText("Os próximos jogos vão aparecer aqui.")).toBeInTheDocument();
   });
 
   it("renderiza um card por partida com as seleções", () => {
@@ -163,6 +163,27 @@ describe("ProximosJogos", () => {
     render(<ProximosJogos />);
 
     expect(screen.getByText(/AMANHÃ/)).toBeInTheDocument();
+  });
+
+  it("exclui o próximo jogo em destaque quando excluirProximoDestaque é true", () => {
+    vi.useFakeTimers();
+    // 2026-06-11T12:00:00Z = 09:00 SP; o jogo das 19:00Z está ~7h à frente (dentro de 24h).
+    vi.setSystemTime(new Date("2026-06-11T12:00:00Z"));
+    mockUsePartidas({
+      data: [
+        makePartida({ id: "destaque", dataHora: "2026-06-11T19:00:00.000Z" }),
+        makePartida({
+          id: "outro",
+          dataHora: "2026-06-12T19:00:00.000Z",
+          mandante: { id: "a", nome: "Brasil", codigo: "BRA" },
+          visitante: { id: "b", nome: "Argentina", codigo: "ARG" },
+        }),
+      ],
+    });
+    render(<ProximosJogos excluirProximoDestaque />);
+
+    expect(screen.getByText("Brasil")).toBeInTheDocument();
+    expect(screen.queryByText("México")).not.toBeInTheDocument();
   });
 
   it("exibe placar quando a partida está ao vivo com gols marcados", () => {

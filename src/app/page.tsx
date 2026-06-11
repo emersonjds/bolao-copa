@@ -24,7 +24,7 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        <ProximosJogos />
+        <ProximosJogos excluirProximoDestaque />
       </section>
 
       <DestaqueRodadaCard />
