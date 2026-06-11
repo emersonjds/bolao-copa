@@ -89,10 +89,13 @@ describe("ProximoJogoDestaque", () => {
       screen.getByRole("region", { name: "Próximo jogo: México contra África do Sul" })
     ).toBeInTheDocument();
     expect(screen.getByText("Grupo A")).toBeInTheDocument();
-    expect(screen.getByText("Em breve")).toBeInTheDocument();
+    expect(screen.getByText("EM BREVE")).toBeInTheDocument();
     expect(screen.getByText("México")).toBeInTheDocument();
     expect(screen.getByText("África do Sul")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Fazer palpite" })).toHaveAttribute("href", "/palpites");
+    expect(screen.getByRole("link", { name: "Fazer palpite" })).toHaveAttribute(
+      "href",
+      "/palpites"
+    );
   });
 
   it("escolhe o jogo mais próximo entre vários candidatos", () => {

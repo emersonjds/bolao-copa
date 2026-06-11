@@ -87,11 +87,19 @@ describe("ProximosJogos", () => {
   });
 
   it("exibe rótulo de grupo e link 'Fazer palpite' em partida agendada", () => {
-    mockUsePartidas({ data: [makePartida({ status: "agendada", grupo: "A" })] });
+    mockUsePartidas({
+      data: [
+        makePartida({
+          status: "agendada",
+          grupo: "A",
+          dataHora: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+        }),
+      ],
+    });
     render(<ProximosJogos />);
 
     expect(screen.getByText("Grupo A")).toBeInTheDocument();
-    expect(screen.getByText("Agendado")).toBeInTheDocument();
+    expect(screen.getByText("AGENDADO")).toBeInTheDocument();
     expect(screen.getByText("x")).toBeInTheDocument();
     const link = screen.getByRole("link", { name: "Fazer palpite" });
     expect(link).toHaveAttribute("href", "/palpites");
@@ -131,14 +139,14 @@ describe("ProximosJogos", () => {
     expect(screen.getByText("4 jogos")).toBeInTheDocument();
   });
 
-  it("usa o nome da fase quando não há grupo e mostra status 'Ao vivo'", () => {
+  it("usa o nome da fase quando não há grupo e mostra status 'AO VIVO'", () => {
     mockUsePartidas({
       data: [makePartida({ grupo: null, fase: "final", status: "ao-vivo" })],
     });
     render(<ProximosJogos />);
 
     expect(screen.getByText("final")).toBeInTheDocument();
-    expect(screen.getByText("Ao vivo")).toBeInTheDocument();
+    expect(screen.getByText("AO VIVO")).toBeInTheDocument();
   });
 
   it("exibe rótulo 'HOJE' quando o jogo cai no dia atual em São Paulo", () => {

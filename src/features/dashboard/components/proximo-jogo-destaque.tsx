@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePartidas } from "@/features/partidas";
 import { encontrarProximoJogo } from "@/features/partidas/lib/proximo-jogo";
 import { FlagIcon } from "@/shared/ui/flag-icon";
+import { StatusJogoBadge } from "@/shared/ui/status-jogo-badge";
 import type { FaseCopa } from "@/entities/partida";
 
 const FASE_LABEL: Record<FaseCopa, string> = {
@@ -52,9 +53,7 @@ export function ProximoJogoDestaque() {
         <span className="rounded-md bg-brand-100 px-2 py-0.5 text-[11px] font-semibold text-brand-700">
           {faseLegenda}
         </span>
-        <span className="rounded-full bg-gold-500/15 px-2 py-0.5 text-[11px] font-semibold text-gold-600">
-          Em breve
-        </span>
+        <StatusJogoBadge partida={jogo} />
       </div>
 
       <div className="flex items-center gap-2">

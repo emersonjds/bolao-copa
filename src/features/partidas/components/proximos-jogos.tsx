@@ -5,7 +5,8 @@ import { usePartidas } from "../api/queries";
 import { agruparProximosDias } from "../lib/agrupar-por-dia";
 import { encontrarProximoJogo } from "../lib/proximo-jogo";
 import { FlagIcon } from "@/shared/ui/flag-icon";
-import type { Partida, StatusPartida } from "@/entities/partida";
+import { StatusJogoBadge } from "@/shared/ui/status-jogo-badge";
+import type { Partida } from "@/entities/partida";
 
 const formatadorData = new Intl.DateTimeFormat("pt-BR", {
   day: "2-digit",
@@ -41,34 +42,6 @@ function rotuloDia(dataChave: string, exemploDataHora: string): string {
   return formatado;
 }
 
-const STATUS_LABEL: Record<StatusPartida, string> = {
-  agendada: "Agendado",
-  "ao-vivo": "Ao vivo",
-  encerrada: "Encerrado",
-};
-
-const STATUS_STYLE: Record<StatusPartida, string> = {
-  agendada: "bg-muted text-muted-foreground",
-  "ao-vivo": "bg-destructive/10 text-destructive",
-  encerrada: "bg-brand-100 text-brand-700",
-};
-
-function StatusPill({ status }: { status: StatusPartida }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase ${STATUS_STYLE[status]}`}
-    >
-      {status === "ao-vivo" && (
-        <span
-          className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive"
-          aria-hidden="true"
-        />
-      )}
-      {STATUS_LABEL[status]}
-    </span>
-  );
-}
-
 function Selecao({ codigo, nome }: { codigo: string; nome: string }) {
   return (
     <div className="flex flex-1 flex-col items-center gap-1.5">
@@ -86,7 +59,7 @@ function CardJogo({ partida }: { partida: Partida }) {
         <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] font-semibold text-brand-700">
           {partida.grupo ? `Grupo ${partida.grupo}` : partida.fase}
         </span>
-        <StatusPill status={partida.status} />
+        <StatusJogoBadge partida={partida} />
       </div>
 
       <div className="flex items-center gap-2">
