@@ -42,7 +42,7 @@ export function CardHistorico({ item }: CardHistoricoProps) {
         <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] font-semibold text-brand-700">
           {badgeGrupo}
         </span>
-        <span className="text-[11px] text-muted-foreground">
+        <span className="rounded-full bg-sky-700 px-2 py-0.5 text-[11px] font-medium text-white">
           {dataFormatada} · {horaFormatada}
         </span>
       </div>
