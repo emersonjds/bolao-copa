@@ -111,12 +111,12 @@ async function main() {
   const resumo = await enviarPendencias(lista, {
     appUrl: APP_URL,
     jaEnviado: (id) => jaEnviadoSet.has(id),
-    enviar: async (para, assunto, html, texto) => {
+    // Texto puro de propósito: o Gmail dropa HTML de remetente novo (validado).
+    enviar: async (para, assunto, texto) => {
       await transporte.sendMail({
         from: `"${REMETENTE}" <${gmailUser}>`,
         to: para,
         subject: assunto,
-        html,
         text: texto,
       });
     },

@@ -115,7 +115,7 @@ export function pendencias(
 export interface EnvioDeps {
   appUrl: string;
   jaEnviado: (participanteId: string) => boolean;
-  enviar: (para: string, assunto: string, html: string, texto: string) => Promise<void>;
+  enviar: (para: string, assunto: string, texto: string) => Promise<void>;
   registrar: (participanteId: string) => Promise<void>;
 }
 export interface ResumoEnvio {
@@ -132,14 +132,13 @@ export async function enviarPendencias(lista: Pendencia[], deps: EnvioDeps): Pro
       resumo.pulados++;
       continue;
     }
-    const { assunto, html, texto } = renderLembrete({
-      nome: p.nome,
+    const { assunto, texto } = renderLembrete({
       jogos: p.jogos,
       prazo: prazoDoDia(p.jogos),
       appUrl: deps.appUrl,
     });
     try {
-      await deps.enviar(p.email, assunto, html, texto);
+      await deps.enviar(p.email, assunto, texto);
       await deps.registrar(p.participanteId);
       resumo.enviados++;
     } catch {
