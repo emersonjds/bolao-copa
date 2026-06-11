@@ -45,6 +45,18 @@ describe("jogosDeHoje", () => {
     expect(jogos[0]).toMatchObject({ mandante: "Brasil", visitante: "Sérvia", horaBrt: "17:00" });
   });
 
+  it("traduz o nome da seleção para PT-BR pelo código FIFA, mesmo vindo em inglês do banco", () => {
+    const jogos = jogosDeHoje(
+      [partida({ mandante_id: "s-mex", visitante_id: "s-rsa" })],
+      [
+        { id: "s-mex", nome: "Mexico", codigo: "MEX" },
+        { id: "s-rsa", nome: "South Africa", codigo: "RSA" },
+      ],
+      AGORA
+    );
+    expect(jogos[0]).toMatchObject({ mandante: "México", visitante: "África do Sul" });
+  });
+
   it("usa label quando não há seleção (mata-mata)", () => {
     const jogos = jogosDeHoje(
       [

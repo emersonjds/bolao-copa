@@ -1,5 +1,6 @@
 import { dataBrtHoje } from "./backup-schema";
 import { renderLembrete } from "./email-template";
+import { nomeSelecaoPt } from "../../src/shared/lib/selecao-nomes-pt";
 
 export interface Selecao {
   id: string;
@@ -68,7 +69,8 @@ export function jogosDeHoje(
   agora = new Date()
 ): JogoView[] {
   const hoje = dataBrtHoje(agora);
-  const porId = new Map(selecoes.map((s) => [s.id, s.nome]));
+  // nome em PT-BR pelo código FIFA (banco guarda em inglês, openfootball) — mesma fonte do app
+  const porId = new Map(selecoes.map((s) => [s.id, nomeSelecaoPt(s.codigo, s.nome)]));
   return partidas
     .filter((p) => p.status === "agendada" && dataBrtHoje(new Date(p.data_hora)) === hoje)
     .sort((a, b) => a.data_hora.localeCompare(b.data_hora))
