@@ -102,6 +102,19 @@
   --color-gold-500: #d9a21b; /* secondary */
   --color-gold-600: #b5830f;
   --color-gold-700: #8f6609;
+
+  /* Entrada sutil ao trocar de grupo na tela de Grupos */
+  --animate-fade-slide: fade-slide 160ms ease-out;
+  @keyframes fade-slide {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 @layer base {
@@ -112,5 +125,10 @@
   h2,
   h3 {
     font-family: var(--font-display);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-slide {
+      animation: none;
+    }
   }
 }

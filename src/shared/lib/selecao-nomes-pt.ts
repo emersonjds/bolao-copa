@@ -64,3 +64,22 @@ export function nomeSelecaoPt(codigo: string | null | undefined, fallback: strin
   if (!codigo) return fallback;
   return NOMES_SELECAO_PT[codigo.toUpperCase()] ?? fallback;
 }
+
+// Versão curta só para os nomes longos que apertam tabelas estreitas (ex.: a
+// classificação dos grupos no mobile). Quem não está aqui usa o nome completo.
+export const NOMES_CURTOS_SELECAO: Record<string, string> = {
+  CZE: "R. Tcheca",
+  CIV: "C. Marfim",
+  BIH: "Bósnia",
+  KSA: "A. Saudita",
+  USA: "EUA",
+  NZL: "N. Zelândia",
+};
+
+/** Nome curto da seleção; cai no nome PT-BR completo quando não há abreviação. */
+export function nomeCurtoSelecao(codigo: string | null | undefined, fallback: string): string {
+  if (codigo && NOMES_CURTOS_SELECAO[codigo.toUpperCase()]) {
+    return NOMES_CURTOS_SELECAO[codigo.toUpperCase()];
+  }
+  return nomeSelecaoPt(codigo, fallback);
+}
