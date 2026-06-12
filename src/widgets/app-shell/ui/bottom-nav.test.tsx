@@ -22,8 +22,8 @@ describe("BottomNav", () => {
     expect(screen.getByRole("link", { name: /início/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /palpites/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /ranking/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /copa/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /premiação/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /regras/i })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /admin/i })).not.toBeInTheDocument();
     expect(screen.getAllByRole("link")).toHaveLength(5);
   });
@@ -31,6 +31,11 @@ describe("BottomNav", () => {
   it("mostra o item Premiação apontando para /premiacao", () => {
     render(<BottomNav />);
     expect(screen.getByRole("link", { name: /premiação/i })).toHaveAttribute("href", "/premiacao");
+  });
+
+  it("mostra o item Copa apontando para /calendario", () => {
+    render(<BottomNav />);
+    expect(screen.getByRole("link", { name: /copa/i })).toHaveAttribute("href", "/calendario");
   });
 
   it("exibe a aba Admin quando o usuário é admin", () => {

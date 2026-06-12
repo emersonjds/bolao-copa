@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Target, Trophy, Gift, BookOpen, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Target, Trophy, Gift, Globe, ShieldCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useIsAdmin } from "@/features/auth";
 
@@ -16,8 +16,8 @@ const BASE_NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Início", icon: LayoutDashboard },
   { href: "/palpites", label: "Palpites", icon: Target },
   { href: "/ranking", label: "Ranking", icon: Trophy },
+  { href: "/calendario", label: "Copa", icon: Globe },
   { href: "/premiacao", label: "Premiação", icon: Gift },
-  { href: "/regras", label: "Regras", icon: BookOpen },
 ];
 
 const ADMIN_NAV_ITEM: NavItem = { href: "/admin", label: "Admin", icon: ShieldCheck };
