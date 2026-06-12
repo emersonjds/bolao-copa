@@ -1,3 +1,4 @@
+import { NovidadesGate } from "@/features/novidades";
 import { TopBar } from "./top-bar";
 import { BottomNav } from "./bottom-nav";
 
@@ -9,6 +10,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       <BottomNav />
+      <NovidadesGate />
     </div>
   );
 }

@@ -9,6 +9,8 @@ vi.mock("next/navigation", () => ({ usePathname }));
 const { useIsAdmin } = vi.hoisted(() => ({ useIsAdmin: vi.fn<() => boolean>() }));
 vi.mock("@/features/auth/use-is-admin", () => ({ useIsAdmin }));
 vi.mock("@/shared/lib/supabase", () => ({ signOutUser: vi.fn().mockResolvedValue(undefined) }));
+// O gate de novidades tem testes próprios; aqui isolamos a AppShell dele.
+vi.mock("@/features/novidades", () => ({ NovidadesGate: () => null }));
 
 import { AppShell } from "./app-shell";
 
