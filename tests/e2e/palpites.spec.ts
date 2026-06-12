@@ -118,6 +118,9 @@ test.describe("Palpites (autenticado)", () => {
       }
     });
     await page.reload();
+    // Espera a rede assentar para a sessão (cookie) reidratar antes de salvar —
+    // sem isso o upsert pode sair com auth.uid() nulo e tomar 42501 (RLS), flaky.
+    await page.waitForLoadState("networkidle");
 
     // Card de jogo antecipado (badge "Amanhã") + inputs editáveis.
     const cardFuturo = page.locator("article", { hasText: "Amanhã" }).first();
@@ -132,6 +135,16 @@ test.describe("Palpites (autenticado)", () => {
     const modal = page.getByRole("dialog");
     await expect(modal).toBeVisible();
     await expect(modal.getByText(/usados quando o jogo começar/i)).toBeVisible();
+
+    // Botões do modal com alvo de toque confortável (h-14 = 56px).
+    const caixaConfirmar = await modal
+      .getByRole("button", { name: "Entendi, salvar" })
+      .boundingBox();
+    expect(caixaConfirmar).not.toBeNull();
+    expect(caixaConfirmar!.height).toBeGreaterThanOrEqual(52);
+    const caixaVoltar = await modal.getByRole("button", { name: "Voltar" }).boundingBox();
+    expect(caixaVoltar!.height).toBeGreaterThanOrEqual(52);
+
     await page.screenshot({ path: path.join(dirEvidencias, "antecipado-1-modal.png") });
 
     await modal.getByRole("button", { name: "Entendi, salvar" }).click();
