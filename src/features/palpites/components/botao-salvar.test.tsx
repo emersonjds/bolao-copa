@@ -15,7 +15,7 @@ describe("BotaoSalvar", () => {
     const onSalvar = vi.fn();
     render(<BotaoSalvar hasPendingChanges isSaving={false} onSalvar={onSalvar} />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Salvar palpites de hoje" }));
+    await userEvent.click(screen.getByRole("button", { name: "Salvar palpites" }));
 
     expect(onSalvar).toHaveBeenCalledOnce();
   });

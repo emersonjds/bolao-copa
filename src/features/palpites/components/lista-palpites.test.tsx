@@ -79,7 +79,7 @@ describe("ListaPalpites", () => {
     expect(screen.getByText(/rodada 2/i)).toBeInTheDocument();
   });
 
-  it("exibe badge 'Libera amanhã' quando a janela de palpite ainda não abriu", () => {
+  it("exibe badge 'Amanhã' quando o jogo é de um dia futuro", () => {
     const futura: Partida = {
       ...criarPartida("part-fut", "2099-07-10T19:00:00.000Z"),
       status: "agendada",
@@ -88,6 +88,6 @@ describe("ListaPalpites", () => {
 
     render(<ListaPalpites {...defaultProps} agora={Date.now()} partidas={[futura]} />);
 
-    expect(screen.getByText(/libera amanhã/i)).toBeInTheDocument();
+    expect(screen.getByText(/^amanhã$/i)).toBeInTheDocument();
   });
 });

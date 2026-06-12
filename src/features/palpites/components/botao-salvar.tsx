@@ -26,7 +26,7 @@ export function BotaoSalvar({ hasPendingChanges, isSaving, onSalvar }: BotaoSalv
             Salvando...
           </>
         ) : (
-          "Salvar palpites de hoje"
+          "Salvar palpites"
         )}
       </button>
     </div>

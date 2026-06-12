@@ -9,11 +9,13 @@ import { useMeusPalpites, useSalvarPalpite } from "../api/queries";
 import { traduzirErroSalvar } from "../lib/traduzir-erro-salvar";
 import { estadoPalpite, filtrarHojeEProximoDia } from "../lib/estado-palpite";
 import { lerRascunho, salvarRascunho, limparRascunho } from "../lib/rascunho-local";
+import { jaConfirmouAntecipado, marcarConfirmouAntecipado } from "../lib/confirmacao-antecipado";
 import { useRefetchNaBorda } from "../api/use-refetch-na-borda";
 import type { FaseCopa } from "@/entities/partida";
 import { FiltroFase } from "./filtro-fase";
 import { ListaPalpites } from "./lista-palpites";
 import { BotaoSalvar } from "./botao-salvar";
+import { ModalConfirmarAntecipado } from "./modal-confirmar-antecipado";
 import { SeletorVista, type VistaPalpites } from "./seletor-vista";
 import { HistoricoContent } from "./historico-content";
 import type { PlacarLocal } from "./card-palpite";
@@ -49,6 +51,7 @@ export function PalpitesContent() {
   const [faseSelecionada, setFaseSelecionada] = useState<FaseCopa>("grupos");
   const [placaresLocais, setPlacaresLocais] = useState<Record<string, PlacarLocal>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [modalAntecipadoAberto, setModalAntecipadoAberto] = useState(false);
 
   const userId = useSupabaseUser()?.id ?? null;
   // Instante de referência reativo: a borda (meia-noite / apito) atualiza este
@@ -111,10 +114,13 @@ export function PalpitesContent() {
     );
   }
 
-  // Só os jogos liberados (de hoje) contam como pendência salvável.
-  const hasPendingChanges = listaPartidas.some(
-    (p) => estadoPalpite(p, agora) === "liberado" && ehPendente(p.id)
-  );
+  // Jogos de hoje (liberado) e antecipados (futuro) contam como pendência
+  // salvável — só os encerrados ficam de fora. O antecipado é gravado no
+  // servidor igual; a trava só fecha no apito.
+  function coletarPendentes(): typeof listaPartidas {
+    return listaPartidas.filter((p) => estadoPalpite(p, agora) !== "encerrado" && ehPendente(p.id));
+  }
+  const hasPendingChanges = coletarPendentes().length > 0;
 
   function handleChangePlacar(
     partidaId: string,
@@ -143,16 +149,7 @@ export function PalpitesContent() {
     }
   }
 
-  async function handleSalvar(): Promise<void> {
-    const pendentes = listaPartidas.filter(
-      (p) => estadoPalpite(p, agora) === "liberado" && ehPendente(p.id)
-    );
-
-    // Guarda defensiva: o botão de salvar só é exibido quando há pendências de
-    // hoje (mesmo predicado), então `pendentes` aqui nunca está vazio.
-    /* v8 ignore next */
-    if (pendentes.length === 0) return;
-
+  async function gravarPendentes(pendentes: typeof listaPartidas): Promise<void> {
     setIsSaving(true);
     const toastId = toast.loading("Salvando palpites...");
 
@@ -178,14 +175,13 @@ export function PalpitesContent() {
         return next;
       });
 
-      // Limpa qualquer rascunho local das partidas já gravadas no servidor.
       // Salvar pressupõe sessão, então `userId` é sempre verdadeiro aqui.
       for (const p of pendentes) {
         /* v8 ignore next */
         if (userId) limparRascunho(userId, p.id);
       }
 
-      toast.success("Palpites de hoje salvos!", { id: toastId });
+      toast.success("Palpites salvos!", { id: toastId });
     } catch (err) {
       const bruto = err instanceof Error ? err.message : "";
       const { tipo, texto } = traduzirErroSalvar(bruto);
@@ -200,6 +196,28 @@ export function PalpitesContent() {
     } finally {
       setIsSaving(false);
     }
+  }
+
+  function handleSalvar(): void {
+    const pendentes = coletarPendentes();
+    /* v8 ignore next */
+    if (pendentes.length === 0) return;
+
+    // Se há jogo antecipado e a pessoa nunca confirmou o aviso, explica antes
+    // de gravar (uma única vez); senão grava direto.
+    const temAntecipado = pendentes.some((p) => estadoPalpite(p, agora) === "futuro");
+    if (temAntecipado && userId && !jaConfirmouAntecipado(userId)) {
+      setModalAntecipadoAberto(true);
+      return;
+    }
+    void gravarPendentes(pendentes);
+  }
+
+  function handleConfirmarAntecipado(): void {
+    setModalAntecipadoAberto(false);
+    /* v8 ignore next */
+    if (userId) marcarConfirmouAntecipado(userId);
+    void gravarPendentes(coletarPendentes());
   }
 
   if (isLoading) {
@@ -268,11 +286,18 @@ export function PalpitesContent() {
           <BotaoSalvar
             hasPendingChanges={hasPendingChanges}
             isSaving={isSaving}
-            onSalvar={() => void handleSalvar()}
+            onSalvar={handleSalvar}
           />
         </>
       ) : (
         <HistoricoContent partidas={listaPartidas} meusPalpites={meusPalpites ?? []} />
+      )}
+
+      {modalAntecipadoAberto && (
+        <ModalConfirmarAntecipado
+          onConfirmar={handleConfirmarAntecipado}
+          onCancelar={() => setModalAntecipadoAberto(false)}
+        />
       )}
     </div>
   );

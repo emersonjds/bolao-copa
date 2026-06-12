@@ -265,7 +265,6 @@ describe("CardPalpite — aberto", () => {
 
     expect(screen.queryByText(/salvo/i)).not.toBeInTheDocument();
 
-    // Os inputs exibem os valores locais
     const inputMandante = screen.getByRole("spinbutton", { name: /gols do brasil/i });
     const inputVisitante = screen.getByRole("spinbutton", { name: /gols do argentina/i });
     expect(inputMandante).toHaveValue(1);
@@ -333,7 +332,7 @@ describe("CardPalpite — aberto", () => {
 // ---------------------------------------------------------------------------
 
 describe("CardPalpite — futuro", () => {
-  it("estado futuro: mostra 'Libera amanhã' e mantém inputs habilitados", () => {
+  it("estado futuro: mostra 'Amanhã' e mantém inputs habilitados", () => {
     render(
       <CardPalpite
         partida={partidaFutura}
@@ -345,12 +344,12 @@ describe("CardPalpite — futuro", () => {
         disabled={false}
       />
     );
-    expect(screen.getByText(/libera amanhã/i)).toBeInTheDocument();
-    expect(screen.getByText(/você pode preparar seu palpite aqui/i)).toBeInTheDocument();
+    expect(screen.getByText(/^amanhã$/i)).toBeInTheDocument();
+    expect(screen.getByText(/você já pode deixar pronto/i)).toBeInTheDocument();
     expect(screen.getAllByLabelText(/Gols do/i)[0]).not.toBeDisabled();
   });
 
-  it("estado futuro com rascunho: mostra microcopy de rascunho", () => {
+  it("estado futuro preenchido (não salvo): pede para tocar em Salvar", () => {
     render(
       <CardPalpite
         partida={partidaFutura}
@@ -362,7 +361,30 @@ describe("CardPalpite — futuro", () => {
         disabled={false}
       />
     );
-    expect(screen.getByText(/rascunho guardado/i)).toBeInTheDocument();
+    expect(screen.getByText(/toque em salvar/i)).toBeInTheDocument();
+  });
+
+  it("estado futuro já salvo: mostra badge Salvo e microcopy de ajuste", () => {
+    render(
+      <CardPalpite
+        partida={partidaFutura}
+        estado="futuro"
+        palpiteSalvo={{
+          id: "pal-1",
+          participanteId: "part-1",
+          partidaId: partidaFutura.id,
+          golsMandante: 2,
+          golsVisitante: 1,
+          pontos: null,
+        }}
+        placarLocal={undefined}
+        onChangeMandante={() => {}}
+        onChangeVisitante={() => {}}
+        disabled={false}
+      />
+    );
+    expect(screen.getByText(/^salvo$/i)).toBeInTheDocument();
+    expect(screen.getByText(/ajuste até o jogo/i)).toBeInTheDocument();
   });
 });
 

@@ -193,18 +193,24 @@ export function CardPalpite({
   }
 
   if (estado === "futuro") {
-    const temRascunho =
-      !!placarLocal && placarLocal.mandante !== "" && placarLocal.visitante !== "";
     return (
       <article className="rounded-2xl border border-dashed border-amber-200 bg-amber-50/40 p-4">
         <div className="mb-3 flex items-center justify-between">
           <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] font-semibold text-brand-700">
             {badgeGrupo}
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
-            <Clock className="h-3 w-3" aria-hidden="true" />
-            Libera amanhã
-          </span>
+          <div className="flex items-center gap-2">
+            {hasSalvo && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold text-brand-700">
+                <Check className="h-3 w-3" aria-hidden="true" />
+                Salvo
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+              <Clock className="h-3 w-3" aria-hidden="true" />
+              Amanhã
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -258,9 +264,11 @@ export function CardPalpite({
         </div>
 
         <p className="mt-3 text-center text-xs text-amber-700">
-          {temRascunho
-            ? "Rascunho guardado · salva quando liberar"
-            : "Você pode preparar seu palpite aqui"}
+          {hasSalvo
+            ? "Palpite salvo · ajuste até o jogo começar"
+            : hasPendente
+              ? "Toque em Salvar para confirmar este palpite"
+              : "Palpite antecipado · você já pode deixar pronto"}
         </p>
       </article>
     );

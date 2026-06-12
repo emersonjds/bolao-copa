@@ -323,7 +323,7 @@ describe("PalpitesContent", () => {
       });
     });
 
-    expect(toast.success).toHaveBeenCalledWith("Palpites de hoje salvos!", {
+    expect(toast.success).toHaveBeenCalledWith("Palpites salvos!", {
       id: "mock-toast-id",
     });
   });
@@ -521,9 +521,9 @@ describe("PalpitesContent", () => {
     expect(screen.queryByRole("spinbutton", { name: /gols do japão/i })).not.toBeInTheDocument();
   });
 
-  // ── Mecânica dia a dia: salvar só envia os jogos de hoje ───────────────────
+  // ── Palpites antecipados: salvar envia hoje + futuros (com modal na 1ª vez) ──
 
-  it("ao salvar, só envia os jogos de hoje (não os futuros)", async () => {
+  it("salva hoje E os antecipados; mostra o modal antes na primeira vez", async () => {
     const user = userEvent.setup();
     const agora = Date.now();
     const hoje = fazerPartida("p-hoje", "Brasil", "Argentina", -2 * HORA, 1 * HORA, agora);
@@ -535,23 +535,59 @@ describe("PalpitesContent", () => {
 
     render(<PalpitesContent />);
 
-    // Preenche o jogo de hoje
     await user.type(screen.getByRole("spinbutton", { name: /gols do brasil/i }), "2");
     await user.type(screen.getByRole("spinbutton", { name: /gols do argentina/i }), "1");
-    // Preenche o jogo de amanhã (rascunho — não deve ser enviado)
     await user.type(screen.getByRole("spinbutton", { name: /gols do frança/i }), "3");
     await user.type(screen.getByRole("spinbutton", { name: /gols do alemanha/i }), "3");
 
-    await user.click(screen.getByRole("button", { name: /salvar palpites de hoje/i }));
+    await user.click(screen.getByRole("button", { name: /^salvar palpites$/i }));
+
+    // 1ª vez com jogo antecipado: abre o modal antes de gravar
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(mutateAsync).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: /entendi, salvar/i }));
 
     await waitFor(() => {
-      expect(mutateAsync).toHaveBeenCalledTimes(1);
+      expect(mutateAsync).toHaveBeenCalledTimes(2);
     });
     expect(mutateAsync).toHaveBeenCalledWith({
       partidaId: "p-hoje",
       golsMandante: 2,
       golsVisitante: 1,
     });
+    expect(mutateAsync).toHaveBeenCalledWith({
+      partidaId: "p-amanha",
+      golsMandante: 3,
+      golsVisitante: 3,
+    });
+  });
+
+  it("não mostra o modal de novo depois de já ter confirmado", async () => {
+    const user = userEvent.setup();
+    localStorage.setItem("palpite-antecipado-confirmado:user-test", "1");
+    const agora = Date.now();
+    const amanha = fazerPartida("p-amanha", "França", "Alemanha", 24 * HORA, 25 * HORA, agora);
+
+    mockPartidasOk([amanha]);
+    mockPalpitesOk();
+    const { mutateAsync } = mockSalvarOk();
+
+    render(<PalpitesContent />);
+
+    await user.type(screen.getByRole("spinbutton", { name: /gols do frança/i }), "1");
+    await user.type(screen.getByRole("spinbutton", { name: /gols do alemanha/i }), "0");
+
+    await user.click(screen.getByRole("button", { name: /^salvar palpites$/i }));
+
+    await waitFor(() => {
+      expect(mutateAsync).toHaveBeenCalledWith({
+        partidaId: "p-amanha",
+        golsMandante: 1,
+        golsVisitante: 0,
+      });
+    });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   // ── Rascunho local: jogos futuros persistem no localStorage ────────────────
