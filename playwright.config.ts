@@ -31,6 +31,10 @@ if (alvo && !alvo.includes("127.0.0.1") && !alvo.includes("localhost")) {
 }
 
 const STORAGE_STATE = path.join(process.cwd(), "tests/e2e/.auth/user.json");
+// Semeia "aviso-visto" no localStorage dos specs públicos: o modal de novidades
+// aparece no 1º acesso e, sem isso, o backdrop cobriria os cliques. O spec
+// dedicado (novidades.spec) roda em projeto próprio, sem esta semente.
+const SEED_PUBLIC = path.join(process.cwd(), "tests/e2e/seed-public.json");
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -53,13 +57,20 @@ export default defineConfig({
     // Specs públicos (sem login) — não rodam o palpites.spec (autenticado).
     {
       name: "desktop-chrome",
-      use: { ...devices["Desktop Chrome"] },
-      testIgnore: /palpites\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"], storageState: SEED_PUBLIC },
+      testIgnore: [/palpites\.spec\.ts/, /novidades\.spec\.ts/],
     },
     {
       name: "mobile-chrome",
-      use: { ...devices["Pixel 7"] },
-      testIgnore: /palpites\.spec\.ts/,
+      use: { ...devices["Pixel 7"], storageState: SEED_PUBLIC },
+      testIgnore: [/palpites\.spec\.ts/, /novidades\.spec\.ts/],
+    },
+
+    // Modal de novidades: contexto limpo (sem a semente) para o aviso aparecer.
+    {
+      name: "novidades",
+      testMatch: /novidades\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
     },
 
     // Specs autenticados — reaproveitam o storageState do setup.

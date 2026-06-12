@@ -74,4 +74,13 @@ setup("autentica o usuário de teste", async ({ context }) => {
   await context.addCookies(cookies);
   await context.storageState({ path: STORAGE_FILE });
   fs.writeFileSync(META_FILE, JSON.stringify({ userId: data.user.id }));
+
+  // Marca o aviso de novidades como visto (id em features/novidades/model):
+  // o modal aparece no 1º acesso e cobriria os cliques dos specs autenticados.
+  await admin
+    .from("avisos_vistos")
+    .upsert(
+      { user_id: data.user.id, aviso_id: "novidades-2026-06" },
+      { onConflict: "user_id,aviso_id" }
+    );
 });

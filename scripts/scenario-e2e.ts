@@ -133,6 +133,15 @@ async function run(pgClient: Client) {
       .single();
     if (error || !pa) throw new Error(`Sem participante para ${c.email}: ${error?.message}`);
     participantes.push({ nome: c.nome, participanteId: pa.id });
+
+    // Marca o modal de novidades como visto (id em features/novidades/model):
+    // ele aparece no 1º acesso e cobriria os cliques dos specs E2E logados.
+    await admin
+      .from("avisos_vistos")
+      .upsert(
+        { user_id: userId, aviso_id: "novidades-2026-06" },
+        { onConflict: "user_id,aviso_id" }
+      );
   }
   const participanteIds = participantes.map((p) => p.participanteId);
 
