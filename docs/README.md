@@ -19,22 +19,25 @@ trabalharem sem reler o projeto todo. Regras de ouro: [`../CLAUDE.md`](../CLAUDE
 | [`audits/security-review.md`](audits/security-review.md)     | Achados de segurança + status (C-1 crítico corrigido, etc.). |
 | [`audits/performance-audit.md`](audits/performance-audit.md) | Métricas de performance e fixes priorizados.                 |
 
-### Especificações (SDD / design docs)
+### Features (spec + plano por feature)
 
-| Doc                                                                                                                                              | O que é                                            |
-| ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
-| [`superpowers/specs/2026-06-05-mvp-bolao-funcional-design.md`](superpowers/specs/2026-06-05-mvp-bolao-funcional-design.md)                       | Design do MVP funcional.                           |
-| [`superpowers/specs/2026-06-05-fase2-google-auth-design.md`](superpowers/specs/2026-06-05-fase2-google-auth-design.md)                           | Auth com Google.                                   |
-| [`superpowers/specs/2026-06-06-historico-palpites-design.md`](superpowers/specs/2026-06-06-historico-palpites-design.md)                         | Histórico de palpites.                             |
-| [`superpowers/specs/2026-06-06-validacao-cenarios-todas-fases-design.md`](superpowers/specs/2026-06-06-validacao-cenarios-todas-fases-design.md) | Validação por fase + cenário de teste (3 camadas). |
+Cada feature tem sua pasta em [`features/`](features/) com `spec.md` (design/SDD) e, quando
+houve plano de implementação, `plan.md`. Ordenadas da mais recente para a mais antiga.
 
-### Planos de implementação
-
-| Doc                                                                                                            | O que é                  |
-| -------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| [`superpowers/plans/2026-06-05-01-banco-e-seed.md`](superpowers/plans/2026-06-05-01-banco-e-seed.md)           | Banco e seed.            |
-| [`superpowers/plans/2026-06-05-02-fase2-google-auth.md`](superpowers/plans/2026-06-05-02-fase2-google-auth.md) | Fase 2 — Google Auth.    |
-| [`superpowers/plans/2026-06-07-performance.md`](superpowers/plans/2026-06-07-performance.md)                   | Performance (executado). |
+| Feature                                                         | spec | plan | O que é                                            |
+| --------------------------------------------------------------- | :--: | :--: | -------------------------------------------------- |
+| [`palpites-antecipados/`](features/palpites-antecipados/)       |  ✓   |  —   | Palpite antecipado persiste no servidor + modal.   |
+| [`grupos-da-copa/`](features/grupos-da-copa/)                   |  ✓   |  ✓   | Tabela de classificação por grupo + histórico.     |
+| [`lembrete-palpites-email/`](features/lembrete-palpites-email/) |  ✓   |  ✓   | Lembrete diário de palpite por e-mail.             |
+| [`backup-diario-json/`](features/backup-diario-json/)           |  ✓   |  ✓   | Backup diário do banco em JSON.                    |
+| [`aba-premiacao/`](features/aba-premiacao/)                     |  ✓   |  ✓   | Aba de premiação + inscrição.                      |
+| [`palpite-dia-a-dia/`](features/palpite-dia-a-dia/)             |  ✓   |  ✓   | Palpite organizado dia a dia.                      |
+| [`validacao-cenarios/`](features/validacao-cenarios/)           |  ✓   |  —   | Validação por fase + cenário de teste (3 camadas). |
+| [`historico-palpites/`](features/historico-palpites/)           |  ✓   |  —   | Histórico de palpites.                             |
+| [`performance/`](features/performance/)                         |  —   |  ✓   | Otimização de performance (executado).             |
+| [`google-auth/`](features/google-auth/)                         |  ✓   |  ✓   | Auth com Google.                                   |
+| [`mvp-bolao-funcional/`](features/mvp-bolao-funcional/)         |  ✓   |  —   | Design do MVP funcional.                           |
+| [`banco-e-seed/`](features/banco-e-seed/)                       |  —   |  ✓   | Banco e seed inicial.                              |
 
 ### Design / UX
 
@@ -46,5 +49,6 @@ trabalharem sem reler o projeto todo. Regras de ouro: [`../CLAUDE.md`](../CLAUDE
 
 ## Convenção
 
-Novas docs entram numa dessas categorias e são indexadas aqui. SDD → `superpowers/specs/`;
-plano → `superpowers/plans/`; auditoria → `audits/`; design → `design/`.
+Cada nova feature ganha uma pasta em `features/<nome-kebab>/` com `spec.md` (design/SDD) e
+`plan.md` (plano de implementação), e é indexada na tabela acima. Auditorias → `audits/`;
+design/UX e mockups → `design/`.
