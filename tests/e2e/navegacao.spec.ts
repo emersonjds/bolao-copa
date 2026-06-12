@@ -17,7 +17,7 @@ test.describe("Navegação — bottom-nav (público)", () => {
     await expect(nav.getByRole("link", { name: "Início" })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Palpites" })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Ranking" })).toBeVisible();
-    await expect(nav.getByRole("link", { name: "Regras" })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Copa" })).toBeVisible();
   });
 
   test("a aba Admin não aparece para visitante sem sessão", async ({ page }) => {
@@ -32,11 +32,11 @@ test.describe("Navegação — bottom-nav (público)", () => {
     await expect(page.getByRole("heading", { name: "Ranking", level: 1 })).toBeVisible();
   });
 
-  test("clicar em Regras navega para /regras", async ({ page }) => {
+  test("clicar em Copa navega para /calendario", async ({ page }) => {
     await page.goto("/");
-    await navPrincipal(page).getByRole("link", { name: "Regras" }).click();
-    await expect(page).toHaveURL(/\/regras$/);
-    await expect(page.getByRole("heading", { name: "Regras e pontuação" })).toBeVisible();
+    await navPrincipal(page).getByRole("link", { name: "Copa" }).click();
+    await expect(page).toHaveURL(/\/calendario$/);
+    await expect(page.getByRole("heading", { name: "Copa 2026", level: 1 })).toBeVisible();
   });
 
   test("clicar em Palpites navega para /palpites (CTA de login para visitante)", async ({
@@ -63,7 +63,7 @@ test.describe("Navegação — bottom-nav (público)", () => {
       "page"
     );
     // Uma aba diferente não deve estar marcada como atual.
-    await expect(nav.getByRole("link", { name: "Regras" })).not.toHaveAttribute(
+    await expect(nav.getByRole("link", { name: "Copa" })).not.toHaveAttribute(
       "aria-current",
       "page"
     );

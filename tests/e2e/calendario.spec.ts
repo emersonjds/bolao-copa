@@ -13,10 +13,18 @@ function seletorSemana(page: Page) {
 }
 
 test.describe("Calendário — agenda da Copa (público)", () => {
-  test("exibe título e subtítulo da agenda", async ({ page }) => {
+  test("exibe título e subtítulo da Copa", async ({ page }) => {
     await page.goto("/calendario");
-    await expect(page.getByRole("heading", { name: "Agenda da Copa" })).toBeVisible();
-    await expect(page.getByText("Copa do Mundo · Jun–Jul 2026")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Copa 2026", level: 1 })).toBeVisible();
+    await expect(page.getByText("Agenda e grupos · Jun–Jul 2026")).toBeVisible();
+  });
+
+  test("a aba Grupos mostra a classificação por grupo", async ({ page }) => {
+    await page.goto("/calendario");
+    await page.getByRole("tab", { name: "Grupos" }).click();
+    await expect(page.getByRole("tab", { name: "Grupo A" })).toBeVisible();
+    // Cabeçalho da tabela de classificação (coluna Pontos).
+    await expect(page.getByRole("columnheader", { name: "P", exact: true }).first()).toBeVisible();
   });
 
   test("lista as seleções da agenda (dados do Supabase)", async ({ page }) => {
