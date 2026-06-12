@@ -53,7 +53,6 @@ describe("CardHistorico", () => {
     expect(screen.getByText(/seu palpite/i)).toBeInTheDocument();
     expect(screen.queryByText(/sem palpite/i)).not.toBeInTheDocument();
 
-    // Os valores 2 e 0 aparecem no texto do card
     const article = screen.getByRole("article");
     expect(article.textContent).toContain("2");
     expect(article.textContent).toContain("0");

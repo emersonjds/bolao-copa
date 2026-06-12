@@ -61,7 +61,6 @@ describe("HistoricoContent", () => {
   it("exibe o resumo de pontos totais quando há partidas travadas", () => {
     render(<HistoricoContent partidas={[partidaTravada]} meusPalpites={[palpite]} />);
 
-    // Banner com pontos totais
     expect(screen.getByText(/3 pontos/i)).toBeInTheDocument();
     expect(screen.getByText(/1 jogo apurado/i)).toBeInTheDocument();
   });
@@ -90,9 +89,7 @@ describe("HistoricoContent", () => {
 
     render(<HistoricoContent partidas={[partidaTravada, partida2]} meusPalpites={[]} />);
 
-    // Devem aparecer seções de datas distintas
     const secoes = screen.getAllByRole("region");
-    // Cada seção corresponde a um grupo de data
     expect(secoes.length).toBeGreaterThanOrEqual(2);
   });
 
