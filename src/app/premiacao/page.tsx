@@ -1,5 +1,5 @@
-import { PremiacaoContent } from "@/features/premiacao";
+import { PremiacaoAbas } from "@/widgets/premiacao-abas";
 
 export default function PremiacaoPage() {
-  return <PremiacaoContent />;
+  return <PremiacaoAbas />;
 }
