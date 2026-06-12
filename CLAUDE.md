@@ -34,11 +34,16 @@ Regras de ouro para todo desenvolvimento assistido por IA neste projeto. Leia e 
 
 ## 4. Qualidade de Código
 
-- Prefira editar arquivos existentes a criar novos; sem abstrações prematuras; sem código morto
-- Comente só o "porquê" não-óbvio
-- TypeScript: tipos explícitos em interfaces públicas; **sem `any`** (use `unknown` + narrowing); props sempre com interface nomeada
-- Nomes semânticos — proibido identificadores de uma letra
-- Tailwind: mobile-first (`sm:`/`md:`/`lg:`), usar tokens do design system (`brand-*`, `gray-*`)
+> **Estas regras são OBRIGATÓRIAS para qualquer pessoa ou agent que escreva código neste projeto** — valem sempre, em toda tarefa e em todo subagent acionado.
+
+- **Comentários: só o extremamente necessário.** Comente apenas o "porquê" não-óbvio de uma **regra** (de negócio, segurança, fuso, armadilha). Proibido comentário que narra/reescreve o que o código já diz. Na dúvida entre comentar e não comentar um trecho óbvio, **não comente**.
+- **Legível em ≤10s por qualquer nível** (jr, pleno, sênior). Se exige mais que isso para entender, simplifique — nomes claros, funções pequenas de propósito único, sem esperteza desnecessária.
+- **Melhores padrões E simples.** O melhor padrão aqui é o mais simples que resolve bem; padrão sofisticado que dificulta a leitura é o padrão errado. Sem abstração prematura, sem código morto.
+- **Performance e escalabilidade sempre no radar.** Evite trabalho desnecessário (re-render, recomputação, query/loop redundante); escolha estruturas/algoritmos que aguentam crescer. Mas sem micro-otimização que prejudique a clareza — meça antes de complicar.
+- Prefira editar arquivos existentes a criar novos.
+- TypeScript: tipos explícitos em interfaces públicas; **sem `any`** (use `unknown` + narrowing); props sempre com interface nomeada.
+- Nomes semânticos — proibido identificadores de uma letra.
+- Tailwind: mobile-first (`sm:`/`md:`/`lg:`), usar tokens do design system (`brand-*`, `gray-*`).
 
 ## 5. Arquitetura — Feature-Sliced Design
 
@@ -72,6 +77,14 @@ src/
 - [ ] Responsivo (375px, 768px, 1280px)
 - [ ] Sem `console.log` / código de debug
 - [ ] Imports não usados removidos
+
+### Testes obrigatórios por implementação (SDD)
+
+Toda feature/implementação que passa pelo fluxo SDD **deve** ter as três camadas — e o E2E vale mais que os mocks (já pegou bug de regra de servidor que os unit não pegaram):
+
+1. **Unitário** — lógica pura (libs, derivações, regras).
+2. **Integração com MSW** — fetchers/queries contra o Supabase mockado (`src/test/msw/`).
+3. **E2E de tela (Playwright)** — fluxo real no browser, **com prints de evidência em PNG**. As evidências ficam em `e2e/<feature>/evidencias/*.png` (gere rodando o spec; não invente prints).
 
 ## 9. Agentes disponíveis
 
