@@ -79,9 +79,9 @@ test.describe("Palpites (autenticado)", () => {
     // 1ª gravação — caminho INSERT.
     await inputsEditaveis.nth(0).fill("3");
     await inputsEditaveis.nth(1).fill("1");
-    const salvar = page.getByRole("button", { name: "Salvar palpites de hoje" });
+    const salvar = page.getByRole("button", { name: "Salvar palpites" });
     await salvar.click();
-    await expect(page.getByText("Palpites de hoje salvos!")).toBeVisible();
+    await expect(page.getByText("Palpites salvos!")).toBeVisible();
     // Espera o salvamento assentar: sem pendências o botão some (e o refetch
     // termina). Sem isso, o refetch pode resetar o input antes da 2ª edição.
     await expect(salvar).toBeHidden();
@@ -94,11 +94,61 @@ test.describe("Palpites (autenticado)", () => {
     await expect(salvar).toBeVisible();
     await salvar.click();
     // Pode haver 2 toasts (o 1º ainda visível) — basta confirmar que apareceu.
-    await expect(page.getByText("Palpites de hoje salvos!").first()).toBeVisible();
+    await expect(page.getByText("Palpites salvos!").first()).toBeVisible();
 
     // Em nenhum momento pode aparecer erro de permissão.
     await expect(page.getByText(/permission denied/i)).toHaveCount(0);
     await expect(page.getByText(/erro ao salvar/i)).toHaveCount(0);
+  });
+
+  // Palpite antecipado (jogo futuro): salva no servidor com o modal de 1ª vez.
+  // Gera prints de evidência em test-results/evidencias/.
+  test("salva palpite antecipado com modal de confirmação (evidências)", async ({ page }) => {
+    const dirEvidencias = path.join(process.cwd(), "test-results/evidencias");
+    fs.mkdirSync(dirEvidencias, { recursive: true });
+
+    await page.goto("/palpites");
+    await expect(page.getByRole("heading", { name: "Meus palpites" })).toBeVisible();
+
+    // Garante que o modal de 1ª vez vai aparecer (limpa só a flag de confirmação,
+    // sem tocar na sessão).
+    await page.evaluate(() => {
+      for (const k of Object.keys(localStorage)) {
+        if (k.startsWith("palpite-antecipado-confirmado")) localStorage.removeItem(k);
+      }
+    });
+    await page.reload();
+
+    // Card de jogo antecipado (badge "Amanhã") + inputs editáveis.
+    const cardFuturo = page.locator("article", { hasText: "Amanhã" }).first();
+    await expect(cardFuturo).toBeVisible();
+    const inputs = cardFuturo.locator('input[type="number"]:not([disabled])');
+    await inputs.nth(0).fill("2");
+    await inputs.nth(1).fill("1");
+
+    await page.getByRole("button", { name: "Salvar palpites" }).click();
+
+    // 1ª vez: o modal explica que o antecipado vale e é ajustável. EVIDÊNCIA.
+    const modal = page.getByRole("dialog");
+    await expect(modal).toBeVisible();
+    await expect(modal.getByText(/usados quando o jogo começar/i)).toBeVisible();
+    await page.screenshot({ path: path.join(dirEvidencias, "antecipado-1-modal.png") });
+
+    await modal.getByRole("button", { name: "Entendi, salvar" }).click();
+
+    // Persistiu: toast de sucesso e o card antecipado passa a exibir "Salvo".
+    await expect(page.getByText("Palpites salvos!")).toBeVisible();
+    await expect(cardFuturo.getByText(/^Salvo$/)).toBeVisible();
+    await page.screenshot({ path: path.join(dirEvidencias, "antecipado-2-salvo.png") });
+
+    await expect(page.getByText(/permission denied/i)).toHaveCount(0);
+
+    // 2ª vez não mostra o modal de novo: edita o placar e salva direto.
+    await inputs.nth(0).fill("3");
+    await inputs.nth(1).fill("0");
+    await page.getByRole("button", { name: "Salvar palpites" }).click();
+    await expect(page.getByText("Palpites salvos!").first()).toBeVisible();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
   });
 
   // Limpeza: deletar o usuário de teste remove participante + palpites em
