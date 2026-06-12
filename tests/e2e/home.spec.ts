@@ -33,6 +33,6 @@ test.describe("Home — estado público", () => {
       .first()
       .click();
     await expect(page).toHaveURL(/\/calendario$/);
-    await expect(page.getByRole("heading", { name: "Agenda da Copa" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Copa 2026", level: 1 })).toBeVisible();
   });
 });
