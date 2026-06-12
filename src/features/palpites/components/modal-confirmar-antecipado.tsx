@@ -65,14 +65,14 @@ export function ModalConfirmarAntecipado({
             ref={confirmarRef}
             type="button"
             onClick={onConfirmar}
-            className="h-11 flex-1 rounded-xl bg-brand-800 font-semibold text-white transition-colors hover:bg-brand-900"
+            className="h-14 flex-1 rounded-xl bg-brand-800 font-semibold text-white transition-colors hover:bg-brand-900"
           >
             Entendi, salvar
           </button>
           <button
             type="button"
             onClick={onCancelar}
-            className="h-11 flex-1 rounded-xl border border-border font-medium text-foreground transition-colors hover:bg-muted"
+            className="h-14 flex-1 rounded-xl border border-border font-medium text-foreground transition-colors hover:bg-muted"
           >
             Voltar
           </button>

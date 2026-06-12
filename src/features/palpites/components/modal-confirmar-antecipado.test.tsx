@@ -11,6 +11,12 @@ describe("ModalConfirmarAntecipado", () => {
     expect(screen.getByText(/até o apito inicial/i)).toBeInTheDocument();
   });
 
+  it("usa botões com altura confortável de toque (h-14)", () => {
+    render(<ModalConfirmarAntecipado onConfirmar={() => {}} onCancelar={() => {}} />);
+    expect(screen.getByRole("button", { name: /entendi, salvar/i })).toHaveClass("h-14");
+    expect(screen.getByRole("button", { name: /voltar/i })).toHaveClass("h-14");
+  });
+
   it("dispara onConfirmar no botão 'Entendi, salvar'", async () => {
     const onConfirmar = vi.fn();
     render(<ModalConfirmarAntecipado onConfirmar={onConfirmar} onCancelar={() => {}} />);
