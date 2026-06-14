@@ -43,7 +43,7 @@ test("walkthrough do app (mobile)", async ({ browser }) => {
 
   // 2. Palpites — preenche um placar pra mostrar a interação
   await abrir("/palpites");
-  const inputs = page.locator('input[type="number"]:not([disabled])');
+  const inputs = page.locator('input[type="text"][inputmode="numeric"]:not([disabled])');
   if ((await inputs.count()) >= 2) {
     await inputs.nth(0).fill("2");
     await pausa(500);

@@ -73,7 +73,7 @@ test.describe("Palpites (autenticado)", () => {
     await expect(page.getByText("Entrar com Google")).toHaveCount(0);
 
     // Primeiro par de inputs editáveis (jogo aberto na aba Palpitar).
-    const inputsEditaveis = page.locator('input[type="number"]:not([disabled])');
+    const inputsEditaveis = page.locator('input[type="text"][inputmode="numeric"]:not([disabled])');
     await expect(inputsEditaveis.first()).toBeVisible();
 
     // 1ª gravação — caminho INSERT.
@@ -125,7 +125,7 @@ test.describe("Palpites (autenticado)", () => {
     // Card de jogo antecipado (badge "Amanhã") + inputs editáveis.
     const cardFuturo = page.locator("article", { hasText: "Amanhã" }).first();
     await expect(cardFuturo).toBeVisible();
-    const inputs = cardFuturo.locator('input[type="number"]:not([disabled])');
+    const inputs = cardFuturo.locator('input[type="text"][inputmode="numeric"]:not([disabled])');
     await inputs.nth(0).fill("2");
     await inputs.nth(1).fill("1");
 
