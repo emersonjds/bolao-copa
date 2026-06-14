@@ -135,14 +135,15 @@ export function CardPalpite({
               nome={partida.mandante.nome}
               tamanho="md"
             />
-            <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
+            <span className="max-w-20 truncate text-center text-xs font-medium text-foreground">
               {partida.mandante.nome}
             </span>
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={valorMandante}
               readOnly
               disabled
@@ -154,7 +155,8 @@ export function CardPalpite({
               ×
             </span>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={valorVisitante}
               readOnly
               disabled
@@ -170,7 +172,7 @@ export function CardPalpite({
               nome={partida.visitante.nome}
               tamanho="md"
             />
-            <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
+            <span className="max-w-20 truncate text-center text-xs font-medium text-foreground">
               {partida.visitante.nome}
             </span>
           </div>
@@ -220,16 +222,15 @@ export function CardPalpite({
               nome={partida.mandante.nome}
               tamanho="md"
             />
-            <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
+            <span className="max-w-20 truncate text-center text-xs font-medium text-foreground">
               {partida.mandante.nome}
             </span>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <input
-              type="number"
-              min={0}
-              max={20}
+              type="text"
               inputMode="numeric"
+              maxLength={2}
               value={valorMandante}
               onChange={(e) => onChangeMandante(e.target.value)}
               disabled={disabled}
@@ -240,10 +241,9 @@ export function CardPalpite({
               ×
             </span>
             <input
-              type="number"
-              min={0}
-              max={20}
+              type="text"
               inputMode="numeric"
+              maxLength={2}
               value={valorVisitante}
               onChange={(e) => onChangeVisitante(e.target.value)}
               disabled={disabled}
@@ -257,7 +257,7 @@ export function CardPalpite({
               nome={partida.visitante.nome}
               tamanho="md"
             />
-            <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
+            <span className="max-w-20 truncate text-center text-xs font-medium text-foreground">
               {partida.visitante.nome}
             </span>
           </div>
@@ -306,17 +306,16 @@ export function CardPalpite({
             nome={partida.mandante.nome}
             tamanho="md"
           />
-          <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
+          <span className="max-w-20 truncate text-center text-xs font-medium text-foreground">
             {partida.mandante.nome}
           </span>
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5">
           <input
-            type="number"
-            min={0}
-            max={20}
+            type="text"
             inputMode="numeric"
+            maxLength={2}
             value={valorMandante}
             onChange={(e) => onChangeMandante(e.target.value)}
             disabled={disabled}
@@ -327,10 +326,9 @@ export function CardPalpite({
             ×
           </span>
           <input
-            type="number"
-            min={0}
-            max={20}
+            type="text"
             inputMode="numeric"
+            maxLength={2}
             value={valorVisitante}
             onChange={(e) => onChangeVisitante(e.target.value)}
             disabled={disabled}
@@ -345,7 +343,7 @@ export function CardPalpite({
             nome={partida.visitante.nome}
             tamanho="md"
           />
-          <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
+          <span className="max-w-20 truncate text-center text-xs font-medium text-foreground">
             {partida.visitante.nome}
           </span>
         </div>

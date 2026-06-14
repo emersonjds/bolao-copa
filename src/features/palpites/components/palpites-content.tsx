@@ -127,16 +127,9 @@ export function PalpitesContent() {
     campo: "mandante" | "visitante",
     valor: string
   ): void {
-    let valorNormalizado: string;
-    if (valor === "") {
-      valorNormalizado = "";
-    } else {
-      const num = parseInt(valor, 10);
-      // O input é type="number": `valor` é sempre "" ou numérico, então parseInt
-      // nunca retorna NaN aqui — o ramo "" é defensivo e inalcançável em runtime.
-      /* v8 ignore next */
-      valorNormalizado = isNaN(num) ? "" : String(Math.min(20, Math.max(0, num)));
-    }
+    const digitos = valor.replace(/\D/g, "");
+    const valorNormalizado =
+      digitos === "" ? "" : String(Math.min(20, Math.max(0, parseInt(digitos, 10))));
 
     const anterior = placaresLocais[partidaId] ?? { mandante: "", visitante: "" };
     const atualizado: PlacarLocal = { ...anterior, [campo]: valorNormalizado };
