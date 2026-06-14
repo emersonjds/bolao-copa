@@ -54,16 +54,16 @@ export default defineConfig({
     // Cria a sessão de teste (storageState) antes dos specs autenticados.
     { name: "setup", testMatch: /auth\.setup\.ts/ },
 
-    // Specs públicos (sem login) — não rodam o palpites.spec (autenticado).
+    // Specs públicos (sem login) — não rodam specs autenticados.
     {
       name: "desktop-chrome",
       use: { ...devices["Desktop Chrome"], storageState: SEED_PUBLIC },
-      testIgnore: [/palpites\.spec\.ts/, /novidades\.spec\.ts/],
+      testIgnore: [/palpites\.spec\.ts/, /novidades\.spec\.ts/, /placar-centralizado\.spec\.ts/],
     },
     {
       name: "mobile-chrome",
       use: { ...devices["Pixel 7"], storageState: SEED_PUBLIC },
-      testIgnore: [/palpites\.spec\.ts/, /novidades\.spec\.ts/],
+      testIgnore: [/palpites\.spec\.ts/, /novidades\.spec\.ts/, /placar-centralizado\.spec\.ts/],
     },
 
     // Modal de novidades: contexto limpo (sem a semente) para o aviso aparecer.
@@ -76,7 +76,7 @@ export default defineConfig({
     // Specs autenticados — reaproveitam o storageState do setup.
     {
       name: "authenticated",
-      testMatch: /palpites\.spec\.ts/,
+      testMatch: [/palpites\.spec\.ts/, /placar-centralizado\.spec\.ts/],
       use: { ...devices["Desktop Chrome"], storageState: STORAGE_STATE },
       dependencies: ["setup"],
     },
