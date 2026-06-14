@@ -91,7 +91,7 @@ describe("CardPalpite — confronto indefinido", () => {
     );
 
     expect(screen.getByText(/classificados após os jogos de grupos/i)).toBeInTheDocument();
-    expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
   });
 });
 
@@ -113,7 +113,7 @@ describe("CardPalpite — travado", () => {
 
     expect(screen.getByText(/travado/i)).toBeInTheDocument();
 
-    const inputs = screen.getAllByRole("spinbutton");
+    const inputs = screen.getAllByRole("textbox");
     inputs.forEach((input) => expect(input).toBeDisabled());
   });
 
@@ -229,11 +229,11 @@ describe("CardPalpite — aberto", () => {
       />
     );
 
-    const inputs = screen.getAllByRole("spinbutton");
+    const inputs = screen.getAllByRole("textbox");
     expect(inputs).toHaveLength(2);
     inputs.forEach((input) => {
       expect(input).not.toBeDisabled();
-      expect(input).toHaveValue(null); // input vazio retorna null em number
+      expect(input).toHaveValue(""); // input de texto vazio retorna ""
     });
   });
 
@@ -265,10 +265,10 @@ describe("CardPalpite — aberto", () => {
 
     expect(screen.queryByText(/salvo/i)).not.toBeInTheDocument();
 
-    const inputMandante = screen.getByRole("spinbutton", { name: /gols do brasil/i });
-    const inputVisitante = screen.getByRole("spinbutton", { name: /gols do argentina/i });
-    expect(inputMandante).toHaveValue(1);
-    expect(inputVisitante).toHaveValue(1);
+    const inputMandante = screen.getByRole("textbox", { name: /gols do brasil/i });
+    const inputVisitante = screen.getByRole("textbox", { name: /gols do argentina/i });
+    expect(inputMandante).toHaveValue("1");
+    expect(inputVisitante).toHaveValue("1");
   });
 
   it("fica pendente quando só o gol do visitante difere do salvo (ramo direito do ||)", () => {
@@ -285,7 +285,7 @@ describe("CardPalpite — aberto", () => {
     );
 
     expect(screen.queryByText(/salvo/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("spinbutton", { name: /gols do argentina/i })).toHaveValue(1);
+    expect(screen.getByRole("textbox", { name: /gols do argentina/i })).toHaveValue("1");
   });
 
   it("chama onChangeMandante ao alterar o input do mandante", async () => {
@@ -301,7 +301,7 @@ describe("CardPalpite — aberto", () => {
       />
     );
 
-    const inputMandante = screen.getByRole("spinbutton", { name: /gols do brasil/i });
+    const inputMandante = screen.getByRole("textbox", { name: /gols do brasil/i });
     await userEvent.type(inputMandante, "2");
 
     expect(onChangeMandante).toHaveBeenCalled();
@@ -320,7 +320,7 @@ describe("CardPalpite — aberto", () => {
       />
     );
 
-    const inputVisitante = screen.getByRole("spinbutton", { name: /gols do argentina/i });
+    const inputVisitante = screen.getByRole("textbox", { name: /gols do argentina/i });
     await userEvent.type(inputVisitante, "1");
 
     expect(onChangeVisitante).toHaveBeenCalled();

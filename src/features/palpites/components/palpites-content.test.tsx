@@ -304,8 +304,8 @@ describe("PalpitesContent", () => {
     render(<PalpitesContent />);
 
     // Preenche ambos os inputs para ativar hasPendingChanges
-    const inputMandante = screen.getByRole("spinbutton", { name: /gols do brasil/i });
-    const inputVisitante = screen.getByRole("spinbutton", { name: /gols do argentina/i });
+    const inputMandante = screen.getByRole("textbox", { name: /gols do brasil/i });
+    const inputVisitante = screen.getByRole("textbox", { name: /gols do argentina/i });
 
     await user.clear(inputMandante);
     await user.type(inputMandante, "2");
@@ -326,6 +326,20 @@ describe("PalpitesContent", () => {
     expect(toast.success).toHaveBeenCalledWith("Palpites salvos!", {
       id: "mock-toast-id",
     });
+  });
+
+  it("saneia o input de texto: ignora não-dígitos e limita o placar a 20", async () => {
+    const user = userEvent.setup();
+    mockPartidasOk();
+    mockPalpitesOk();
+    mockSalvarOk();
+
+    render(<PalpitesContent />);
+
+    const inputMandante = screen.getByRole("textbox", { name: /gols do brasil/i });
+    // Letras são descartadas; "99" é limitado ao teto de 20.
+    await user.type(inputMandante, "a9b9");
+    expect(inputMandante).toHaveValue("20");
   });
 
   // ── Erro de trava (lock) ──────────────────────────────────────────────────
@@ -349,10 +363,10 @@ describe("PalpitesContent", () => {
 
     render(<PalpitesContent />);
 
-    await user.clear(screen.getByRole("spinbutton", { name: /gols do brasil/i }));
-    await user.type(screen.getByRole("spinbutton", { name: /gols do brasil/i }), "3");
-    await user.clear(screen.getByRole("spinbutton", { name: /gols do argentina/i }));
-    await user.type(screen.getByRole("spinbutton", { name: /gols do argentina/i }), "0");
+    await user.clear(screen.getByRole("textbox", { name: /gols do brasil/i }));
+    await user.type(screen.getByRole("textbox", { name: /gols do brasil/i }), "3");
+    await user.clear(screen.getByRole("textbox", { name: /gols do argentina/i }));
+    await user.type(screen.getByRole("textbox", { name: /gols do argentina/i }), "0");
 
     await user.click(screen.getByRole("button", { name: /salvar palpites/i }));
 
@@ -381,8 +395,8 @@ describe("PalpitesContent", () => {
 
     render(<PalpitesContent />);
 
-    await user.type(screen.getByRole("spinbutton", { name: /gols do brasil/i }), "1");
-    await user.type(screen.getByRole("spinbutton", { name: /gols do argentina/i }), "0");
+    await user.type(screen.getByRole("textbox", { name: /gols do brasil/i }), "1");
+    await user.type(screen.getByRole("textbox", { name: /gols do argentina/i }), "0");
 
     await user.click(screen.getByRole("button", { name: /salvar palpites/i }));
 
@@ -402,8 +416,8 @@ describe("PalpitesContent", () => {
 
     render(<PalpitesContent />);
 
-    await user.type(screen.getByRole("spinbutton", { name: /gols do brasil/i }), "1");
-    await user.type(screen.getByRole("spinbutton", { name: /gols do argentina/i }), "0");
+    await user.type(screen.getByRole("textbox", { name: /gols do brasil/i }), "1");
+    await user.type(screen.getByRole("textbox", { name: /gols do argentina/i }), "0");
     await user.click(screen.getByRole("button", { name: /salvar palpites/i }));
 
     await waitFor(() => {
@@ -425,8 +439,8 @@ describe("PalpitesContent", () => {
     render(<PalpitesContent />);
 
     // Preencher ambos os campos aciona ehPendente, que lê `(meusPalpites ?? [])`.
-    await user.type(screen.getByRole("spinbutton", { name: /gols do brasil/i }), "1");
-    await user.type(screen.getByRole("spinbutton", { name: /gols do argentina/i }), "0");
+    await user.type(screen.getByRole("textbox", { name: /gols do brasil/i }), "1");
+    await user.type(screen.getByRole("textbox", { name: /gols do argentina/i }), "0");
 
     // hasPendingChanges ficou true → o botão de salvar aparece.
     expect(screen.getByRole("button", { name: /salvar palpites/i })).toBeInTheDocument();
@@ -446,8 +460,8 @@ describe("PalpitesContent", () => {
 
     render(<PalpitesContent />);
 
-    const mandante = screen.getByRole("spinbutton", { name: /gols do brasil/i });
-    const visitante = screen.getByRole("spinbutton", { name: /gols do argentina/i });
+    const mandante = screen.getByRole("textbox", { name: /gols do brasil/i });
+    const visitante = screen.getByRole("textbox", { name: /gols do argentina/i });
 
     // Limpa (valor "") e redigita: mandante diferente do salvo, visitante igual.
     await user.clear(mandante);
@@ -466,8 +480,8 @@ describe("PalpitesContent", () => {
 
     render(<PalpitesContent />);
 
-    const mandante = screen.getByRole("spinbutton", { name: /gols do brasil/i });
-    const visitante = screen.getByRole("spinbutton", { name: /gols do argentina/i });
+    const mandante = screen.getByRole("textbox", { name: /gols do brasil/i });
+    const visitante = screen.getByRole("textbox", { name: /gols do argentina/i });
 
     await user.clear(mandante);
     await user.type(mandante, "2"); // igual ao salvo → ramo esquerdo falso
@@ -485,8 +499,8 @@ describe("PalpitesContent", () => {
 
     render(<PalpitesContent />);
 
-    const mandante = screen.getByRole("spinbutton", { name: /gols do brasil/i });
-    const visitante = screen.getByRole("spinbutton", { name: /gols do argentina/i });
+    const mandante = screen.getByRole("textbox", { name: /gols do brasil/i });
+    const visitante = screen.getByRole("textbox", { name: /gols do argentina/i });
 
     await user.clear(mandante);
     await user.type(mandante, "2");
@@ -515,10 +529,10 @@ describe("PalpitesContent", () => {
     render(<PalpitesContent />);
 
     // Hoje e amanhã têm inputs editáveis renderizados
-    expect(screen.getByRole("spinbutton", { name: /gols do brasil/i })).toBeInTheDocument();
-    expect(screen.getByRole("spinbutton", { name: /gols do frança/i })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: /gols do brasil/i })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: /gols do frança/i })).toBeInTheDocument();
     // Depois de amanhã não entra na lista
-    expect(screen.queryByRole("spinbutton", { name: /gols do japão/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: /gols do japão/i })).not.toBeInTheDocument();
   });
 
   // ── Palpites antecipados: salvar envia hoje + futuros (com modal na 1ª vez) ──
@@ -535,10 +549,10 @@ describe("PalpitesContent", () => {
 
     render(<PalpitesContent />);
 
-    await user.type(screen.getByRole("spinbutton", { name: /gols do brasil/i }), "2");
-    await user.type(screen.getByRole("spinbutton", { name: /gols do argentina/i }), "1");
-    await user.type(screen.getByRole("spinbutton", { name: /gols do frança/i }), "3");
-    await user.type(screen.getByRole("spinbutton", { name: /gols do alemanha/i }), "3");
+    await user.type(screen.getByRole("textbox", { name: /gols do brasil/i }), "2");
+    await user.type(screen.getByRole("textbox", { name: /gols do argentina/i }), "1");
+    await user.type(screen.getByRole("textbox", { name: /gols do frança/i }), "3");
+    await user.type(screen.getByRole("textbox", { name: /gols do alemanha/i }), "3");
 
     await user.click(screen.getByRole("button", { name: /^salvar palpites$/i }));
 
@@ -575,8 +589,8 @@ describe("PalpitesContent", () => {
 
     render(<PalpitesContent />);
 
-    await user.type(screen.getByRole("spinbutton", { name: /gols do frança/i }), "1");
-    await user.type(screen.getByRole("spinbutton", { name: /gols do alemanha/i }), "0");
+    await user.type(screen.getByRole("textbox", { name: /gols do frança/i }), "1");
+    await user.type(screen.getByRole("textbox", { name: /gols do alemanha/i }), "0");
 
     await user.click(screen.getByRole("button", { name: /^salvar palpites$/i }));
 
@@ -603,7 +617,7 @@ describe("PalpitesContent", () => {
 
     render(<PalpitesContent />);
 
-    await user.type(screen.getByRole("spinbutton", { name: /gols do frança/i }), "3");
+    await user.type(screen.getByRole("textbox", { name: /gols do frança/i }), "3");
 
     await waitFor(() => {
       const cru = localStorage.getItem("palpite-rascunho:user-test:p-amanha");
@@ -628,9 +642,9 @@ describe("PalpitesContent", () => {
     render(<PalpitesContent />);
 
     await waitFor(() => {
-      expect(screen.getByRole("spinbutton", { name: /gols do frança/i })).toHaveValue(1);
+      expect(screen.getByRole("textbox", { name: /gols do frança/i })).toHaveValue("1");
     });
-    expect(screen.getByRole("spinbutton", { name: /gols do alemanha/i })).toHaveValue(2);
+    expect(screen.getByRole("textbox", { name: /gols do alemanha/i })).toHaveValue("2");
   });
 
   it("não re-hidrata uma partida futura já processada quando a lista é refeita", () => {
@@ -653,7 +667,7 @@ describe("PalpitesContent", () => {
     } as unknown as UseQueryResult<Partida[], Error>);
     rerender(<PalpitesContent />);
 
-    expect(screen.getByRole("spinbutton", { name: /gols do frança/i })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: /gols do frança/i })).toBeInTheDocument();
   });
 
   it("não tenta hidratar rascunhos quando não há usuário autenticado", () => {
@@ -673,7 +687,7 @@ describe("PalpitesContent", () => {
     render(<PalpitesContent />);
 
     // O input do jogo futuro renderiza vazio (sem hidratação).
-    expect(screen.getByRole("spinbutton", { name: /gols do frança/i })).toHaveValue(null);
+    expect(screen.getByRole("textbox", { name: /gols do frança/i })).toHaveValue("");
   });
 
   it("reage à borda: ao virar a janela do jogo, atualiza o instante e refaz o fetch", () => {

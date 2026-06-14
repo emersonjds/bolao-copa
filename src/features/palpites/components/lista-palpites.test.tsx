@@ -62,7 +62,7 @@ describe("ListaPalpites", () => {
     expect(cabecalhos).toHaveLength(1);
 
     // Dois cards (inputs do mandante/visitante por card)
-    const inputs = screen.getAllByRole("spinbutton");
+    const inputs = screen.getAllByRole("textbox");
     // 2 cards × 2 inputs = 4
     expect(inputs).toHaveLength(4);
   });
