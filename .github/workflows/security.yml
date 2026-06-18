@@ -1,0 +1,21 @@
+name: security
+
+# Auditoria de dependências: barra vulnerabilidades High/Critical que afetam o
+# build de produção (o front é static export — só `--prod` importa pro deploy).
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --prod --audit-level high

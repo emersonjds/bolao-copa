@@ -22,9 +22,6 @@ const CONTAS_DEV: ContaDev[] = [
   { email: "diego@bolao.test", rotulo: "Diego Lanterna — lanterna" },
 ];
 
-// Senha do cenário local (não-secreta; documentada em .env.test.example).
-const SENHA_DEV = "Senha-Demo-2026!";
-
 interface DevLoginButtonProps {
   /** Caminho para onde ir após logar. */
   next?: string;
@@ -37,11 +34,15 @@ export function DevLoginButton({ next }: DevLoginButtonProps) {
 
   if (process.env.NODE_ENV !== "development") return null;
 
+  // Dentro do guard de dev: em produção o componente já retornou null acima, então
+  // a senha do cenário local fica em código morto e o DCE a remove do bundle.
+  const senhaDev = "Senha-Demo-2026!";
+
   async function entrar() {
     setCarregando(true);
     setErro(null);
     try {
-      await signInDev(email, SENHA_DEV);
+      await signInDev(email, senhaDev);
       window.location.assign(next ?? "/");
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Falha no login dev");
