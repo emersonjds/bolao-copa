@@ -64,5 +64,7 @@ export default defineConfig([
     // Artefatos gerados pelo Playwright (relatório/trace/UI) — não é código nosso.
     "playwright-report/**",
     "test-results/**",
+    // Toolkit de hardening vendorado (Blue Spec) — conteúdo de terceiros.
+    ".bluespec/**",
   ]),
 ]);

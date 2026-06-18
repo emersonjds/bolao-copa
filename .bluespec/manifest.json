@@ -1,0 +1,31 @@
+{
+  "name": "blue-spec",
+  "version": "0.1.1",
+  "agent": "claude",
+  "createdAt": "2026-06-18T21:41:27.766Z",
+  "files": [
+    ".bluespec/templates/charter-template.md",
+    ".bluespec/templates/detect-template.md",
+    ".bluespec/templates/plan-template.md",
+    ".bluespec/templates/harden-template.md",
+    ".bluespec/templates/verify-template.md",
+    ".bluespec/hooks/list.mjs",
+    ".bluespec/hooks/regex.mjs",
+    ".bluespec/hooks/repair.mjs",
+    ".bluespec/hooks/skills.mjs",
+    ".bluespec/hooks/track.mjs",
+    ".bluespec/hooks/untrack.mjs",
+    ".bluespec/skills/browser.md",
+    ".bluespec/skills/javascript.md",
+    ".bluespec/skills/regex.md",
+    ".claude/skills/bluespec.charter/SKILL.md",
+    ".claude/skills/bluespec.detect/SKILL.md",
+    ".claude/skills/bluespec.plan/SKILL.md",
+    ".claude/skills/bluespec.harden/SKILL.md",
+    ".claude/skills/bluespec.verify/SKILL.md",
+    ".claude/skills/bluespec.repair/SKILL.md",
+    ".claude/skills/bluespec.skills/SKILL.md",
+    ".claude/skills/bluespec.list/SKILL.md",
+    ".bluespec/tracking.json"
+  ]
+}

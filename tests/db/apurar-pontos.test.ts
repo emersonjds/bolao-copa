@@ -250,20 +250,80 @@ describe("segurança — grants de profiles (anti-escalonamento de admin)", () =
     );
   });
 
-  it("eh_admin() reflete o is_admin do participante", async () => {
+  it("eh_admin() reflete o is_admin do usuário logado", async () => {
     await db.query("update public.profiles set is_admin = true where id = $1", [userIdTeste]);
-    const admin = await db.query<{ ok: boolean }>("select public.eh_admin($1) as ok", [
-      userIdTeste,
-    ]);
+    await db.query("update public.profiles set is_admin = false where id = $1", [userIdTeste2]);
+
+    // Simula a sessão do admin (auth.uid() = userIdTeste, via GUC do JWT).
+    await db.query(
+      "select set_config('request.jwt.claims', json_build_object('sub', $1::text, 'role', 'authenticated')::text, true)",
+      [userIdTeste]
+    );
+    const admin = await db.query<{ ok: boolean }>("select public.eh_admin() as ok");
     expect(admin.rows[0].ok).toBe(true);
 
-    const sel = await db.query("select id from public.profiles where id <> $1 limit 1", [
-      userIdTeste,
-    ]);
-    const outro = await db.query<{ ok: boolean }>("select public.eh_admin($1) as ok", [
-      sel.rows[0].id,
-    ]);
+    // Simula a sessão de um não-admin → false.
+    await db.query(
+      "select set_config('request.jwt.claims', json_build_object('sub', $1::text, 'role', 'authenticated')::text, true)",
+      [userIdTeste2]
+    );
+    const outro = await db.query<{ ok: boolean }>("select public.eh_admin() as ok");
     expect(outro.rows[0].ok).toBe(false);
+  });
+
+  it("eh_admin não aceita mais uid externo (fecha enumeração de admins)", async () => {
+    // Regressão de segurança (0023): a sobrecarga eh_admin(uuid) foi removida,
+    // então ninguém consegue perguntar "fulano é admin?" sobre outra conta.
+    await expect(db.query("select public.eh_admin($1)", [userIdTeste])).rejects.toThrow(
+      /does not exist/i
+    );
+  });
+});
+
+async function rankingPontos(pid: string): Promise<number> {
+  const r = await db.query<{ participante_id: string; pontos_totais: number }>(
+    "select participante_id, pontos_totais from public.get_ranking()"
+  );
+  const row = r.rows.find((x) => x.participante_id === pid);
+  return row ? Number(row.pontos_totais) : 0;
+}
+
+describe("hardening — validação e integridade (0024–0026)", () => {
+  it("0024: rejeita gols negativos no palpite (CHECK no servidor)", async () => {
+    const p = await novaPartida();
+    await expect(palpita(p, -1, 0)).rejects.toThrow(/palpites_gols_validos|check/i);
+  });
+
+  it("0024: rejeita placar absurdo no resultado da partida", async () => {
+    const p = await novaPartida();
+    await expect(
+      db.query(
+        "update partidas set status='encerrada', gols_mandante=100, gols_visitante=0 where id=$1",
+        [p]
+      )
+    ).rejects.toThrow(/partidas_gols_validos|check/i);
+  });
+
+  it("0026: authenticated não tem grant de UPDATE em updated_at (só nos gols)", async () => {
+    const r = await db.query<{ gols: boolean; upd: boolean }>(
+      `select has_column_privilege('authenticated','public.palpites','gols_mandante','UPDATE') as gols,
+              has_column_privilege('authenticated','public.palpites','updated_at','UPDATE') as upd`
+    );
+    expect(r.rows[0].gols).toBe(true);
+    expect(r.rows[0].upd).toBe(false);
+  });
+
+  it("0025: pontos de partida revertida para não-encerrada saem do ranking", async () => {
+    await db.query("delete from palpites"); // isola (rollback no fim)
+    const p = await novaPartida();
+    await palpita(p, 2, 1);
+    await encerra(p, 2, 1); // crava vitória nos grupos → 5 pts
+    expect(await rankingPontos(participanteId)).toBe(5);
+
+    // Reverte o status sem mudar gols: o trigger de apuração não dispara, mas o
+    // ranking deve parar de contar os pontos residuais.
+    await db.query("update partidas set status='ao-vivo' where id=$1", [p]);
+    expect(await rankingPontos(participanteId)).toBe(0);
   });
 });
 
