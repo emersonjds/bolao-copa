@@ -13,3 +13,14 @@ public/
 
 # Skills vendoradas (conteúdo de terceiros — não formatamos nem checamos)
 docs/superpowers/
+
+# Toolkit de hardening vendorado (Blue Spec) — não formatamos nem checamos
+.bluespec/
+.claude/skills/bluespec.charter/
+.claude/skills/bluespec.detect/
+.claude/skills/bluespec.plan/
+.claude/skills/bluespec.harden/
+.claude/skills/bluespec.verify/
+.claude/skills/bluespec.repair/
+.claude/skills/bluespec.skills/
+.claude/skills/bluespec.list/

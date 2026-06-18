@@ -1,0 +1,109 @@
+{
+  "name": "blue-spec",
+  "entries": [
+    {
+      "name": "Acesso ao bolão sem convite (signup aberto + auto-inscrição + RLS de self-insert)",
+      "paths": [
+        "supabase/config.toml",
+        "supabase/migrations/0004_auth_autoinscricao.sql",
+        "supabase/migrations/0001_initial_schema.sql"
+      ]
+    },
+    {
+      "name": "CSP permite `script-src 'unsafe-inline'`",
+      "paths": [
+        "public/_headers"
+      ]
+    },
+    {
+      "name": "Tokens de sessão em cookie acessível a JavaScript (não-HttpOnly)",
+      "paths": [
+        "src/shared/lib/supabase/client.ts"
+      ]
+    },
+    {
+      "name": "`connect-src` da CSP usa wildcard `*.supabase.co`",
+      "paths": [
+        "public/_headers"
+      ]
+    },
+    {
+      "name": "`eh_admin(uuid)` permite enumerar contas admin",
+      "paths": [
+        "supabase/migrations/0023_eh_admin_sem_parametro.sql",
+        "tests/db/apurar-pontos.test.ts"
+      ]
+    },
+    {
+      "name": "Sem CHECK de range para gols (palpites e partidas)",
+      "paths": [
+        "supabase/migrations/0024_check_gols_validos.sql",
+        "tests/db/apurar-pontos.test.ts"
+      ]
+    },
+    {
+      "name": "`nodemailer` com CVE de SSRF/leitura de arquivo local",
+      "paths": [
+        "package.json",
+        "scripts/notificar.ts"
+      ]
+    },
+    {
+      "name": "`postcss` transitivo com CVE de XSS de build-time",
+      "paths": [
+        "package.json",
+        "pnpm-lock.yaml"
+      ]
+    },
+    {
+      "name": "Ranking conta pontos de partida revertida para não-encerrada",
+      "paths": [
+        "supabase/migrations/0025_ranking_so_encerradas.sql",
+        "tests/db/apurar-pontos.test.ts"
+      ]
+    },
+    {
+      "name": "`updated_at` de palpite falsificável pelo cliente",
+      "paths": [
+        "supabase/migrations/0026_palpite_updated_at_nao_gravavel.sql",
+        "tests/db/apurar-pontos.test.ts"
+      ]
+    },
+    {
+      "name": "Funções de janela do palpite sem `search_path` fixo",
+      "paths": [
+        "supabase/migrations/0027_janela_search_path.sql"
+      ]
+    },
+    {
+      "name": "`SENHA_DEV` hardcoded em escopo de módulo (pode vazar no bundle)",
+      "paths": [
+        "src/features/auth/components/dev-login-button.tsx"
+      ]
+    },
+    {
+      "name": "Chave publishable local hardcoded no `package.json`",
+      "paths": [
+        "package.json"
+      ]
+    },
+    {
+      "name": "MCP `serena` instalado sem pin de commit (supply chain de dev)",
+      "paths": [
+        ".mcp.json"
+      ]
+    },
+    {
+      "name": "Sem scanning de dependências no CI",
+      "paths": [
+        ".github/workflows/security.yml"
+      ]
+    },
+    {
+      "name": "`undici` transitivo com CVE (apenas dev/test)",
+      "paths": [
+        "pnpm-lock.yaml"
+      ]
+    }
+  ]
+}
