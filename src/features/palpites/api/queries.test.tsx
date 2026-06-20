@@ -144,7 +144,7 @@ describe("useSalvarPalpite", () => {
     });
   });
 
-  it("invoca invalidateQueries com a chave de palpites do participante ao salvar com sucesso (onSuccess)", async () => {
+  it("invalida as queries de palpites ao salvar com sucesso (onSuccess)", async () => {
     vi.mocked(useSupabaseUser).mockReturnValue(fakeUser);
     vi.mocked(salvarPalpite).mockResolvedValue(undefined);
 
@@ -166,10 +166,9 @@ describe("useSalvarPalpite", () => {
       });
     });
 
-    // Garante que o branch `if (participanteId)` em onSuccess foi executado.
     await waitFor(() => {
       expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: palpitesKeys.meus("part-id-1"),
+        queryKey: palpitesKeys.all,
       });
     });
   });

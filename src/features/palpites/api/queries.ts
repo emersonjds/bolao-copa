@@ -62,11 +62,7 @@ export function useSalvarPalpite() {
       return salvarPalpite({ participanteId, ...vars });
     },
     onSuccess: () => {
-      if (participanteId) {
-        void queryClient.invalidateQueries({
-          queryKey: palpitesKeys.meus(participanteId),
-        });
-      }
+      void queryClient.invalidateQueries({ queryKey: palpitesKeys.all });
     },
   });
 }
