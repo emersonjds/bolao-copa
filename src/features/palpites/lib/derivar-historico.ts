@@ -42,8 +42,8 @@ export function derivarHistorico(
       return { partida, palpite, pontos: palpite?.pontos ?? null };
     });
 
-  const apurados = itens.filter((item) => item.pontos !== null);
-  const totalPontos = apurados.reduce((soma, item) => soma + (item.pontos ?? 0), 0);
+  const totalPontos = itens.reduce((soma, item) => soma + (item.pontos ?? 0), 0);
+  const jogosApurados = itens.filter((item) => item.pontos !== null).length;
 
-  return { itens, totalPontos, jogosApurados: apurados.length };
+  return { itens, totalPontos, jogosApurados };
 }
