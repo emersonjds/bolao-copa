@@ -43,7 +43,7 @@ const NOME_CLASSES: Record<1 | 2 | 3, string> = {
 const COLUNA_HEIGHT: Record<1 | 2 | 3, string> = { 1: "h-12", 2: "h-8", 3: "h-4" };
 
 function PodioItem({ item, posicao, ehMeuPerfil }: PodioItemProps) {
-  const primeiroNome = item.nome.split(" ").at(0) ?? item.nome;
+  const primeiroNome = item.nome.split(" ")[0];
   const nomeExibido = ehMeuPerfil ? "Você" : primeiroNome;
 
   return (
@@ -66,7 +66,6 @@ function PodioItem({ item, posicao, ehMeuPerfil }: PodioItemProps) {
       <p className={PONTOS_CLASSES[posicao]}>
         {item.pontosTotais} {item.pontosTotais === 1 ? "pt" : "pts"}
       </p>
-      {/* Coluna decorativa do pódio — altura proporcional à posição */}
       <div
         className={`mt-2 w-16 rounded-t-xl bg-white/20 ${COLUNA_HEIGHT[posicao]}`}
         aria-hidden="true"
