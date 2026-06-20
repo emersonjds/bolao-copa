@@ -37,4 +37,12 @@ describe("ModalConfirmarAntecipado", () => {
     await userEvent.keyboard("{Escape}");
     expect(onCancelar).toHaveBeenCalledOnce();
   });
+
+  it("não dispara onCancelar ao pressionar tecla que não seja Escape", async () => {
+    const onCancelar = vi.fn();
+    render(<ModalConfirmarAntecipado onConfirmar={() => {}} onCancelar={onCancelar} />);
+    await userEvent.keyboard("{Enter}");
+    await userEvent.keyboard("a");
+    expect(onCancelar).not.toHaveBeenCalled();
+  });
 });

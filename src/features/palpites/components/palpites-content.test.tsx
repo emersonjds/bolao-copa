@@ -577,6 +577,31 @@ describe("PalpitesContent", () => {
     });
   });
 
+  it("cancela o modal de antecipado ao clicar 'Voltar', sem gravar", async () => {
+    const user = userEvent.setup();
+    const agora = Date.now();
+    const amanha = fazerPartida("p-amanha", "França", "Alemanha", 24 * HORA, 25 * HORA, agora);
+
+    mockPartidasOk([amanha]);
+    mockPalpitesOk();
+    const { mutateAsync } = mockSalvarOk();
+
+    render(<PalpitesContent />);
+
+    await user.type(screen.getByRole("textbox", { name: /gols do frança/i }), "1");
+    await user.type(screen.getByRole("textbox", { name: /gols do alemanha/i }), "0");
+    await user.click(screen.getByRole("button", { name: /^salvar palpites$/i }));
+
+    // Modal de antecipado abre na primeira vez
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+
+    // Cancelar fecha o modal sem acionar o salvamento
+    await user.click(screen.getByRole("button", { name: /voltar/i }));
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(mutateAsync).not.toHaveBeenCalled();
+  });
+
   it("não mostra o modal de novo depois de já ter confirmado", async () => {
     const user = userEvent.setup();
     localStorage.setItem("palpite-antecipado-confirmado:user-test", "1");
