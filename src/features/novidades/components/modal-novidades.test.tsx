@@ -27,4 +27,11 @@ describe("ModalNovidades", () => {
     await userEvent.keyboard("{Escape}");
     expect(onFechar).toHaveBeenCalledOnce();
   });
+
+  it("não chama onFechar ao pressionar tecla que não é Escape", async () => {
+    const onFechar = vi.fn();
+    render(<ModalNovidades aviso={AVISO_ATUAL} onFechar={onFechar} />);
+    await userEvent.keyboard("{ArrowDown}");
+    expect(onFechar).not.toHaveBeenCalled();
+  });
 });

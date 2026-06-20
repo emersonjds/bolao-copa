@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { http, HttpResponse } from "msw";
 import { server } from "@/test/msw/server";
 import { restList, restWrite, restError } from "@/test/msw/handlers";
 import { avisoFoiVisto, marcarAvisoVisto } from "./avisos-fetcher";
@@ -19,6 +20,11 @@ describe("avisoFoiVisto", () => {
       restError("avisos_vistos", { method: "get", status: 400, message: "permission denied" })
     );
     await expect(avisoFoiVisto("user-1", "x")).rejects.toThrow("Falha ao verificar aviso");
+  });
+
+  it("retorna false quando data é null (resposta inesperada do banco)", async () => {
+    server.use(http.get("*/rest/v1/avisos_vistos", () => HttpResponse.json(null)));
+    expect(await avisoFoiVisto("user-1", "novidades-2026-06")).toBe(false);
   });
 });
 
