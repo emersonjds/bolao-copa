@@ -1,21 +1,19 @@
 import type { Partida, Selecao } from "@/entities/partida";
 
-/** Uma linha da tabela de classificação (uma seleção dentro de um grupo). */
 export interface LinhaClassificacao {
   selecao: Selecao;
   /** 1..4, já com a ordenação de desempate aplicada. */
   posicao: number;
   pontos: number; // P — vitória=3, empate=1, derrota=0
   jogos: number; // J — só jogos encerrados com placar
-  vitorias: number; // V
-  empates: number; // E
-  derrotas: number; // D
-  golsPro: number; // GP
-  golsContra: number; // GC
-  saldoGols: number; // SG = GP - GC
+  vitorias: number;
+  empates: number;
+  derrotas: number;
+  golsPro: number;
+  golsContra: number;
+  saldoGols: number;
 }
 
-/** Classificação completa de um grupo + os jogos para o histórico. */
 export interface ClassificacaoGrupo {
   grupo: string; // "A".."L" — vem do banco, sem hardcode
   linhas: LinhaClassificacao[]; // seleções já ordenadas
@@ -49,8 +47,6 @@ function novoAcumulador(selecao: Selecao): Acumulador {
 }
 
 /**
- * Deriva a classificação de cada grupo a partir das partidas.
- *
  * É a tabela dos TIMES (3 vitória / 1 empate / 0 derrota) — não tem nenhuma
  * relação com a pontuação dos palpites (apurar_pontos no Supabase). Read-only.
  *
@@ -74,10 +70,8 @@ export function derivarClassificacao(partidas: Partida[]): ClassificacaoGrupo[] 
   const grupos: ClassificacaoGrupo[] = [];
 
   for (const [grupo, jogos] of porGrupo) {
-    // Map local por grupo — nunca compartilhado entre grupos.
     const acumuladores = new Map<string, Acumulador>();
 
-    // Enumera os times de todos os confrontos (mesmo antes de jogar).
     for (const jogo of jogos) {
       if (!acumuladores.has(jogo.mandante.id)) {
         acumuladores.set(jogo.mandante.id, novoAcumulador(jogo.mandante));
@@ -87,7 +81,6 @@ export function derivarClassificacao(partidas: Partida[]): ClassificacaoGrupo[] 
       }
     }
 
-    // Acumula stats só dos jogos encerrados com placar.
     for (const jogo of jogos) {
       const golsMandante = jogo.golsMandante;
       const golsVisitante = jogo.golsVisitante;
@@ -95,9 +88,8 @@ export function derivarClassificacao(partidas: Partida[]): ClassificacaoGrupo[] 
         continue;
       }
 
-      const mandante = acumuladores.get(jogo.mandante.id);
-      const visitante = acumuladores.get(jogo.visitante.id);
-      if (!mandante || !visitante) continue;
+      const mandante = acumuladores.get(jogo.mandante.id)!;
+      const visitante = acumuladores.get(jogo.visitante.id)!;
 
       mandante.jogos += 1;
       visitante.jogos += 1;

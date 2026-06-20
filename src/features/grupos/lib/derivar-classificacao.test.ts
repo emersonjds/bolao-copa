@@ -137,6 +137,54 @@ describe("derivarClassificacao", () => {
     expect(grupoA.finalizado).toBe(true);
   });
 
+  it("acumula corretamente quando um time aparece como mandante em múltiplos jogos", () => {
+    // MEX joga contra RSA e depois contra BRA no mesmo grupo (MEX=mandante 2×).
+    // Garante que o acumulador do MEX não é recriado na segunda passagem.
+    const [grupoA] = derivarClassificacao([
+      jogo({ mandante: MEX, visitante: RSA, golsMandante: 2, golsVisitante: 0 }),
+      jogo({ mandante: MEX, visitante: BRA, golsMandante: 1, golsVisitante: 0 }),
+    ]);
+
+    const mex = grupoA.linhas.find((l) => l.selecao.id === "mex")!;
+    expect(mex.vitorias).toBe(2);
+    expect(mex.pontos).toBe(6);
+    expect(mex.golsPro).toBe(3);
+    expect(grupoA.linhas).toHaveLength(3); // MEX, RSA, BRA
+  });
+
+  it("acumula corretamente quando um time aparece como visitante em múltiplos jogos", () => {
+    // RSA é visitante nos dois jogos: garante que o acumulador de RSA não é
+    // recriado quando ele aparece pela segunda vez como visitante.
+    const [grupoA] = derivarClassificacao([
+      jogo({ mandante: MEX, visitante: RSA, golsMandante: 1, golsVisitante: 0 }),
+      jogo({ mandante: BRA, visitante: RSA, golsMandante: 2, golsVisitante: 1 }),
+    ]);
+
+    const rsa = grupoA.linhas.find((l) => l.selecao.id === "rsa")!;
+    expect(rsa.derrotas).toBe(2);
+    expect(rsa.pontos).toBe(0);
+    expect(grupoA.linhas).toHaveLength(3); // MEX, RSA, BRA
+  });
+
+  it("pontua vitória do visitante: visitante=3pts, mandante=0", () => {
+    const [grupoA] = derivarClassificacao([
+      jogo({ mandante: MEX, visitante: BRA, golsMandante: 0, golsVisitante: 2 }),
+    ]);
+
+    const bra = grupoA.linhas.find((l) => l.selecao.id === "bra")!;
+    const mex = grupoA.linhas.find((l) => l.selecao.id === "mex")!;
+
+    expect(bra.pontos).toBe(3);
+    expect(bra.vitorias).toBe(1);
+    expect(bra.golsPro).toBe(2);
+    expect(bra.golsContra).toBe(0);
+    expect(bra.saldoGols).toBe(2);
+
+    expect(mex.pontos).toBe(0);
+    expect(mex.derrotas).toBe(1);
+    expect(mex.saldoGols).toBe(-2);
+  });
+
   it("separa grupos e os ordena alfabeticamente; ignora mata-mata", () => {
     const grupos = derivarClassificacao([
       jogo({ grupo: "B", mandante: BRA, visitante: ARG, golsMandante: 1, golsVisitante: 0 }),
