@@ -23,22 +23,18 @@ function getColorClasses(nome: string): string {
 }
 
 function getInitials(nome: string): string {
-  const trimmed = nome.trim();
-  if (!trimmed) return "?";
   // Considera só palavras que começam com letra/número e remove pontuação do
   // início (ex.: "Você (Demo)" → ["Você", "Demo"] = "VD", nunca "V(").
-  const parts = trimmed
+  const parts = nome
+    .trim()
     .split(/\s+/)
     .map((parte) => parte.replace(/^[^\p{L}\p{N}]+/u, ""))
     .filter(Boolean);
   if (parts.length === 0) return "?";
-  if (parts.length === 1) {
-    return (parts[0][0] ?? "?").toUpperCase();
-  }
-  const first = parts[0][0] ?? "";
-  const last = parts[parts.length - 1][0] ?? "";
-  const initials = (first + last).toUpperCase();
-  return initials || "?";
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  const first = parts[0][0];
+  const last = parts[parts.length - 1][0];
+  return (first + last).toUpperCase();
 }
 
 /**
