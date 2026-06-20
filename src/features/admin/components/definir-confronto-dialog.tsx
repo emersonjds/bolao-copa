@@ -31,7 +31,6 @@ const DATA_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
   hour12: false,
 });
 
-/** Diálogo de bottom sheet (mobile) / modal centrado (desktop) para definir o confronto de mata-mata. */
 export function DefinirConfrontoDialog({ partida, open, onOpenChange }: Props) {
   const { data: selecoes, isLoading: loadingSelecoes } = useSelecoes();
   const mutation = useDefinirConfronto();
@@ -43,9 +42,6 @@ export function DefinirConfrontoDialog({ partida, open, onOpenChange }: Props) {
   const dataLabel = DATA_FORMATTER.format(new Date(partida.dataHora));
 
   function handleConfirmar() {
-    if (!mandanteId || !visitanteId) return;
-    if (mandanteId === visitanteId) return;
-
     mutation.mutate(
       { partidaId: partida.id, mandanteId, visitanteId },
       {

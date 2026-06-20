@@ -106,8 +106,6 @@ function CardEdicao({ partida, onCancelar }: CardEdicaoProps) {
   const statusParaSalvar: StatusPartida = encerrada ? "encerrada" : "agendada";
 
   function handleSalvar() {
-    if (!placaresDefined) return;
-
     mutation.mutate(
       {
         partidaId: partida.id,
@@ -118,7 +116,7 @@ function CardEdicao({ partida, onCancelar }: CardEdicaoProps) {
       },
       {
         onSuccess: () => {
-          if (onCancelar) onCancelar(); // fecha modo edição para encerradas
+          if (onCancelar) onCancelar();
         },
       }
     );
