@@ -328,7 +328,7 @@ export function RegrasContent() {
                     <span
                       className={`rounded-full px-2 py-0.5 font-mono text-xs font-bold ${getPalpiteBadgeClasses(item.pontos)}`}
                     >
-                      {item.pontos} {item.pontos === 1 ? "pt" : "pts"}
+                      {item.pontos} pts
                     </span>
                     <span className="text-xs text-muted-foreground">{item.descricao}</span>
                   </li>
