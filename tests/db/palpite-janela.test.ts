@@ -1,8 +1,8 @@
 /**
- * Testes da mecânica "palpite dia a dia": janela [meia-noite BRT, kickoff).
- * Bate no Postgres LOCAL (supabase start). Valida as funções
- * janela_palpite_inicio / janela_inicio e a borda inferior do trigger
- * enforce_palpite_lock adicionada na migração 0019.
+ * Testes da janela de palpite. Bate no Postgres LOCAL (supabase start).
+ * Valida as funções janela_palpite_inicio / janela_inicio (usadas pelo cliente
+ * para agrupar jogos por dia) e o trigger enforce_palpite_lock. Desde a 0021 a
+ * borda inferior foi removida (palpite antecipado liberado); só o apito trava.
  *
  * Cada teste cria partida+palpite numa transação e dá ROLLBACK no fim.
  * Usa participante dedicado (email diferente de apurar-pontos) para não colidir.
@@ -103,31 +103,30 @@ describe("janela_palpite_inicio — meia-noite BRT do dia do jogo", () => {
   });
 });
 
-describe("enforce_palpite_lock — borda inferior (dia a dia)", () => {
-  it("recusa palpite ANTES da janela (jogo daqui a 10 dias)", async () => {
+describe("enforce_palpite_lock — só a borda superior (0021 liberou palpite antecipado)", () => {
+  it("aceita palpite antecipado (jogo daqui a 10 dias) — 0021 removeu a borda inferior", async () => {
     const p = await partidaEm("now() + interval '10 days'");
-    await expect(palpita(p)).rejects.toThrow(/nao_liberado|não liberado|abrem no dia/i);
+    await expect(palpita(p)).resolves.toBeUndefined();
   });
-  it("aceita palpite DENTRO da janela (jogo hoje, 1h no futuro)", async () => {
+  it("aceita palpite de jogo próximo (1h no futuro)", async () => {
     const p = await partidaEm("now() + interval '1 hour'");
     await expect(palpita(p)).resolves.toBeUndefined();
   });
-  it("recusa palpite DEPOIS do apito (borda superior, sem regressão)", async () => {
+  it("recusa palpite DEPOIS do apito (borda superior, mantida)", async () => {
     const p = await partidaEm("now() - interval '1 hour'");
     await expect(palpita(p)).rejects.toThrow(/encerrado|começou/i);
   });
-  it("recusa UPDATE que muda gols ANTES da janela", async () => {
-    // cria a partida HOJE (janela aberta), insere o palpite, depois empurra a
-    // data_hora pra 10 dias no futuro (janela fecha) e tenta editar os gols.
-    const p = await partidaEm("now() + interval '1 hour'");
-    await palpita(p); // 1x0, dentro da janela → ok
-    await db.query("update partidas set data_hora = now() + interval '10 days' where id=$1", [p]);
+  it("aceita UPDATE de gols de jogo distante (sem borda inferior) — 0021", async () => {
+    // Antes da 0021 isto era recusado; hoje editar palpite de jogo futuro é livre,
+    // a única trava é o apito (coberta acima).
+    const p = await partidaEm("now() + interval '10 days'");
+    await palpita(p); // 1x0
     await expect(
       db.query("update palpites set gols_mandante=3 where participante_id=$1 and partida_id=$2", [
         participanteId,
         p,
       ])
-    ).rejects.toThrow(/nao_liberado|não liberado|abrem no dia/i);
+    ).resolves.toBeDefined();
   });
 });
 
