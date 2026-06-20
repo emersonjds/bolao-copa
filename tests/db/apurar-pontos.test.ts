@@ -29,6 +29,7 @@ const BOLAO = "00000000-0000-0000-0000-000000000b01";
 const db = new Client({ connectionString: DB });
 const admin = createClient(SUPA_URL, SERVICE, { auth: { persistSession: false } });
 let participanteId: string;
+let participanteId2: string;
 let userIdTeste: string;
 // Segundo usuário dedicado — necessário para os testes que exigem ≥2
 // participantes (eh_admin, get_ranking). Garante que o arquivo seja
@@ -61,6 +62,11 @@ beforeAll(async () => {
     BOLAO,
   ]);
   participanteId = pa.rows[0].id;
+  const pa2 = await db.query("select id from participantes where user_id=$1 and bolao_id=$2", [
+    userIdTeste2,
+    BOLAO,
+  ]);
+  participanteId2 = pa2.rows[0].id;
   const sel = await db.query("select id from selecoes order by codigo limit 2");
   selA = sel.rows[0].id;
   selB = sel.rows[1].id;
@@ -324,6 +330,145 @@ describe("hardening — validação e integridade (0024–0026)", () => {
     // ranking deve parar de contar os pontos residuais.
     await db.query("update partidas set status='ao-vivo' where id=$1", [p]);
     expect(await rankingPontos(participanteId)).toBe(0);
+  });
+});
+
+/**
+ * Escrita de palpite pelo caminho REAL do app: role `authenticated` + JWT do
+ * dono, exatamente como o PostgREST opera. Os demais testes rodam como
+ * `postgres` (superuser), que IGNORA grants de coluna e RLS — foi essa cegueira
+ * que deixou a 0026 quebrar o upsert em produção sem nenhum teste pegar. Aqui
+ * tudo passa pelos grants e policies de verdade.
+ */
+describe("escrita de palpite como authenticated (caminho real do app)", () => {
+  /** Entra na sessão do usuário: JWT (auth.uid) + troca de role. ROLLBACK reseta. */
+  async function comoAuth(userId: string): Promise<void> {
+    await db.query(
+      "select set_config('request.jwt.claims', json_build_object('sub', $1::text, 'role', 'authenticated')::text, true)",
+      [userId]
+    );
+    await db.query("set role authenticated");
+  }
+
+  /** Upsert idêntico ao do PostgREST: o SET inclui as colunas de conflito. */
+  function upsertPalpite(pid: string, partida: string, gm: number, gv: number) {
+    return db.query(
+      `insert into palpites (participante_id, partida_id, gols_mandante, gols_visitante)
+       values ($1, $2, $3, $4)
+       on conflict (participante_id, partida_id) do update set
+         participante_id = excluded.participante_id,
+         partida_id      = excluded.partida_id,
+         gols_mandante   = excluded.gols_mandante,
+         gols_visitante  = excluded.gols_visitante`,
+      [pid, partida, gm, gv]
+    );
+  }
+
+  it("cria palpite novo via upsert (ramo INSERT)", async () => {
+    const p = await novaPartida();
+    await comoAuth(userIdTeste);
+    await expect(upsertPalpite(participanteId, p, 2, 1)).resolves.toBeDefined();
+  });
+
+  it("0028: edita palpite existente via upsert (ramo ON CONFLICT) — regressão do bug de prod", async () => {
+    const p = await novaPartida();
+    await palpita(p, 1, 0); // INSERT inicial como postgres
+    await comoAuth(userIdTeste);
+    await expect(upsertPalpite(participanteId, p, 3, 2)).resolves.toBeDefined();
+  });
+
+  it("UPDATE simples só dos gols funciona", async () => {
+    const p = await novaPartida();
+    await palpita(p, 1, 0);
+    await comoAuth(userIdTeste);
+    await expect(
+      db.query("update palpites set gols_mandante=4 where participante_id=$1 and partida_id=$2", [
+        participanteId,
+        p,
+      ])
+    ).resolves.toBeDefined();
+  });
+
+  it("0026 mantido: NÃO consegue escrever updated_at", async () => {
+    const p = await novaPartida();
+    await palpita(p, 1, 0);
+    await comoAuth(userIdTeste);
+    await expect(
+      db.query(
+        "update palpites set gols_mandante=2, updated_at=now() where participante_id=$1 and partida_id=$2",
+        [participanteId, p]
+      )
+    ).rejects.toThrow(/permission denied/i);
+  });
+
+  it("anti-fraude: NÃO consegue escrever pontos (UPDATE)", async () => {
+    const p = await novaPartida();
+    await palpita(p, 1, 0);
+    await comoAuth(userIdTeste);
+    await expect(
+      db.query("update palpites set pontos=999 where participante_id=$1 and partida_id=$2", [
+        participanteId,
+        p,
+      ])
+    ).rejects.toThrow(/permission denied/i);
+  });
+
+  it("anti-fraude: NÃO consegue inserir pontos (INSERT)", async () => {
+    const p = await novaPartida();
+    await comoAuth(userIdTeste);
+    await expect(
+      db.query(
+        "insert into palpites (participante_id, partida_id, gols_mandante, gols_visitante, pontos) values ($1,$2,1,0,999)",
+        [participanteId, p]
+      )
+    ).rejects.toThrow(/permission denied/i);
+  });
+
+  it("RLS: NÃO consegue criar palpite para OUTRO participante", async () => {
+    const p = await novaPartida();
+    await comoAuth(userIdTeste);
+    await expect(upsertPalpite(participanteId2, p, 1, 0)).rejects.toThrow(
+      /row-level security|violates/i
+    );
+  });
+
+  it("NÃO consegue realocar palpite próprio para OUTRO participante", async () => {
+    // Defesa em profundidade: o grant de UPDATE em participante_id (necessário
+    // pro upsert) NÃO abre brecha — o trigger de imutabilidade (0012) barra a
+    // troca de dono antes mesmo da checagem de RLS.
+    const p = await novaPartida();
+    await palpita(p, 1, 0); // palpite meu
+    await comoAuth(userIdTeste);
+    await expect(
+      db.query(
+        "update palpites set participante_id=$1 where participante_id=$2 and partida_id=$3",
+        [participanteId2, participanteId, p]
+      )
+    ).rejects.toThrow(/imutável|row-level security|violates/i);
+  });
+
+  it("0024: CHECK de gols vale também para authenticated (gol negativo)", async () => {
+    const p = await novaPartida();
+    await comoAuth(userIdTeste);
+    await expect(upsertPalpite(participanteId, p, -1, 0)).rejects.toThrow(
+      /palpites_gols_validos|check/i
+    );
+  });
+
+  it("0024: CHECK de gols rejeita placar absurdo (>99)", async () => {
+    const p = await novaPartida();
+    await comoAuth(userIdTeste);
+    await expect(upsertPalpite(participanteId, p, 100, 0)).rejects.toThrow(
+      /palpites_gols_validos|check/i
+    );
+  });
+
+  it("janela: NÃO consegue editar palpite depois do apito", async () => {
+    const p = await novaPartida();
+    await palpita(p, 1, 0);
+    await db.query("update partidas set data_hora = now() - interval '1 hour' where id=$1", [p]);
+    await comoAuth(userIdTeste);
+    await expect(upsertPalpite(participanteId, p, 3, 0)).rejects.toThrow(/encerrado|começou/i);
   });
 });
 
