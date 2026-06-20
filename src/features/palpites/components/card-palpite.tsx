@@ -68,13 +68,11 @@ export function CardPalpite({
 }: CardPalpiteProps) {
   const indefinido = isConfrontoIndefinido(partida);
 
-  // Valor exibido: local (em edição) → salvo → vazio
   const valorMandante =
     placarLocal?.mandante ?? (palpiteSalvo ? String(palpiteSalvo.golsMandante) : "");
   const valorVisitante =
     placarLocal?.visitante ?? (palpiteSalvo ? String(palpiteSalvo.golsVisitante) : "");
 
-  // Pendente: placarLocal existe, ambos os campos preenchidos e diferem do salvo
   const hasPendente = (() => {
     if (!placarLocal) return false;
     if (placarLocal.mandante === "" || placarLocal.visitante === "") return false;

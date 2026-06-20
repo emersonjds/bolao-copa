@@ -76,8 +76,6 @@ export function PalpitesContent() {
     agora
   );
 
-  // Hidrata rascunhos locais dos jogos futuros visíveis (uma vez por partida).
-  // Rastreia os ids já hidratados num ref para só processar partidas novas.
   const partidasHidratadas = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (!userId) return;
@@ -196,8 +194,6 @@ export function PalpitesContent() {
     /* v8 ignore next */
     if (pendentes.length === 0) return;
 
-    // Se há jogo antecipado e a pessoa nunca confirmou o aviso, explica antes
-    // de gravar (uma única vez); senão grava direto.
     const temAntecipado = pendentes.some((p) => estadoPalpite(p, agora) === "futuro");
     if (temAntecipado && userId && !jaConfirmouAntecipado(userId)) {
       setModalAntecipadoAberto(true);

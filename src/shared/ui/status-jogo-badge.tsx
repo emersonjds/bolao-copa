@@ -13,7 +13,6 @@ interface StatusJogoBadgeProps {
   className?: string;
 }
 
-/** Tag única de status do jogo, consistente em todos os cards (sempre CAIXA ALTA). */
 export function StatusJogoBadge({ partida, className }: StatusJogoBadgeProps) {
   const { variante, rotulo, comPulso } = derivarStatusBadge(partida);
 

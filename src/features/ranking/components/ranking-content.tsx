@@ -78,7 +78,6 @@ export function RankingContent() {
 
   return (
     <div className="space-y-4">
-      {/* Craque da rodada — auto-suficiente, retorna null quando sem dados */}
       <DestaqueRodadaCard />
 
       <Podio top3={top3} meuParticipanteId={meuParticipanteId} />

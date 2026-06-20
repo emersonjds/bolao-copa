@@ -21,12 +21,6 @@ export interface DefinirConfrontoInput {
   visitanteId: string;
 }
 
-/**
- * Ao salvar com status "encerrada", o trigger `apurar_pontos` do banco
- * calcula automaticamente os pontos dos palpites.
- *
- * Invalida: ["partidas"], ["ranking"], ["destaque-rodada"] no sucesso.
- */
 export function useSalvarResultado() {
   const queryClient = useQueryClient();
 
@@ -62,8 +56,6 @@ export function useSalvarResultado() {
 /**
  * Define os times de uma partida de mata-mata cujo confronto ainda não foi
  * determinado (mandante_id / visitante_id nulos no banco).
- *
- * Invalida: ["partidas"] no sucesso.
  */
 export function useDefinirConfronto() {
   const queryClient = useQueryClient();

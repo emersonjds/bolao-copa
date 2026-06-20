@@ -23,7 +23,6 @@ const CONTAS_DEV: ContaDev[] = [
 ];
 
 interface DevLoginButtonProps {
-  /** Caminho para onde ir após logar. */
   next?: string;
 }
 

@@ -20,7 +20,6 @@ const FASE_LABEL: Record<FaseCopa, string> = {
   final: "Final",
 };
 
-/** Ordem canônica das fases da competição. */
 const ORDEM_FASES: readonly FaseCopa[] = [
   "grupos",
   "trinta-e-dois",

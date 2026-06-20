@@ -57,7 +57,6 @@ export function HistoricoContent({ partidas, meusPalpites }: HistoricoContentPro
   // Corta a lista plana ordenada ANTES de agrupar, mantendo a ordenação desc original.
   const itensPaginados = itens.slice(0, limite);
 
-  // Agrupa por data UTC, mais recente primeiro (itens já vêm ordenados desc).
   const grupos = new Map<string, ItemHistorico[]>();
   for (const item of itensPaginados) {
     const dataStr = item.partida.dataHora.slice(0, 10);

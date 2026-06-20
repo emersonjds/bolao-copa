@@ -3,7 +3,6 @@
 import { useContext } from "react";
 import { AuthContext, type AuthState } from "./auth-context";
 
-/** Estado completo de auth. Lança se usado fora do AuthProvider. */
 export function useAuth(): AuthState {
   const ctx = useContext(AuthContext);
   if (ctx === undefined) {

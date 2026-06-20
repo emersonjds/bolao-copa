@@ -1,6 +1,5 @@
 import { getSupabaseBrowserClient } from "@/shared/lib/supabase";
 
-/** Já viu (e fechou) este aviso? Consulta a tabela avisos_vistos do próprio usuário. */
 export async function avisoFoiVisto(userId: string, avisoId: string): Promise<boolean> {
   const supabase = getSupabaseBrowserClient();
   const { data, error } = await supabase
@@ -14,7 +13,6 @@ export async function avisoFoiVisto(userId: string, avisoId: string): Promise<bo
   return (data?.length ?? 0) > 0;
 }
 
-/** Marca o aviso como visto. Upsert para ser idempotente (fechar de novo não erra). */
 export async function marcarAvisoVisto(userId: string, avisoId: string): Promise<void> {
   const supabase = getSupabaseBrowserClient();
   const { error } = await supabase

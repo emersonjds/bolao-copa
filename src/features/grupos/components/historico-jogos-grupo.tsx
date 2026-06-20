@@ -82,7 +82,6 @@ function ItemHistorico({ jogo }: { jogo: Partida }) {
   );
 }
 
-/** Lista os jogos de um grupo com placar (encerrados) ou data (agendados). */
 export function HistoricoJogosGrupo({ grupo, jogos }: HistoricoJogosGrupoProps) {
   if (jogos.length === 0) return null;
   const ordenados = ordenarJogos(jogos);

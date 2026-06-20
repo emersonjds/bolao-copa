@@ -15,14 +15,11 @@
 export const PIX_INSCRICAO = {
   /** Chave PIX (telefone, só dígitos) usada para roteamento do pagamento. */
   chave: "11948772834",
-  /** Forma legível da chave para exibição. */
   chaveFormatada: "11 94877-2834",
   recebedor: "JOAO GUSTAVO TOMAZ BARBOSA",
-  /** Prazo limite para pagar a inscrição. */
   prazo: "10/06/2026",
   /** Contato (WhatsApp) do organizador para receber o comprovante de pagamento. */
   contatoComprovante: "11971801555",
-  /** Forma legível do contato do organizador. */
   contatoComprovanteFormatado: "11 97180-1555",
   /** Payload EMV completo (BR Code) — fonte única do QR e do "copia e cola". */
   brCode:

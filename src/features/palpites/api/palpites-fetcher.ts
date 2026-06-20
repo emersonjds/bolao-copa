@@ -106,8 +106,6 @@ export async function salvarPalpite(input: SalvarPalpiteInput): Promise<void> {
   );
 
   if (error) {
-    // Mensagens possíveis: "Palpite encerrado: a partida já começou" (trigger),
-    // erros de RLS, problemas de rede.
     throw new Error(`Falha ao salvar palpite: ${error.message}`);
   }
 }

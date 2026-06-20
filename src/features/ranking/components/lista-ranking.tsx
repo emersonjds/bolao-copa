@@ -7,7 +7,6 @@ interface ListaRankingProps {
   /** Itens da posição 4 em diante, já fatiados pelo componente pai. */
   items: ItemRanking[];
   meuParticipanteId: string | null;
-  /** Número da posição do primeiro item (padrão: 4). */
   startPosition?: number;
 }
 
@@ -66,7 +65,6 @@ function ItemRankingRow({ item, posicao, ehMeuPerfil }: ItemRankingRowProps) {
   );
 }
 
-/** Retorna null quando a lista está vazia (sem ruído visual desnecessário). */
 export function ListaRanking({ items, meuParticipanteId, startPosition = 4 }: ListaRankingProps) {
   if (items.length === 0) return null;
 

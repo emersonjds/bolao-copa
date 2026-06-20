@@ -30,7 +30,6 @@ interface PartidaDb {
 }
 
 /**
- * Constrói um Selecao a partir da linha do banco.
  * Quando a seleção real é null (mata-mata com time indefinido), usa o rótulo
  * de exibição (ex.: "2A", "Vencedor Grupo A") para manter o contrato do tipo.
  */
@@ -40,7 +39,6 @@ function mapSelecao(db: SelecaoDb | null, label: string | null): Selecao {
     // código FIFA para exibir em PT-BR, com fallback no nome original.
     return { id: db.id, nome: nomeSelecaoPt(db.codigo, db.nome), codigo: db.codigo };
   }
-  // Placeholder: código usa até 3 caracteres do rótulo para exibição compacta
   const rotulo = label ?? "?";
   return {
     id: "",
@@ -69,9 +67,6 @@ function mapPartida(db: PartidaDb): Partida {
 }
 
 /**
- * Lê todas as partidas do Supabase com join nas seleções (mandante/visitante),
- * ordenadas por data_hora ascendente.
- *
  * A autenticação é tratada automaticamente pelo cliente Supabase (RLS via
  * policy "partidas_select" que libera leitura para authenticated).
  */

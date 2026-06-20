@@ -9,13 +9,6 @@ import { AdminContent } from "@/features/admin";
 /**
  * Rota protegida /admin.
  *
- * Fluxo de acesso:
- * 1. Enquanto a sessão Supabase carrega → skeleton de carregamento.
- * 2. Sem sessão (user = null) → redirect para "/" + toast de erro.
- * 3. Com sessão mas sem is_admin → aguarda a query de perfil (que usa o mesmo
- *    cache de useIsAdmin) e redireciona após 800ms caso não seja admin.
- * 4. is_admin = true → renderiza AdminContent.
- *
  * O timer de 800ms garante que a query de profiles (staleTime: Infinity)
  * tenha tempo de resolver antes de decidir redirecionar um admin legítimo
  * em sessão recém-iniciada.

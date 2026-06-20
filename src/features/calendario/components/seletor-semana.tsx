@@ -12,10 +12,6 @@ interface SeletorSemanaProps {
   onNextWeek: () => void;
 }
 
-/**
- * Builds an accessible label for a day button, e.g. "Sábado, 13 de junho".
- * Used by screen readers — visible label is the numeric date only.
- */
 function ariaLabelDia(date: Date): string {
   return date.toLocaleDateString("pt-BR", {
     weekday: "long",

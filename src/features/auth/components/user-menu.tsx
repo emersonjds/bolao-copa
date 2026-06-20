@@ -26,7 +26,6 @@ function getAvatarUrl(user: User): string | null {
   return null;
 }
 
-/** Fecha ao clicar fora ou pressionar Escape. */
 export function UserMenu() {
   const user = useUser();
   const isAdmin = useIsAdmin();

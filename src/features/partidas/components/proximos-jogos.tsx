@@ -114,7 +114,6 @@ export function ProximosJogos({ excluirProximoDestaque = false }: ProximosJogosP
     return <p className="text-sm text-destructive">Não foi possível carregar os jogos.</p>;
   }
 
-  // Na home, o próximo jogo já aparece no card de destaque — tira ele daqui pra não duplicar.
   const destaque = excluirProximoDestaque ? encontrarProximoJogo(partidas) : null;
   const visiveis = destaque ? partidas.filter((partida) => partida.id !== destaque.id) : partidas;
   const grupos = agruparProximosDias(visiveis, 2);

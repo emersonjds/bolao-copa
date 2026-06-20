@@ -12,7 +12,6 @@ interface SeletorVistaProps {
   onSelect: (vista: VistaPalpites) => void;
 }
 
-/** Alterna entre palpitar (jogos abertos) e o histórico (jogos travados). */
 export function SeletorVista({ vista, onSelect }: SeletorVistaProps) {
   return (
     <div

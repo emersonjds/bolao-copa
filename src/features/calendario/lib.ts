@@ -53,10 +53,6 @@ export function formatarHorario(dataHora: string): string {
   return `${horas}h${minutos}`;
 }
 
-/**
- * Returns the Sunday that starts the ISO-week containing `date`, at midnight
- * local time. Used to anchor the 7-day SeletorSemana window.
- */
 export function getWeekStart(date: Date): Date {
   const d = new Date(date);
   d.setDate(d.getDate() - d.getDay());
