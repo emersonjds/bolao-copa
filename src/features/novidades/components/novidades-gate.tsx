@@ -2,15 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/shared/lib/supabase";
-import { type Aviso, AVISOS } from "../model/aviso-atual";
+import { type Aviso, type Gatilho, AVISOS } from "../model/aviso-atual";
 import { avisoFoiVisto, marcarAvisoVisto } from "../api/avisos-fetcher";
+import { mataMataDefinido } from "../api/mata-mata-pronto";
 import { avisoVistoLocal, marcarAvisoVistoLocal } from "../lib/aviso-local";
 import { ModalNovidades } from "./modal-novidades";
 
+// Cada gatilho de aviso mapeia para a consulta que diz se já está disponível.
+const VERIFICAR_GATILHO: Record<Gatilho, () => Promise<boolean>> = {
+  "mata-mata-definido": mataMataDefinido,
+};
+
 /**
- * Itera AVISOS em ordem e retorna o primeiro não visto, ou null se todos vistos.
- * jaVistos: IDs já dispensados nesta sessão (evita re-consultar o banco).
- * Falhas de leitura são silenciosas — aviso informativo, não crítico.
+ * Itera AVISOS em ordem e retorna o primeiro não visto cujo gatilho já está
+ * disponível, ou null. jaVistos: IDs já dispensados nesta sessão (evita
+ * re-consultar o banco). Falhas de leitura são silenciosas — aviso informativo.
  */
 async function encontrarProximo(
   userId: string | null,
@@ -18,15 +24,23 @@ async function encontrarProximo(
 ): Promise<Aviso | null> {
   for (const aviso of AVISOS) {
     if (jaVistos.has(aviso.id)) continue;
+
+    let naoVisto: boolean;
     if (userId) {
       try {
-        if (!(await avisoFoiVisto(userId, aviso.id))) return aviso;
+        naoVisto = !(await avisoFoiVisto(userId, aviso.id));
       } catch {
         return null; // silencioso
       }
-    } else if (!avisoVistoLocal(aviso.id)) {
-      return aviso;
+    } else {
+      naoVisto = !avisoVistoLocal(aviso.id);
     }
+    if (!naoVisto) continue;
+
+    // Não visto: só exibe quando o gatilho de dados já está disponível.
+    if (aviso.gatilho && !(await VERIFICAR_GATILHO[aviso.gatilho]())) continue;
+
+    return aviso;
   }
   return null;
 }

@@ -21,6 +21,11 @@ const { avisoVistoLocal, marcarAvisoVistoLocal } = vi.hoisted(() => ({
 }));
 vi.mock("../lib/aviso-local", () => ({ avisoVistoLocal, marcarAvisoVistoLocal }));
 
+const { mataMataDefinido } = vi.hoisted(() => ({
+  mataMataDefinido: vi.fn<() => Promise<boolean>>(),
+}));
+vi.mock("../api/mata-mata-pronto", () => ({ mataMataDefinido }));
+
 import { NovidadesGate } from "./novidades-gate";
 
 function semSessao() {
@@ -36,6 +41,7 @@ describe("NovidadesGate", () => {
     vi.clearAllMocks();
     marcarAvisoVisto.mockResolvedValue(undefined);
     marcarAvisoVistoLocal.mockReturnValue(undefined);
+    mataMataDefinido.mockResolvedValue(true);
   });
 
   describe("usuário logado", () => {
@@ -213,6 +219,44 @@ describe("NovidadesGate", () => {
           expect(screen.getByText("Começou o mata-mata!")).toBeInTheDocument(),
         );
       });
+    });
+  });
+
+  describe("gatilho de fase (mata-mata)", () => {
+    it("não exibe o aviso de mata-mata enquanto os confrontos não estão definidos", async () => {
+      getSession.mockResolvedValue(comSessao());
+      avisoFoiVisto
+        .mockResolvedValueOnce(true) // novidades: visto
+        .mockResolvedValueOnce(false); // mata-mata: não visto
+      mataMataDefinido.mockResolvedValue(false);
+
+      render(<NovidadesGate />);
+
+      await waitFor(() => expect(mataMataDefinido).toHaveBeenCalled());
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("exibe o aviso de mata-mata assim que os confrontos ficam definidos", async () => {
+      getSession.mockResolvedValue(comSessao());
+      avisoFoiVisto.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+      mataMataDefinido.mockResolvedValue(true);
+
+      render(<NovidadesGate />);
+
+      await waitFor(() =>
+        expect(screen.getByText("Começou o mata-mata!")).toBeInTheDocument(),
+      );
+    });
+
+    it("não checa o gatilho de um aviso já visto", async () => {
+      getSession.mockResolvedValue(comSessao());
+      avisoFoiVisto.mockResolvedValue(true); // novidades e mata-mata: vistos
+
+      render(<NovidadesGate />);
+
+      await waitFor(() => expect(avisoFoiVisto).toHaveBeenCalledTimes(2));
+      expect(mataMataDefinido).not.toHaveBeenCalled();
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
   });
 
