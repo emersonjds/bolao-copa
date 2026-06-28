@@ -48,7 +48,7 @@ export function PalpitesContent() {
   const listaPartidas = partidas ?? [];
 
   const [vista, setVista] = useState<VistaPalpites>("palpitar");
-  const [faseSelecionada, setFaseSelecionada] = useState<FaseCopa>("grupos");
+  const [faseSelecionada, setFaseSelecionada] = useState<FaseCopa | null>(null);
   const [placaresLocais, setPlacaresLocais] = useState<Record<string, PlacarLocal>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [modalAntecipadoAberto, setModalAntecipadoAberto] = useState(false);
@@ -70,9 +70,19 @@ export function PalpitesContent() {
     (fase) => fase === "grupos" || listaPartidas.some((p) => p.fase === fase)
   );
 
+  // Fase atual = última fase disponível com jogo ainda não encerrado.
+  // Null no estado significa "sem escolha manual" → usa o derivado.
+  const faseAtual: FaseCopa =
+    [...fasesDisponiveis].reverse().find((f) =>
+      listaPartidas.some((p) => p.fase === f && p.status !== "encerrada")
+    ) ??
+    fasesDisponiveis[fasesDisponiveis.length - 1] ??
+    "grupos";
+  const faseEfetiva = faseSelecionada ?? faseAtual;
+
   // Aba "Palpitar": jogos liberados hoje + o próximo dia (mecânica dia a dia).
   const partidasFiltradas = filtrarHojeEProximoDia(
-    listaPartidas.filter((p) => p.fase === faseSelecionada),
+    listaPartidas.filter((p) => p.fase === faseEfetiva),
     agora
   );
 
@@ -259,7 +269,7 @@ export function PalpitesContent() {
         <>
           <FiltroFase
             fases={fasesDisponiveis}
-            faseSelecionada={faseSelecionada}
+            faseSelecionada={faseEfetiva}
             onSelect={setFaseSelecionada}
           />
 

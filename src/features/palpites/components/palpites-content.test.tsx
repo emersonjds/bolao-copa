@@ -715,6 +715,84 @@ describe("PalpitesContent", () => {
     expect(screen.getByRole("textbox", { name: /gols do frança/i })).toHaveValue("");
   });
 
+  // ── Fase ativa: default para a fase com jogos abertos ─────────────────────
+
+  it("abre na aba Trinta e Dois quando grupos estão encerrados e há jogo aberto de trinta-e-dois", () => {
+    const gruposEncerrada: Partida = {
+      ...partidaAberta,
+      id: "part-grupos-enc",
+      status: "encerrada",
+      golsMandante: 1,
+      golsVisitante: 0,
+    };
+    const trintaEDois: Partida = {
+      ...partidaAberta,
+      id: "part-32",
+      fase: "trinta-e-dois",
+      grupo: null,
+      status: "agendada",
+      dataHora: "2099-07-01T19:00:00.000Z",
+      janelaInicio: "2020-01-01T03:00:00Z",
+    };
+
+    mockPartidasOk([gruposEncerrada, trintaEDois]);
+    mockPalpitesOk();
+    mockSalvarOk();
+
+    render(<PalpitesContent />);
+
+    expect(screen.getByRole("tab", { name: "Trinta e Dois" })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+    expect(screen.getByRole("tab", { name: "Fase de Grupos" })).toHaveAttribute(
+      "aria-selected",
+      "false"
+    );
+  });
+
+  it("muda para Fase de Grupos ao clicar na aba, sobrepondo o default derivado", async () => {
+    const user = userEvent.setup();
+    const gruposEncerrada: Partida = {
+      ...partidaAberta,
+      id: "part-grupos-enc",
+      status: "encerrada",
+      golsMandante: 1,
+      golsVisitante: 0,
+    };
+    const trintaEDois: Partida = {
+      ...partidaAberta,
+      id: "part-32",
+      fase: "trinta-e-dois",
+      grupo: null,
+      status: "agendada",
+      dataHora: "2099-07-01T19:00:00.000Z",
+      janelaInicio: "2020-01-01T03:00:00Z",
+    };
+
+    mockPartidasOk([gruposEncerrada, trintaEDois]);
+    mockPalpitesOk();
+    mockSalvarOk();
+
+    render(<PalpitesContent />);
+
+    expect(screen.getByRole("tab", { name: "Trinta e Dois" })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+
+    await user.click(screen.getByRole("tab", { name: "Fase de Grupos" }));
+
+    expect(screen.getByRole("tab", { name: "Fase de Grupos" })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+    expect(screen.getByRole("tab", { name: "Trinta e Dois" })).toHaveAttribute(
+      "aria-selected",
+      "false"
+    );
+  });
+
   it("reage à borda: ao virar a janela do jogo, atualiza o instante e refaz o fetch", () => {
     vi.useFakeTimers();
     try {
