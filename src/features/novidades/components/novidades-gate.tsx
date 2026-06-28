@@ -2,62 +2,82 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/shared/lib/supabase";
-import { AVISO_ATUAL } from "../model/aviso-atual";
+import { type Aviso, AVISOS } from "../model/aviso-atual";
 import { avisoFoiVisto, marcarAvisoVisto } from "../api/avisos-fetcher";
 import { avisoVistoLocal, marcarAvisoVistoLocal } from "../lib/aviso-local";
 import { ModalNovidades } from "./modal-novidades";
 
 /**
- * Decide se o modal de novidades aparece. Logado: fonte de verdade no banco
- * (avisos_vistos). Anônimo: fallback localStorage. Falhas de leitura/escrita
- * são silenciosas — o aviso é informativo, não crítico.
+ * Itera AVISOS em ordem e retorna o primeiro não visto, ou null se todos vistos.
+ * jaVistos: IDs já dispensados nesta sessão (evita re-consultar o banco).
+ * Falhas de leitura são silenciosas — aviso informativo, não crítico.
  */
+async function encontrarProximo(
+  userId: string | null,
+  jaVistos: Set<string>,
+): Promise<Aviso | null> {
+  for (const aviso of AVISOS) {
+    if (jaVistos.has(aviso.id)) continue;
+    if (userId) {
+      try {
+        if (!(await avisoFoiVisto(userId, aviso.id))) return aviso;
+      } catch {
+        return null; // silencioso
+      }
+    } else if (!avisoVistoLocal(aviso.id)) {
+      return aviso;
+    }
+  }
+  return null;
+}
+
 export function NovidadesGate() {
-  const [aberto, setAberto] = useState(false);
+  const [avisoAtivo, setAvisoAtivo] = useState<Aviso | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  // ponytail: in-session dismissed IDs — evita re-consultar o banco para avisos já fechados
+  const [vistos, setVistos] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     let cancelado = false;
 
-    async function decidir(): Promise<void> {
+    async function iniciar(): Promise<void> {
       // getSession lê a sessão local (sem rede) e é definitiva — diferente do
       // useSupabaseUser, que retorna null tanto carregando quanto anônimo.
       const { data } = await getSupabaseBrowserClient().auth.getSession();
       const id = data.session?.user?.id ?? null;
       if (cancelado) return;
       setUserId(id);
-
-      if (id) {
-        try {
-          const visto = await avisoFoiVisto(id, AVISO_ATUAL.id);
-          if (!cancelado && !visto) setAberto(true);
-        } catch {
-          /* silencioso */
-        }
-      } else if (!avisoVistoLocal(AVISO_ATUAL.id)) {
-        setAberto(true);
-      }
+      const proximo = await encontrarProximo(id, new Set());
+      if (!cancelado) setAvisoAtivo(proximo);
     }
 
-    void decidir();
+    void iniciar();
     return () => {
       cancelado = true;
     };
   }, []);
 
   async function fechar(): Promise<void> {
-    setAberto(false);
+    if (!avisoAtivo) return;
+    const fechado = avisoAtivo;
+    const novosVistos = new Set([...vistos, fechado.id]);
+    setVistos(novosVistos);
+    setAvisoAtivo(null);
+
     if (userId) {
       try {
-        await marcarAvisoVisto(userId, AVISO_ATUAL.id);
+        await marcarAvisoVisto(userId, fechado.id);
       } catch {
         /* silencioso */
       }
     } else {
-      marcarAvisoVistoLocal(AVISO_ATUAL.id);
+      marcarAvisoVistoLocal(fechado.id);
     }
+
+    const proximo = await encontrarProximo(userId, novosVistos);
+    setAvisoAtivo(proximo);
   }
 
-  if (!aberto) return null;
-  return <ModalNovidades aviso={AVISO_ATUAL} onFechar={() => void fechar()} />;
+  if (!avisoAtivo) return null;
+  return <ModalNovidades aviso={avisoAtivo} onFechar={() => void fechar()} />;
 }

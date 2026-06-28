@@ -70,7 +70,8 @@ describe("NovidadesGate", () => {
 
     it("fecha o modal e marca como visto ao clicar em Bora!", async () => {
       getSession.mockResolvedValue(comSessao());
-      avisoFoiVisto.mockResolvedValue(false);
+      // primeira chamada: novidades não visto → abre; segunda: mata-mata visto → fila vazia
+      avisoFoiVisto.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
 
       render(<NovidadesGate />);
       await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
@@ -78,12 +79,12 @@ describe("NovidadesGate", () => {
       await userEvent.click(screen.getByRole("button", { name: /bora!/i }));
 
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-      expect(marcarAvisoVisto).toHaveBeenCalledWith("user-1", expect.any(String));
+      expect(marcarAvisoVisto).toHaveBeenCalledWith("user-1", "novidades-2026-06");
     });
 
     it("fecha o modal mesmo quando marcarAvisoVisto lança (falha silenciosa)", async () => {
       getSession.mockResolvedValue(comSessao());
-      avisoFoiVisto.mockResolvedValue(false);
+      avisoFoiVisto.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
       marcarAvisoVisto.mockRejectedValue(new Error("falha ao marcar"));
 
       render(<NovidadesGate />);
@@ -117,7 +118,8 @@ describe("NovidadesGate", () => {
 
     it("fecha o modal e marca como visto no localStorage ao clicar em Bora!", async () => {
       getSession.mockResolvedValue(semSessao());
-      avisoVistoLocal.mockReturnValue(false);
+      // novidades não visto → abre; após fechar, mata-mata visto → fila vazia
+      avisoVistoLocal.mockReturnValueOnce(false).mockReturnValueOnce(true);
 
       render(<NovidadesGate />);
       await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
@@ -125,8 +127,92 @@ describe("NovidadesGate", () => {
       await userEvent.click(screen.getByRole("button", { name: /bora!/i }));
 
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-      expect(marcarAvisoVistoLocal).toHaveBeenCalledWith(expect.any(String));
+      expect(marcarAvisoVistoLocal).toHaveBeenCalledWith("novidades-2026-06");
       expect(marcarAvisoVisto).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("fila de avisos", () => {
+    describe("usuário logado", () => {
+      it("pula o primeiro aviso se já visto e mostra o segundo", async () => {
+        getSession.mockResolvedValue(comSessao());
+        avisoFoiVisto
+          .mockResolvedValueOnce(true) // novidades: visto
+          .mockResolvedValueOnce(false); // mata-mata: não visto
+
+        render(<NovidadesGate />);
+
+        await waitFor(() =>
+          expect(screen.getByText("Começou o mata-mata!")).toBeInTheDocument(),
+        );
+      });
+
+      it("não renderiza nada quando todos os avisos foram vistos", async () => {
+        getSession.mockResolvedValue(comSessao());
+        avisoFoiVisto.mockResolvedValue(true);
+
+        render(<NovidadesGate />);
+
+        await waitFor(() => expect(avisoFoiVisto).toHaveBeenCalledTimes(2));
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      });
+
+      it("após fechar o primeiro, exibe o segundo aviso", async () => {
+        getSession.mockResolvedValue(comSessao());
+        avisoFoiVisto.mockResolvedValue(false);
+
+        render(<NovidadesGate />);
+        await waitFor(() =>
+          expect(screen.getByText("Novidades no bolão")).toBeInTheDocument(),
+        );
+
+        await userEvent.click(screen.getByRole("button", { name: /bora!/i }));
+
+        await waitFor(() =>
+          expect(screen.getByText("Começou o mata-mata!")).toBeInTheDocument(),
+        );
+      });
+    });
+
+    describe("usuário anônimo", () => {
+      it("pula o primeiro aviso se já visto localmente e mostra o segundo", async () => {
+        getSession.mockResolvedValue(semSessao());
+        avisoVistoLocal
+          .mockReturnValueOnce(true) // novidades: visto
+          .mockReturnValueOnce(false); // mata-mata: não visto
+
+        render(<NovidadesGate />);
+
+        await waitFor(() =>
+          expect(screen.getByText("Começou o mata-mata!")).toBeInTheDocument(),
+        );
+      });
+
+      it("não renderiza nada quando todos os avisos foram vistos localmente", async () => {
+        getSession.mockResolvedValue(semSessao());
+        avisoVistoLocal.mockReturnValue(true);
+
+        render(<NovidadesGate />);
+
+        await waitFor(() => expect(avisoVistoLocal).toHaveBeenCalledTimes(2));
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      });
+
+      it("após fechar o primeiro, exibe o segundo aviso", async () => {
+        getSession.mockResolvedValue(semSessao());
+        avisoVistoLocal.mockReturnValue(false);
+
+        render(<NovidadesGate />);
+        await waitFor(() =>
+          expect(screen.getByText("Novidades no bolão")).toBeInTheDocument(),
+        );
+
+        await userEvent.click(screen.getByRole("button", { name: /bora!/i }));
+
+        await waitFor(() =>
+          expect(screen.getByText("Começou o mata-mata!")).toBeInTheDocument(),
+        );
+      });
     });
   });
 
