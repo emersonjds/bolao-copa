@@ -734,8 +734,19 @@ describe("PalpitesContent", () => {
       dataHora: "2099-07-01T19:00:00.000Z",
       janelaInicio: "2020-01-01T03:00:00Z",
     };
+    // Fases futuras já existem no banco como placeholders agendados; a aba padrão
+    // deve ser a primeira em aberto (trinta-e-dois), nunca a última (final).
+    const final: Partida = {
+      ...partidaAberta,
+      id: "part-final",
+      fase: "final",
+      grupo: null,
+      status: "agendada",
+      dataHora: "2099-07-19T19:00:00.000Z",
+      janelaInicio: "2099-07-18T03:00:00Z",
+    };
 
-    mockPartidasOk([gruposEncerrada, trintaEDois]);
+    mockPartidasOk([gruposEncerrada, trintaEDois, final]);
     mockPalpitesOk();
     mockSalvarOk();
 
@@ -746,6 +757,10 @@ describe("PalpitesContent", () => {
       "true"
     );
     expect(screen.getByRole("tab", { name: "Fase de Grupos" })).toHaveAttribute(
+      "aria-selected",
+      "false"
+    );
+    expect(screen.getByRole("tab", { name: "Final" })).toHaveAttribute(
       "aria-selected",
       "false"
     );
