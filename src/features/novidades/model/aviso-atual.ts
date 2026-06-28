@@ -4,11 +4,20 @@ export interface ItemNovidade {
   descricao: string;
 }
 
+/** Pré-condição de dados para um aviso aparecer (resolvida na camada api). */
+export type Gatilho = "mata-mata-definido";
+
 export interface Aviso {
   /** Versão do anúncio: trocar o id faz o modal reaparecer para todos. */
   id: string;
   titulo: string;
   itens: ItemNovidade[];
+  /**
+   * Só exibe quando este gatilho de dados estiver disponível. Sem gatilho, o
+   * aviso aparece assim que não estiver visto. Evita anunciar uma fase antes de
+   * os confrontos existirem (o usuário dispensaria o modal cedo demais).
+   */
+  gatilho?: Gatilho;
 }
 
 export const AVISO_ATUAL: Aviso = {
@@ -32,6 +41,7 @@ export const AVISO_ATUAL: Aviso = {
 export const AVISO_MATA_MATA: Aviso = {
   id: "mata-mata-2026-06",
   titulo: "Começou o mata-mata!",
+  gatilho: "mata-mata-definido",
   itens: [
     {
       emoji: "🔥",
