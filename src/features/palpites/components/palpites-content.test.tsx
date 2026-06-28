@@ -791,6 +791,10 @@ describe("PalpitesContent", () => {
       "aria-selected",
       "false"
     );
+    // Fase encerrada mostra os jogos travados com o placar oficial (read-only),
+    // em vez de "nenhum jogo" — o filtro dia-a-dia não se aplica ao passado.
+    expect(screen.getByText(/Resultado oficial: 1 × 0/i)).toBeInTheDocument();
+    expect(screen.getByText("Travado")).toBeInTheDocument();
   });
 
   it("reage à borda: ao virar a janela do jogo, atualiza o instante e refaz o fetch", () => {
