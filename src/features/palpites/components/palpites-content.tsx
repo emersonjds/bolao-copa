@@ -48,7 +48,7 @@ export function PalpitesContent() {
   const listaPartidas = partidas ?? [];
 
   const [vista, setVista] = useState<VistaPalpites>("palpitar");
-  const [faseSelecionada, setFaseSelecionada] = useState<FaseCopa>("grupos");
+  const [faseSelecionada, setFaseSelecionada] = useState<FaseCopa | null>(null);
   const [placaresLocais, setPlacaresLocais] = useState<Record<string, PlacarLocal>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [modalAntecipadoAberto, setModalAntecipadoAberto] = useState(false);
@@ -70,11 +70,27 @@ export function PalpitesContent() {
     (fase) => fase === "grupos" || listaPartidas.some((p) => p.fase === fase)
   );
 
-  // Aba "Palpitar": jogos liberados hoje + o próximo dia (mecânica dia a dia).
-  const partidasFiltradas = filtrarHojeEProximoDia(
-    listaPartidas.filter((p) => p.fase === faseSelecionada),
-    agora
-  );
+  // Fase atual = última fase disponível com jogo ainda não encerrado.
+  // Null no estado significa "sem escolha manual" → usa o derivado.
+  const faseAtual: FaseCopa =
+    [...fasesDisponiveis].reverse().find((f) =>
+      listaPartidas.some((p) => p.fase === f && p.status !== "encerrada")
+    ) ??
+    fasesDisponiveis[fasesDisponiveis.length - 1] ??
+    "grupos";
+  const faseEfetiva = faseSelecionada ?? faseAtual;
+
+  // Aba "Palpitar": fase ativa usa o recorte dia a dia (jogos de hoje + próximo
+  // dia). Fase já toda encerrada (ex.: grupos depois que o mata-mata começou)
+  // mostra todos os jogos travados, com placar oficial e pontos — vira um
+  // resumo read-only da fase em vez de uma lista vazia.
+  const partidasDaFase = listaPartidas.filter((p) => p.fase === faseEfetiva);
+  const faseTodaEncerrada =
+    partidasDaFase.length > 0 &&
+    partidasDaFase.every((p) => estadoPalpite(p, agora) === "encerrado");
+  const partidasFiltradas = faseTodaEncerrada
+    ? partidasDaFase
+    : filtrarHojeEProximoDia(partidasDaFase, agora);
 
   const partidasHidratadas = useRef<Set<string>>(new Set());
   useEffect(() => {
@@ -259,7 +275,7 @@ export function PalpitesContent() {
         <>
           <FiltroFase
             fases={fasesDisponiveis}
-            faseSelecionada={faseSelecionada}
+            faseSelecionada={faseEfetiva}
             onSelect={setFaseSelecionada}
           />
 

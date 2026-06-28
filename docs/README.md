@@ -26,6 +26,7 @@ houve plano de implementação, `plan.md`. Ordenadas da mais recente para a mais
 
 | Feature                                                         | spec | plan | O que é                                            |
 | --------------------------------------------------------------- | :--: | :--: | -------------------------------------------------- |
+| [`mata-mata-trinta-e-dois/`](features/mata-mata-trinta-e-dois/) |  ✓   |  ✓   | 32-avos resolvidas do banco + fase em destaque + banner. |
 | [`palpites-antecipados/`](features/palpites-antecipados/)       |  ✓   |  —   | Palpite antecipado persiste no servidor + modal.   |
 | [`grupos-da-copa/`](features/grupos-da-copa/)                   |  ✓   |  ✓   | Tabela de classificação por grupo + histórico.     |
 | [`lembrete-palpites-email/`](features/lembrete-palpites-email/) |  ✓   |  ✓   | Lembrete diário de palpite por e-mail.             |

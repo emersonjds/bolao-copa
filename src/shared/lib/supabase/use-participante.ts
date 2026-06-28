@@ -5,11 +5,6 @@ import { BOLAO_PADRAO_ID } from "../constants";
 import { getSupabaseBrowserClient } from "./client";
 import { useSupabaseUser } from "./use-user";
 
-/**
- * Devolve o `participante_id` do usuário logado no bolão padrão (ou null).
- * Usado para destacar "minha posição" no ranking e no dashboard sem que cada
- * tela reimplemente a consulta. `staleTime: Infinity` — não muda na sessão.
- */
 export function useMeuParticipanteId(): string | null {
   const user = useSupabaseUser();
 
