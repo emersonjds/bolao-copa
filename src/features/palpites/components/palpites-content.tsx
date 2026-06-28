@@ -70,10 +70,13 @@ export function PalpitesContent() {
     (fase) => fase === "grupos" || listaPartidas.some((p) => p.fase === fase)
   );
 
-  // Fase atual = última fase disponível com jogo ainda não encerrado.
+  // Fase atual = primeira fase disponível com jogo ainda não encerrado, ou seja,
+  // a mais antiga ainda em jogo. As fases futuras do mata-mata já existem no banco
+  // como placeholders agendados (W101 etc.), então pegar a ÚLTIMA cairia sempre na
+  // final — a primeira em aberto é a que o usuário deve palpitar agora.
   // Null no estado significa "sem escolha manual" → usa o derivado.
   const faseAtual: FaseCopa =
-    [...fasesDisponiveis].reverse().find((f) =>
+    fasesDisponiveis.find((f) =>
       listaPartidas.some((p) => p.fase === f && p.status !== "encerrada")
     ) ??
     fasesDisponiveis[fasesDisponiveis.length - 1] ??
