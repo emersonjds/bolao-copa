@@ -14,6 +14,7 @@
     "notificar": "tsx scripts/notificar.ts",
     "restore": "tsx scripts/restore.ts",
     "trinta-e-dois": "tsx scripts/gerar-trinta-e-dois.ts",
+    "mata-mata": "tsx scripts/gerar-mata-mata.ts",
     "build": "next build",
     "start": "next start",
     "preview": "next build && npx serve out",
