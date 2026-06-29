@@ -221,43 +221,76 @@ async function run(pgClient: Client) {
     await pgClient.query("SET session_replication_role = DEFAULT");
   }
 
-  console.log(`→ encerrando ${fechados.length} jogos com placar (dispara a apuração)…`);
-  let kc = 0; // contador de jogos de mata-mata, pra parear seleções reais
-  for (let gi = 0; gi < fechados.length; gi++) {
-    const jogo = fechados[gi];
+  // Encerrar em ordem de fase para que a trigger avancar_mata_mata() preencha
+  // mandante_id/visitante_id da fase seguinte a cada UPDATE. Sessão usa
+  // session_replication_role DEFAULT (triggers ATIVOS) — ao contrário do bloco
+  // de palpites acima que usa REPLICA. Terceiro-lugar e final ficam abertos
+  // (palpitáveis após a trigger do semi preencher os times via cascade).
+  const gruposFechados = fechados.filter((j) => j.fase === "grupos");
+  // fases encerradas; terceiro-lugar e final ficam agendados para palpitar
+  const mmFasesEncerrar = ["trinta-e-dois", "oitavas", "quartas", "semifinal"] as const;
+
+  console.log(`→ encerrando grupos (${gruposFechados.length} jogos)…`);
+  for (let gi = 0; gi < gruposFechados.length; gi++) {
+    const jogo = gruposFechados[gi];
     const res = RES[gi % RES.length];
-    const empate = res[0] === res[1];
-    const ehMataMata = jogo.fase !== "grupos";
-    // Mata-mata vem com times indefinidos (rótulos "W74", "2B"). Preenche
-    // seleções reais e distintas pra tela mostrar nome + bandeira. Não é um
-    // chaveamento "correto" (um time pode reaparecer em fases diferentes) —
-    // é só pra dar cara real às telas de cada fase.
-    const times = ehMataMata
-      ? {
-          mandante_id: selIds[(2 * kc) % selIds.length],
-          visitante_id: selIds[(2 * kc + 1) % selIds.length],
-        }
-      : {};
-    if (ehMataMata) kc++;
     const { error } = await admin
       .from("partidas")
-      .update({
-        status: "encerrada",
-        gols_mandante: res[0],
-        gols_visitante: res[1],
-        vencedor_penaltis: empate && ehMataMata ? penaltiSelecao : null,
-        ...times,
-      })
+      .update({ status: "encerrada", gols_mandante: res[0], gols_visitante: res[1] })
       .eq("id", jogo.id);
     if (error) throw new Error(`Falha ao encerrar jogo ${jogo.id}: ${error.message}`);
   }
 
+  // gi continua a partir dos grupos para alinhar o ciclo de RES com os palpites
+  let gi = gruposFechados.length;
+  let kc = 0; // apenas para 32-avos: índice para times fake
+  for (const fase of mmFasesEncerrar) {
+    const jogos = ordenados.filter((j) => j.fase === fase);
+    console.log(`→ encerrando ${fase} (${jogos.length} jogos, trigger ativo)…`);
+    for (const jogo of jogos) {
+      const res = RES[gi % RES.length];
+      const ehTrintaEDois = fase === "trinta-e-dois";
+      // 32-avos: seed tem mandante_id/visitante_id null (times vêm de grupos).
+      // Atribuir times fake para que a trigger possa propagar o vencedor.
+      const times = ehTrintaEDois
+        ? {
+            mandante_id: selIds[(2 * kc) % selIds.length],
+            visitante_id: selIds[(2 * kc + 1) % selIds.length],
+          }
+        : {};
+      if (ehTrintaEDois) kc++;
+      // ponytail: oitavas+ evitam empate para não precisar de vencedor_penaltis
+      // com times desconhecidos; 32-avos usam penaltiSelecao (FK válida).
+      const safeRes = !ehTrintaEDois && res[0] === res[1] ? [2, 1] : res;
+      const empate = safeRes[0] === safeRes[1];
+      const { error } = await admin
+        .from("partidas")
+        .update({
+          status: "encerrada",
+          gols_mandante: safeRes[0],
+          gols_visitante: safeRes[1],
+          vencedor_penaltis: empate ? penaltiSelecao : null,
+          ...times,
+        })
+        .eq("id", jogo.id);
+      if (error) throw new Error(`Falha ao encerrar jogo ${jogo.id}: ${error.message}`);
+      gi++;
+    }
+  }
+
   // ── relatório ──────────────────────────────────────────────────────────────
-  const porFase = new Map<string, number>();
-  for (const j of fechados) porFase.set(j.fase, (porFase.get(j.fase) ?? 0) + 1);
+  const porFaseEncerrada = new Map<string, number>();
+  for (const j of gruposFechados) {
+    porFaseEncerrada.set(j.fase, (porFaseEncerrada.get(j.fase) ?? 0) + 1);
+  }
+  for (const fase of mmFasesEncerrar) {
+    porFaseEncerrada.set(fase, ordenados.filter((j) => j.fase === fase).length);
+  }
   console.log("\n📊 Jogos encerrados por fase:");
   for (const fase of Object.keys(ORDEM_FASE)) {
-    console.log(`  ${fase.padEnd(16)} ${porFase.get(fase) ?? 0}`);
+    const count = porFaseEncerrada.get(fase) ?? 0;
+    const sufixo = count === 0 ? " ← aberto, palpite disponível" : "";
+    console.log(`  ${fase.padEnd(16)} ${count}${sufixo}`);
   }
   console.log(`  (grupos abertos p/ palpitar: ${abertos.size})`);
 
