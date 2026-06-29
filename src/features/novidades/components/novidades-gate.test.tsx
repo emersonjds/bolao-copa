@@ -24,7 +24,7 @@ vi.mock("../lib/aviso-local", () => ({ avisoVistoLocal, marcarAvisoVistoLocal })
 const { mataMataDefinido } = vi.hoisted(() => ({
   mataMataDefinido: vi.fn<() => Promise<boolean>>(),
 }));
-vi.mock("../api/mata-mata-pronto", () => ({ mataMataDefinido }));
+vi.mock("../api/fase-pronta", () => ({ mataMataDefinido }));
 
 import { NovidadesGate } from "./novidades-gate";
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/shared/lib/supabase";
 import { type Aviso, type Gatilho, AVISOS } from "../model/aviso-atual";
 import { avisoFoiVisto, marcarAvisoVisto } from "../api/avisos-fetcher";
-import { mataMataDefinido } from "../api/mata-mata-pronto";
+import { mataMataDefinido } from "../api/fase-pronta";
 import { avisoVistoLocal, marcarAvisoVistoLocal } from "../lib/aviso-local";
 import { ModalNovidades } from "./modal-novidades";
 
