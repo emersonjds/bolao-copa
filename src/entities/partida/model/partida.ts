@@ -46,4 +46,6 @@ export interface Partida {
    * Rótulo do time visitante para mata-mata com times ainda indefinidos.
    */
   visitanteLabel: string | null;
+  /** Número oficial FIFA do jogo (só mata-mata, 73–104). null em grupos. */
+  numero?: number | null;
 }

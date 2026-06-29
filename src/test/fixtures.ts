@@ -23,6 +23,7 @@ export const partidaDb = {
   gols_mandante: null,
   gols_visitante: null,
   vencedor_penaltis: null,
+  numero: null,
   mandante: selecaoMexicoDb,
   visitante: selecaoAfricaDb,
 };
@@ -33,6 +34,7 @@ export const partidaIndefinidaDb = {
   id: "part-ko",
   fase: "oitavas",
   grupo: null,
+  numero: 89,
   mandante_id: null,
   mandante_label: "1A",
   visitante_id: null,

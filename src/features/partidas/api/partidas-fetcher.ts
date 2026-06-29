@@ -23,6 +23,7 @@ interface PartidaDb {
   gols_mandante: number | null;
   gols_visitante: number | null;
   vencedor_penaltis: string | null;
+  numero: number | null;
   /** Join em selecoes pelo FK mandante_id (null quando ainda indefinido no mata-mata). */
   mandante: SelecaoDb | null;
   /** Join em selecoes pelo FK visitante_id (null quando ainda indefinido no mata-mata). */
@@ -63,6 +64,7 @@ function mapPartida(db: PartidaDb): Partida {
     vencedorPenaltis: db.vencedor_penaltis,
     mandanteLabel: db.mandante_label,
     visitanteLabel: db.visitante_label,
+    numero: db.numero,
   };
 }
 
@@ -91,6 +93,7 @@ export async function listarPartidas(): Promise<Partida[]> {
       gols_mandante,
       gols_visitante,
       vencedor_penaltis,
+      numero,
       mandante:selecoes!mandante_id (id, nome, codigo),
       visitante:selecoes!visitante_id (id, nome, codigo)
     `
