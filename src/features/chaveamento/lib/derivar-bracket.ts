@@ -21,8 +21,7 @@ export interface RodadaBracket {
   confrontos: ConfrontoBracket[];
 }
 
-// ponytail: numero por posição dentro da fase + offset fixo da topologia oficial
-// (32-avos 73, oitavas 89, quartas 97, semi 101, 3º 103, final 104) — Partida não expõe numero
+// ponytail: offset como fallback quando partida.numero for null/undefined
 const FASE_CONFIG: Array<{ fase: FaseCopa; titulo: string; offset: number }> = [
   { fase: "trinta-e-dois", titulo: "32-avos", offset: 73 },
   { fase: "oitavas", titulo: "Oitavas", offset: 89 },
@@ -48,7 +47,7 @@ function derivarLado(
   encerrada: boolean,
   eVencedor: boolean
 ): LadoConfronto {
-  const resolvida = selecao.codigo ? selecao : null;
+  const resolvida = selecao.id !== "" ? selecao : null;
   return {
     selecao: resolvida,
     placeholder: resolvida ? resolvida.nome : traduzirLabel(label),
@@ -63,7 +62,12 @@ export function derivarBracket(partidas: Partida[]): RodadaBracket[] {
   for (const { fase, titulo, offset } of FASE_CONFIG) {
     const dafase = partidas
       .filter((p) => p.fase === fase)
-      .sort((a, b) => a.dataHora.localeCompare(b.dataHora));
+      .sort((a, b) => {
+        if (a.numero == null && b.numero == null) return 0;
+        if (a.numero == null) return 1;
+        if (b.numero == null) return -1;
+        return a.numero - b.numero;
+      });
 
     if (dafase.length === 0) continue;
 
@@ -83,7 +87,7 @@ export function derivarBracket(partidas: Partida[]): RodadaBracket[] {
           : false;
 
       return {
-        numero: offset + i,
+        numero: partida.numero ?? (offset + i),
         fase,
         mandante: derivarLado(partida.mandante, partida.mandanteLabel, mGols, encerrada, mandanteVence),
         visitante: derivarLado(partida.visitante, partida.visitanteLabel, vGols, encerrada, visitanteVence),

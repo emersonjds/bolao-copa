@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import type { Partida } from "@/entities/partida";
 import { derivarBracket } from "./derivar-bracket";
 
-// Seleção não resolvida: codigo vazio (o bracket fetcher preenche assim quando mandante_id é null)
+// Seleção não resolvida: id vazio é o sinal canônico (mapSelecao retorna id:"" quando mandante_id é null)
 const SELECAO_VAZIA = { id: "", nome: "", codigo: "" };
 
 function makePartida(overrides: Partial<Partida> & { id: string; fase: Partida["fase"] }): Partida {
@@ -186,11 +186,21 @@ describe("derivarBracket", () => {
     expect(rodadas[0].confrontos[0].status).toBe("ao-vivo");
   });
 
-  it("numero derivado por posição dentro da fase com offset correto", () => {
-    // oitavas: offset 89, então 1ª partida = 89, 2ª = 90
+  it("usa numero da partida quando disponível e ordena por ele", () => {
     const partidas = [
-      makePartida({ id: "p2", fase: "oitavas", mandanteLabel: "W74", visitanteLabel: "W75" }),
+      makePartida({ id: "p2", fase: "oitavas", numero: 90, mandanteLabel: "W74", visitanteLabel: "W75" }),
+      makePartida({ id: "p1", fase: "oitavas", numero: 89, mandanteLabel: "W73", visitanteLabel: "W74" }),
+    ];
+    const rodadas = derivarBracket(partidas);
+    const numeros = rodadas[0].confrontos.map((c) => c.numero);
+    expect(numeros).toEqual([89, 90]);
+  });
+
+  it("fallback para offset da fase quando numero é null", () => {
+    // oitavas: offset 89 → 1ª posição=89, 2ª=90
+    const partidas = [
       makePartida({ id: "p1", fase: "oitavas", mandanteLabel: "W73", visitanteLabel: "W74" }),
+      makePartida({ id: "p2", fase: "oitavas", mandanteLabel: "W74", visitanteLabel: "W75" }),
     ];
     const rodadas = derivarBracket(partidas);
     const numeros = rodadas[0].confrontos.map((c) => c.numero);
