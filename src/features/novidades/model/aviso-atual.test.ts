@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { AVISOS, type Gatilho } from "./aviso-atual";
+import { AVISOS, AVISO_CHAVEAMENTO, type Gatilho } from "./aviso-atual";
 
 const GATILHOS_VALIDOS = new Set<Gatilho>([
   "mata-mata-definido",
@@ -23,7 +23,7 @@ describe("AVISOS", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("ordem: novidades, mata-mata, oitavas, quartas, semi, final", () => {
+  it("ordem: novidades, mata-mata, oitavas, quartas, semi, final, chaveamento", () => {
     expect(AVISOS.map((a) => a.id)).toEqual([
       "novidades-2026-06",
       "mata-mata-2026-06",
@@ -31,7 +31,18 @@ describe("AVISOS", () => {
       "quartas-2026",
       "semifinal-2026",
       "final-2026",
+      "chaveamento-2026",
     ]);
+  });
+
+  it("chaveamento é o último aviso em AVISOS", () => {
+    expect(AVISOS.at(-1)?.id).toBe("chaveamento-2026");
+  });
+
+  it("AVISO_CHAVEAMENTO tem id, gatilho e itens corretos", () => {
+    expect(AVISO_CHAVEAMENTO.id).toBe("chaveamento-2026");
+    expect(AVISO_CHAVEAMENTO.gatilho).toBe("mata-mata-definido");
+    expect(AVISO_CHAVEAMENTO.itens).toHaveLength(2);
   });
 
   it("avisos com gatilho têm gatilho válido", () => {

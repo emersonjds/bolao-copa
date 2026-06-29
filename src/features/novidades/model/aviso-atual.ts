@@ -135,6 +135,26 @@ export const AVISO_FINAL: Aviso = {
   ],
 };
 
+export const AVISO_CHAVEAMENTO: Aviso = {
+  id: "chaveamento-2026",
+  titulo: "Veja o chaveamento!",
+  gatilho: "mata-mata-definido",
+  itens: [
+    {
+      emoji: "🗺️",
+      titulo: "O caminho até a final",
+      descricao:
+        "Agora dá pra ver todo o chaveamento do mata-mata numa tela só, na aba Copa.",
+    },
+    {
+      emoji: "⚡",
+      titulo: "Atualiza sozinho",
+      descricao:
+        "Conforme os jogos terminam, os próximos confrontos já aparecem chaveados.",
+    },
+  ],
+};
+
 export const AVISOS: Aviso[] = [
   AVISO_ATUAL,
   AVISO_MATA_MATA,
@@ -142,4 +162,5 @@ export const AVISOS: Aviso[] = [
   AVISO_QUARTAS,
   AVISO_SEMI,
   AVISO_FINAL,
+  AVISO_CHAVEAMENTO,
 ];

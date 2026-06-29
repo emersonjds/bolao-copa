@@ -27,6 +27,7 @@ const { faseDefinida } = vi.hoisted(() => ({
 vi.mock("../api/fase-pronta", () => ({ faseDefinida }));
 
 import { NovidadesGate } from "./novidades-gate";
+import { AVISOS } from "../model/aviso-atual";
 
 function semSessao() {
   return { data: { session: null } };
@@ -159,7 +160,7 @@ describe("NovidadesGate", () => {
 
         render(<NovidadesGate />);
 
-        await waitFor(() => expect(avisoFoiVisto).toHaveBeenCalledTimes(6));
+        await waitFor(() => expect(avisoFoiVisto).toHaveBeenCalledTimes(AVISOS.length));
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
       });
 
@@ -200,7 +201,7 @@ describe("NovidadesGate", () => {
 
         render(<NovidadesGate />);
 
-        await waitFor(() => expect(avisoVistoLocal).toHaveBeenCalledTimes(6));
+        await waitFor(() => expect(avisoVistoLocal).toHaveBeenCalledTimes(AVISOS.length));
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
       });
 
@@ -256,7 +257,7 @@ describe("NovidadesGate", () => {
 
       render(<NovidadesGate />);
 
-      await waitFor(() => expect(avisoFoiVisto).toHaveBeenCalledTimes(6));
+      await waitFor(() => expect(avisoFoiVisto).toHaveBeenCalledTimes(AVISOS.length));
       expect(faseDefinida).not.toHaveBeenCalled();
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
