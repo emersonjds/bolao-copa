@@ -4,13 +4,17 @@ import { useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/shared/lib/supabase";
 import { type Aviso, type Gatilho, AVISOS } from "../model/aviso-atual";
 import { avisoFoiVisto, marcarAvisoVisto } from "../api/avisos-fetcher";
-import { mataMataDefinido } from "../api/fase-pronta";
+import { faseDefinida } from "../api/fase-pronta";
 import { avisoVistoLocal, marcarAvisoVistoLocal } from "../lib/aviso-local";
 import { ModalNovidades } from "./modal-novidades";
 
 // Cada gatilho de aviso mapeia para a consulta que diz se já está disponível.
 const VERIFICAR_GATILHO: Record<Gatilho, () => Promise<boolean>> = {
-  "mata-mata-definido": mataMataDefinido,
+  "mata-mata-definido": () => faseDefinida("trinta-e-dois"),
+  "oitavas-definido": () => faseDefinida("oitavas"),
+  "quartas-definido": () => faseDefinida("quartas"),
+  "semifinal-definido": () => faseDefinida("semifinal"),
+  "final-definido": () => faseDefinida("final"),
 };
 
 /**
