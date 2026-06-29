@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { CalendarioContent } from "@/features/calendario";
 import { GruposContent } from "@/features/grupos";
 
@@ -21,6 +22,14 @@ export function CalendarioAbas() {
 
   return (
     <>
+      <Link
+        href="/chaveamento"
+        className="mb-4 flex items-center justify-between rounded-xl border border-brand-200 bg-brand-50 px-4 py-2.5 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-100"
+      >
+        <span>Ver chaveamento do mata-mata</span>
+        <span aria-hidden="true">→</span>
+      </Link>
+
       <div
         role="tablist"
         aria-label="Visualização da Copa"

@@ -2,6 +2,14 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
+vi.mock("next/link", () => ({
+  default: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
 vi.mock("@/features/calendario", () => ({
   CalendarioContent: () => <p>conteúdo-agenda</p>,
 }));
@@ -53,5 +61,12 @@ describe("CalendarioAbas", () => {
     expect(screen.queryByText("conteúdo-grupos")).not.toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Agenda" })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("tab", { name: "Grupos" })).toHaveAttribute("aria-selected", "false");
+  });
+
+  it("exibe link para o chaveamento apontando para /chaveamento", () => {
+    render(<CalendarioAbas />);
+    const link = screen.getByRole("link", { name: /chaveamento/i });
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute("href", "/chaveamento");
   });
 });
