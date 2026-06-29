@@ -1,4 +1,4 @@
-import { listarPartidas } from "@/features/partidas/api/partidas-fetcher";
+import { listarPartidas } from "@/features/partidas";
 import type { FaseCopa, Partida } from "@/entities/partida";
 
 const FASES_MATA_MATA: Set<FaseCopa> = new Set([
