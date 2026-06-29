@@ -15,6 +15,7 @@ import {
   isPlaceholderTeam,
   fifaCode,
 } from "./lib/transform";
+import { BRACKET_2026 } from "./lib/bracket-2026";
 
 const SOURCE_URL =
   "https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json";
@@ -27,6 +28,15 @@ interface SourceMatch {
   team2: string;
   group?: string;
   ground: string;
+}
+
+// numero por posição dentro de cada fase do mata-mata (ordem espelha BRACKET_2026).
+// Matching por posição é robusto quando a fonte usa times reais em vez de rótulos.
+const NUMEROS_POR_FASE = new Map<string, number[]>();
+for (const p of BRACKET_2026) {
+  const arr = NUMEROS_POR_FASE.get(p.fase) ?? [];
+  arr.push(p.numero);
+  NUMEROS_POR_FASE.set(p.fase, arr);
 }
 
 function sqlStr(value: string | null): string {
@@ -89,16 +99,28 @@ async function main(): Promise<void> {
   lines.push("");
 
   lines.push(
-    "insert into public.partidas (fase, grupo, rodada, data_hora, estadio, status, mandante_id, visitante_id, mandante_label, visitante_label) values"
+    "insert into public.partidas (fase, grupo, rodada, data_hora, estadio, status, mandante_id, visitante_id, mandante_label, visitante_label, numero) values"
   );
+  // contador por fase: garante que o Nth jogo de cada fase recebe o Nth numero
+  // de BRACKET_2026 independente de a fonte usar times reais ou rótulos.
+  const faseIdx = new Map<string, number>();
   const partidaValues = data.matches.map((m) => {
     const mandante = side(m.team1);
     const visitante = side(m.team2);
     const rodada = roundToRodada(m.round, maxGroupMatchday);
+    const fase = roundToFase(m.round);
+    const nums = NUMEROS_POR_FASE.get(fase);
+    let numero: number | null = null;
+    if (nums) {
+      const idx = faseIdx.get(fase) ?? 0;
+      faseIdx.set(fase, idx + 1);
+      numero = nums[idx] ?? null;
+    }
     return (
-      `  (${sqlStr(roundToFase(m.round))}, ${sqlStr(parseGroup(m.group))}, ${rodada}, ` +
+      `  (${sqlStr(fase)}, ${sqlStr(parseGroup(m.group))}, ${rodada}, ` +
       `${sqlStr(parseKickoffToUtc(m.date, m.time))}, ${sqlStr(m.ground)}, 'agendada', ` +
-      `${mandante.idExpr}, ${visitante.idExpr}, ${sqlStr(mandante.label)}, ${sqlStr(visitante.label)})`
+      `${mandante.idExpr}, ${visitante.idExpr}, ${sqlStr(mandante.label)}, ${sqlStr(visitante.label)}, ` +
+      `${numero === null ? "null" : numero})`
     );
   });
   lines.push(partidaValues.join(",\n") + ";");
