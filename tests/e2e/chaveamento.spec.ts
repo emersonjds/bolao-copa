@@ -19,6 +19,7 @@ const TODOS_AVISOS = [
   "quartas-2026",
   "semifinal-2026",
   "final-2026",
+  "pontuacao-mata-mata-2026-06",
   "chaveamento-2026",
 ];
 
@@ -92,6 +93,7 @@ test.describe("Modal 'Veja o chaveamento!' (anon)", () => {
         "quartas-2026",
         "semifinal-2026",
         "final-2026",
+        "pontuacao-mata-mata-2026-06",
       ];
       for (const id of antecedentes) localStorage.setItem(`aviso-visto:${id}`, "1");
     });

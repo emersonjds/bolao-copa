@@ -46,6 +46,7 @@ test.describe("Modal das oitavas (anon)", () => {
         "quartas-2026",
         "semifinal-2026",
         "final-2026",
+        "pontuacao-mata-mata-2026-06",
         "chaveamento-2026",
       ];
       for (const id of outros) localStorage.setItem(`aviso-visto:${id}`, "1");
@@ -80,6 +81,7 @@ test.describe("Pontuação ×2 nas oitavas — Histórico (demo)", () => {
         "quartas-2026",
         "semifinal-2026",
         "final-2026",
+        "pontuacao-mata-mata-2026-06",
         "chaveamento-2026",
       ];
       for (const id of ids) localStorage.setItem(`aviso-visto:${id}`, "1");
