@@ -69,6 +69,13 @@ begin
     return new;
   end if;
 
+  if new.gols_mandante = new.gols_visitante
+     and new.vencedor_penaltis is not null
+     and new.vencedor_penaltis is distinct from new.mandante_id
+     and new.vencedor_penaltis is distinct from new.visitante_id then
+    raise exception 'vencedor_penaltis (%) nao e mandante nem visitante da partida %', new.vencedor_penaltis, new.id;
+  end if;
+
   venc := case
     when new.gols_mandante > new.gols_visitante then new.mandante_id
     when new.gols_visitante > new.gols_mandante then new.visitante_id
@@ -91,4 +98,6 @@ end; $$;
 drop trigger if exists trg_avancar_mata_mata on public.partidas;
 create trigger trg_avancar_mata_mata
   after update on public.partidas
-  for each row execute function public.avancar_mata_mata();
+  for each row
+  when (new.status = 'encerrada' and new.numero is not null)
+  execute function public.avancar_mata_mata();

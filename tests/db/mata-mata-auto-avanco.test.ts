@@ -189,6 +189,14 @@ describe("avancar_mata_mata — trigger de auto-avanço", () => {
     expect(mandante_id).toBe(selA);
   });
 
+  it("vencedor_penaltis de selecao alheia lanca excecao", async () => {
+    const { rows } = await db.query("select id from selecoes order by codigo limit 3");
+    const selC = rows[2].id as string; // terceira selecao, nao joga esta partida
+    const fonte = await inserirJogo(10081, selA, selB);
+
+    await expect(encerrar(fonte, 0, 0, selC)).rejects.toThrow(/vencedor_penaltis/);
+  });
+
   it("partida de grupos (numero null) não dispara avanço", async () => {
     // grupos não têm numero, portanto o trigger deve ser no-op
     const r = await db.query(
