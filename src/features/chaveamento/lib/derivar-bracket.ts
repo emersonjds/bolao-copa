@@ -62,12 +62,9 @@ export function derivarBracket(partidas: Partida[]): RodadaBracket[] {
   for (const { fase, titulo, offset } of FASE_CONFIG) {
     const dafase = partidas
       .filter((p) => p.fase === fase)
-      .sort((a, b) => {
-        if (a.numero == null && b.numero == null) return 0;
-        if (a.numero == null) return 1;
-        if (b.numero == null) return -1;
-        return a.numero - b.numero;
-      });
+      .sort(
+        (a, b) => (a.numero ?? Number.MAX_SAFE_INTEGER) - (b.numero ?? Number.MAX_SAFE_INTEGER)
+      );
 
     if (dafase.length === 0) continue;
 
