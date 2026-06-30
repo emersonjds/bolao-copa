@@ -3,39 +3,24 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSupabaseUser, getSupabaseBrowserClient } from "@/shared/lib/supabase";
 
-interface ProfileAdminRow {
-  is_admin: boolean | null;
-}
-
 /**
- * Retorna true se o usuário logado tem `profiles.is_admin = true`.
- * Retorna false enquanto carrega, em caso de erro ou sem login.
- * A query é cacheada indefinidamente (`staleTime: Infinity`) — permissões
- * não mudam em tempo real na sessão corrente.
+ * Retorna true se o usuário logado é admin. Usa a RPC `eh_admin` (SECURITY
+ * DEFINER) porque a coluna profiles.is_admin não é mais legível pelo cliente
+ * (migration 0018). Cacheada indefinidamente: permissões não mudam na sessão.
  */
 export function useIsAdmin(): boolean {
   const user = useSupabaseUser();
 
-  const { data } = useQuery<ProfileAdminRow | null>({
-    queryKey: ["profiles", "is_admin", user?.id],
-    queryFn: async (): Promise<ProfileAdminRow | null> => {
-      if (!user) return null;
-
-      const { data: raw, error } = await getSupabaseBrowserClient()
-        .from("profiles")
-        .select("is_admin")
-        .eq("id", user.id)
-        .single();
-
-      if (error || !raw) return null;
-
-      // O client não tem tipagem de schema; fazemos o cast explícito via unknown.
-      const row = raw as unknown as ProfileAdminRow;
-      return row;
+  const { data } = useQuery<boolean>({
+    queryKey: ["eh-admin", user?.id],
+    queryFn: async (): Promise<boolean> => {
+      const { data: ehAdmin, error } = await getSupabaseBrowserClient().rpc("eh_admin");
+      if (error) return false;
+      return ehAdmin === true;
     },
     enabled: !!user,
     staleTime: Infinity,
   });
 
-  return data?.is_admin === true;
+  return data === true;
 }

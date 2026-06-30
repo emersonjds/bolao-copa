@@ -2,10 +2,6 @@ import { getSupabaseBrowserClient } from "@/shared/lib/supabase";
 import { nomeSelecaoPt } from "@/shared/lib/selecao-nomes-pt";
 import type { FaseCopa, Partida, Selecao, StatusPartida } from "@/entities/partida";
 
-// ---------------------------------------------------------------------------
-// Tipos internos — formato bruto retornado pelo Supabase (snake_case + joins)
-// ---------------------------------------------------------------------------
-
 interface SelecaoDb {
   id: string;
   nome: string;
@@ -17,6 +13,7 @@ interface PartidaDb {
   fase: string;
   grupo: string | null;
   data_hora: string;
+  janela_inicio: string;
   estadio: string;
   status: string;
   mandante_id: string | null;
@@ -32,12 +29,7 @@ interface PartidaDb {
   visitante: SelecaoDb | null;
 }
 
-// ---------------------------------------------------------------------------
-// Mappers snake_case → camelCase
-// ---------------------------------------------------------------------------
-
 /**
- * Constrói um Selecao a partir da linha do banco.
  * Quando a seleção real é null (mata-mata com time indefinido), usa o rótulo
  * de exibição (ex.: "2A", "Vencedor Grupo A") para manter o contrato do tipo.
  */
@@ -47,7 +39,6 @@ function mapSelecao(db: SelecaoDb | null, label: string | null): Selecao {
     // código FIFA para exibir em PT-BR, com fallback no nome original.
     return { id: db.id, nome: nomeSelecaoPt(db.codigo, db.nome), codigo: db.codigo };
   }
-  // Placeholder: código usa até 3 caracteres do rótulo para exibição compacta
   const rotulo = label ?? "?";
   return {
     id: "",
@@ -62,6 +53,7 @@ function mapPartida(db: PartidaDb): Partida {
     fase: db.fase as FaseCopa,
     grupo: db.grupo,
     dataHora: db.data_hora,
+    janelaInicio: db.janela_inicio,
     estadio: db.estadio,
     status: db.status as StatusPartida,
     mandante: mapSelecao(db.mandante, db.mandante_label),
@@ -74,14 +66,7 @@ function mapPartida(db: PartidaDb): Partida {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Fetcher
-// ---------------------------------------------------------------------------
-
 /**
- * Lê todas as partidas do Supabase com join nas seleções (mandante/visitante),
- * ordenadas por data_hora ascendente.
- *
  * A autenticação é tratada automaticamente pelo cliente Supabase (RLS via
  * policy "partidas_select" que libera leitura para authenticated).
  */
@@ -96,6 +81,7 @@ export async function listarPartidas(): Promise<Partida[]> {
       fase,
       grupo,
       data_hora,
+      janela_inicio,
       estadio,
       status,
       mandante_id,

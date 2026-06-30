@@ -29,7 +29,6 @@ export function ItemJogo({ partida, mostrarCta }: ItemJogoProps) {
         estaEncerrada && "opacity-70"
       )}
     >
-      {/* Horário */}
       <time
         dateTime={partida.dataHora}
         className={cn(
@@ -40,9 +39,7 @@ export function ItemJogo({ partida, mostrarCta }: ItemJogoProps) {
         {estaAoVivo ? "Ao vivo" : horario}
       </time>
 
-      {/* Confronto: mandante × visitante */}
       <div className="flex min-w-0 flex-1 items-center gap-1.5">
-        {/* Mandante */}
         <div className="flex min-w-0 flex-1 items-center justify-end gap-1">
           <span className="truncate text-right text-xs font-medium text-foreground">
             {partida.mandante.nome}
@@ -54,12 +51,10 @@ export function ItemJogo({ partida, mostrarCta }: ItemJogoProps) {
           />
         </div>
 
-        {/* Placar ou separador */}
         <span className="shrink-0 px-1 font-mono text-sm font-bold text-muted-foreground">
           {placarOuX}
         </span>
 
-        {/* Visitante */}
         <div className="flex min-w-0 flex-1 items-center gap-1">
           <FlagIcon
             codigoFifa={partida.visitante.codigo}
@@ -72,17 +67,15 @@ export function ItemJogo({ partida, mostrarCta }: ItemJogoProps) {
         </div>
       </div>
 
-      {/* Badge de fase */}
       <span className="shrink-0 rounded-md bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-brand-700">
         {faseBadge}
       </span>
 
-      {/* CTA — somente em jogos agendados para usuários autenticados */}
       {mostrarCta && estaAgendada ? (
         <Link
           href={`/palpites#${partida.id}`}
-          aria-label={`Dar palpite para ${partida.mandante.nome} vs ${partida.visitante.nome}`}
-          title={`Dar palpite para ${partida.mandante.nome} vs ${partida.visitante.nome}`}
+          aria-label={`Fazer palpite para ${partida.mandante.nome} vs ${partida.visitante.nome}`}
+          title={`Fazer palpite para ${partida.mandante.nome} vs ${partida.visitante.nome}`}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-brand-200 bg-brand-50 transition-colors hover:bg-brand-100"
         >
           <Target className="h-4 w-4 text-brand-700" aria-hidden="true" />

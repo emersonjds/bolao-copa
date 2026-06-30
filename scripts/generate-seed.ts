@@ -81,7 +81,6 @@ async function main(): Promise<void> {
   lines.push("truncate table public.palpites, public.partidas, public.selecoes cascade;");
   lines.push("");
 
-  // selecoes
   const selecaoValues = [...teams.entries()]
     .sort((a, b) => a[0].localeCompare(b[0]))
     .map(([codigo, nome]) => `  (${sqlStr(nome)}, ${sqlStr(codigo)})`);
@@ -89,7 +88,6 @@ async function main(): Promise<void> {
   lines.push(selecaoValues.join(",\n") + ";");
   lines.push("");
 
-  // partidas
   lines.push(
     "insert into public.partidas (fase, grupo, rodada, data_hora, estadio, status, mandante_id, visitante_id, mandante_label, visitante_label) values"
   );

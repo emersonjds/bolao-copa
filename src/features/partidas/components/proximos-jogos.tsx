@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { usePartidas } from "../api/queries";
+import { agruparProximosDias } from "../lib/agrupar-por-dia";
+import { encontrarProximoJogo } from "../lib/proximo-jogo";
 import { FlagIcon } from "@/shared/ui/flag-icon";
-import type { Partida, StatusPartida } from "@/entities/partida";
+import { StatusJogoBadge } from "@/shared/ui/status-jogo-badge";
+import type { Partida } from "@/entities/partida";
 
 const formatadorData = new Intl.DateTimeFormat("pt-BR", {
   day: "2-digit",
@@ -12,32 +15,31 @@ const formatadorData = new Intl.DateTimeFormat("pt-BR", {
   minute: "2-digit",
 });
 
-const STATUS_LABEL: Record<StatusPartida, string> = {
-  agendada: "Agendado",
-  "ao-vivo": "Ao vivo",
-  encerrada: "Encerrado",
-};
+const diaSaoPaulo = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Sao_Paulo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
 
-const STATUS_STYLE: Record<StatusPartida, string> = {
-  agendada: "bg-muted text-muted-foreground",
-  "ao-vivo": "bg-destructive/10 text-destructive",
-  encerrada: "bg-brand-100 text-brand-700",
-};
+const cabecalhoDia = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: "America/Sao_Paulo",
+  weekday: "short",
+  day: "2-digit",
+  month: "short",
+});
 
-function StatusPill({ status }: { status: StatusPartida }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase ${STATUS_STYLE[status]}`}
-    >
-      {status === "ao-vivo" && (
-        <span
-          className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive"
-          aria-hidden="true"
-        />
-      )}
-      {STATUS_LABEL[status]}
-    </span>
-  );
+function rotuloDia(dataChave: string, exemploDataHora: string): string {
+  const hoje = diaSaoPaulo.format(new Date());
+  const amanha = diaSaoPaulo.format(new Date(Date.now() + 86_400_000));
+  const formatado = cabecalhoDia
+    .format(new Date(exemploDataHora))
+    .replace(/\./g, "")
+    .replace(" de ", " ")
+    .toUpperCase();
+  if (dataChave === hoje) return `HOJE · ${formatado}`;
+  if (dataChave === amanha) return `AMANHÃ · ${formatado}`;
+  return formatado;
 }
 
 function Selecao({ codigo, nome }: { codigo: string; nome: string }) {
@@ -57,16 +59,21 @@ function CardJogo({ partida }: { partida: Partida }) {
         <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] font-semibold text-brand-700">
           {partida.grupo ? `Grupo ${partida.grupo}` : partida.fase}
         </span>
-        <StatusPill status={partida.status} />
+        <StatusJogoBadge partida={partida} />
       </div>
 
       <div className="flex items-center gap-2">
         <Selecao codigo={partida.mandante.codigo} nome={partida.mandante.nome} />
         <div className="flex flex-col items-center px-1">
-          <span className="font-mono text-lg font-bold text-foreground">
+          <span
+            className={`font-mono text-lg text-foreground ${temPlacar ? "font-bold" : "font-medium"}`}
+          >
             {temPlacar ? `${partida.golsMandante} : ${partida.golsVisitante}` : "x"}
           </span>
-          <time className="mt-0.5 text-[11px] text-muted-foreground" dateTime={partida.dataHora}>
+          <time
+            className="mt-1 rounded-full bg-sky-700 px-2 py-0.5 text-[11px] font-medium text-white"
+            dateTime={partida.dataHora}
+          >
             {formatadorData.format(new Date(partida.dataHora))}
           </time>
         </div>
@@ -85,7 +92,12 @@ function CardJogo({ partida }: { partida: Partida }) {
   );
 }
 
-export function ProximosJogos() {
+interface ProximosJogosProps {
+  /** Na home, esconde o jogo já mostrado no card de destaque para não duplicar a visão. */
+  excluirProximoDestaque?: boolean;
+}
+
+export function ProximosJogos({ excluirProximoDestaque = false }: ProximosJogosProps = {}) {
   const { data: partidas, isLoading, isError } = usePartidas();
 
   if (isLoading) {
@@ -102,15 +114,38 @@ export function ProximosJogos() {
     return <p className="text-sm text-destructive">Não foi possível carregar os jogos.</p>;
   }
 
-  if (partidas.length === 0) {
-    return <p className="text-sm text-muted-foreground">Nenhum jogo por aqui ainda.</p>;
+  const destaque = excluirProximoDestaque ? encontrarProximoJogo(partidas) : null;
+  const visiveis = destaque ? partidas.filter((partida) => partida.id !== destaque.id) : partidas;
+  const grupos = agruparProximosDias(visiveis, 2);
+
+  if (grupos.length === 0) {
+    return <p className="text-sm text-muted-foreground">Os próximos jogos vão aparecer aqui.</p>;
   }
 
   return (
-    <ul className="flex flex-col gap-3">
-      {partidas.map((partida) => (
-        <CardJogo key={partida.id} partida={partida} />
-      ))}
-    </ul>
+    <div className="flex flex-col gap-6 sm:gap-8">
+      {grupos.map((grupo) => {
+        const rotulo = rotuloDia(grupo.data, grupo.jogos[0].dataHora);
+        return (
+          <section key={grupo.data} aria-label={rotulo}>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-[11px] font-semibold tracking-widest text-muted-foreground uppercase">
+                {rotulo}
+              </h3>
+              {grupo.jogos.length >= 3 && (
+                <span className="rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold text-brand-700">
+                  {grupo.jogos.length} jogos
+                </span>
+              )}
+            </div>
+            <ul className="flex flex-col gap-3">
+              {grupo.jogos.map((partida) => (
+                <CardJogo key={partida.id} partida={partida} />
+              ))}
+            </ul>
+          </section>
+        );
+      })}
+    </div>
   );
 }

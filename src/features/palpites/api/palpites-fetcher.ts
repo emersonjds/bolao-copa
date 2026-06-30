@@ -2,10 +2,6 @@ import { getSupabaseBrowserClient } from "@/shared/lib/supabase";
 import { BOLAO_PADRAO_ID } from "@/shared/lib/constants";
 import type { Palpite } from "@/entities/palpite";
 
-// ---------------------------------------------------------------------------
-// Tipos internos — formato bruto do banco (snake_case)
-// ---------------------------------------------------------------------------
-
 interface PalpiteDb {
   id: string;
   participante_id: string;
@@ -14,10 +10,6 @@ interface PalpiteDb {
   gols_visitante: number;
   pontos: number | null;
 }
-
-// ---------------------------------------------------------------------------
-// Mapper
-// ---------------------------------------------------------------------------
 
 function mapPalpite(db: PalpiteDb): Palpite {
   return {
@@ -29,10 +21,6 @@ function mapPalpite(db: PalpiteDb): Palpite {
     pontos: db.pontos,
   };
 }
-
-// ---------------------------------------------------------------------------
-// Fetchers
-// ---------------------------------------------------------------------------
 
 /**
  * Busca o participante_id do usuário no bolão padrão.
@@ -79,10 +67,6 @@ export async function listarMeusPalpites(participanteId: string): Promise<Palpit
   return (data as unknown as PalpiteDb[]).map(mapPalpite);
 }
 
-// ---------------------------------------------------------------------------
-// Mutação
-// ---------------------------------------------------------------------------
-
 export interface SalvarPalpiteInput {
   participanteId: string;
   partidaId: string;
@@ -95,13 +79,15 @@ export interface SalvarPalpiteInput {
  *
  * Estratégia de colunas:
  *   INSERT grant: participante_id, partida_id, gols_mandante, gols_visitante
- *   UPDATE grant: gols_mandante, gols_visitante, updated_at
+ *   UPDATE grant: participante_id, partida_id, gols_mandante, gols_visitante, updated_at
  *
- * O payload não inclui updated_at para não violar o INSERT grant — o banco usa
- * DEFAULT now() no insert. Na rota de UPDATE (ON CONFLICT DO UPDATE), o
- * PostgREST atualiza apenas as colunas do payload excluindo as de conflito, ou
- * seja, só gols_mandante e gols_visitante. Um trigger de updated_at pode ser
- * adicionado em migration futura para manter o campo atualizado no UPDATE.
+ * ATENÇÃO: no upsert, o PostgREST inclui TODAS as colunas do payload no SET do
+ * ON CONFLICT DO UPDATE — INCLUSIVE participante_id e partida_id (ele NÃO exclui
+ * as colunas de conflito). Por isso o UPDATE grant precisa cobrir essas duas
+ * colunas também (migration 0011); senão editar um palpite existente falha com
+ * 42501. A integridade é garantida pela policy palpites_update_own (WITH CHECK):
+ * a linha resultante tem de continuar sendo do próprio usuário. `pontos` nunca
+ * entra no payload e fica fora de qualquer grant de escrita.
  *
  * A trava de horário (trg_palpite_lock) roda no servidor; se a partida já
  * tiver começado, o banco lança exceção e o erro é propagado pela mutation.
@@ -120,8 +106,6 @@ export async function salvarPalpite(input: SalvarPalpiteInput): Promise<void> {
   );
 
   if (error) {
-    // Mensagens possíveis: "Palpite encerrado: a partida já começou" (trigger),
-    // erros de RLS, problemas de rede.
     throw new Error(`Falha ao salvar palpite: ${error.message}`);
   }
 }

@@ -8,10 +8,6 @@ interface BotaoSalvarProps {
   onSalvar: () => void;
 }
 
-/**
- * Botão de salvar fixo no rodapé. Visível apenas quando há palpites pendentes
- * ou enquanto o salvamento está em andamento.
- */
 export function BotaoSalvar({ hasPendingChanges, isSaving, onSalvar }: BotaoSalvarProps) {
   if (!hasPendingChanges && !isSaving) return null;
 

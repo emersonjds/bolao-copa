@@ -14,17 +14,9 @@ export const destaqueRodadaKeys = {
 };
 
 /**
- * Classificação dos participantes do bolão.
- *
- * Assinatura: () => UseQueryResult<ItemRanking[], Error>
- *
  * O ranking só muda quando a apuração de pontos roda (trigger no banco após
  * marcar partida como encerrada). staleTime de 2 minutos reduz refetches
  * desnecessários sem prejudicar a consistência.
- *
- * Depende da RPC get_ranking() (migration 0005 pendente). Enquanto a função
- * não existir no banco, isError será true e data será undefined — o
- * componente deve tratar o estado de erro com mensagem amigável.
  */
 export function useRanking() {
   return useQuery({
@@ -35,21 +27,14 @@ export function useRanking() {
 }
 
 /**
- * Destaque(s) da rodada — participante(s) com maior soma de pontos.
- *
- * Assinatura: (rodada?: number) => UseQueryResult<DestaqueRodada[], Error>
- *
  * @param rodada - Número da jornada a consultar. Se omitido, a RPC retorna
- *   automaticamente a última rodada com jogo encerrado/apurado. Passe o
- *   número explicitamente para consultar uma rodada histórica específica.
+ *   automaticamente a última rodada com jogo encerrado/apurado.
  *
  * staleTime de 2 minutos: o destaque só muda após a apuração de pontos
  * (trigger no banco), então atualizações frequentes não trazem benefício.
  *
  * Array vazio = nenhum jogo da rodada foi encerrado ainda, ou todos
  * pontuaram 0. O componente deve tratar esse estado graciosamente.
- *
- * Depende da RPC get_destaque_rodada() criada na migration 0006.
  */
 export function useDestaqueRodada(rodada?: number) {
   return useQuery({

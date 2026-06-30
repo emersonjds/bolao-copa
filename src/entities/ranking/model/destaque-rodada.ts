@@ -10,8 +10,6 @@ export interface DestaqueRodada {
   rodada: number;
   participanteId: string;
   nome: string;
-  /** URL do avatar do perfil; null se não disponível. */
   avatarUrl: string | null;
-  /** Soma de pontos obtidos pelo participante nessa rodada. */
   pontosRodada: number;
 }

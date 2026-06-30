@@ -2,15 +2,14 @@
 
 import { LogIn } from "lucide-react";
 import { signInWithGoogle } from "@/shared/lib/supabase";
+import { DevLoginButton } from "./dev-login-button";
 
 interface LoginCTAProps {
-  /** Caminho para onde voltar após o login. */
   next?: string;
   titulo?: string;
   descricao?: string;
 }
 
-/** Bloco de chamada para login com Google (porta de entrada da ação protegida). */
 export function LoginCTA({
   next,
   titulo = "Entre para palpitar",
@@ -32,6 +31,7 @@ export function LoginCTA({
       >
         Entrar com Google
       </button>
+      <DevLoginButton next={next} />
     </div>
   );
 }

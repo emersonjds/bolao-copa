@@ -10,12 +10,6 @@ interface DestaqueRodadaCardProps {
   className?: string;
 }
 
-/**
- * "Craque da Rodada" — o(s) apostador(es) que mais pontuaram na última jornada
- * apurada (o "funcionário do mês" do bolão). Em caso de empate, mostra todos.
- * Auto-suficiente: busca os próprios dados e retorna null quando ainda não há
- * destaque (nenhuma rodada apurada). Usado no Dashboard e no Ranking.
- */
 export function DestaqueRodadaCard({ rodada, className }: DestaqueRodadaCardProps) {
   const { data, isLoading } = useDestaqueRodada(rodada);
 

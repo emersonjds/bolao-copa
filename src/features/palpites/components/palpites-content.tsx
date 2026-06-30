@@ -1,17 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Target } from "lucide-react";
 import { toast } from "sonner";
 import { usePartidas } from "@/features/partidas";
+import { useSupabaseUser } from "@/shared/lib/supabase";
 import { useMeusPalpites, useSalvarPalpite } from "../api/queries";
-import type { FaseCopa, Partida } from "@/entities/partida";
+import { traduzirErroSalvar } from "../lib/traduzir-erro-salvar";
+import { estadoPalpite, filtrarHojeEProximoDia } from "../lib/estado-palpite";
+import { lerRascunho, salvarRascunho, limparRascunho } from "../lib/rascunho-local";
+import { jaConfirmouAntecipado, marcarConfirmouAntecipado } from "../lib/confirmacao-antecipado";
+import { useRefetchNaBorda } from "../api/use-refetch-na-borda";
+import type { FaseCopa } from "@/entities/partida";
 import { FiltroFase } from "./filtro-fase";
 import { ListaPalpites } from "./lista-palpites";
 import { BotaoSalvar } from "./botao-salvar";
+import { ModalConfirmarAntecipado } from "./modal-confirmar-antecipado";
+import { SeletorVista, type VistaPalpites } from "./seletor-vista";
+import { HistoricoContent } from "./historico-content";
 import type { PlacarLocal } from "./card-palpite";
 
-// Fases na ordem de exibição das tabs
 const ORDEM_FASES: FaseCopa[] = [
   "grupos",
   "trinta-e-dois",
@@ -21,11 +29,6 @@ const ORDEM_FASES: FaseCopa[] = [
   "terceiro-lugar",
   "final",
 ];
-
-/** Regra de trava (client-side): agendada E ainda no futuro → pode editar. */
-function estaEmJogo(partida: Partida): boolean {
-  return partida.status !== "agendada" || new Date(partida.dataHora) <= new Date();
-}
 
 /**
  * Conteúdo principal da tela de palpites (renderizado apenas quando autenticado).
@@ -40,18 +43,76 @@ export function PalpitesContent() {
   const { data: meusPalpites, isPending: isPendingPalpites } = useMeusPalpites();
   const { mutateAsync: salvarPalpite } = useSalvarPalpite();
 
-  const [faseSelecionada, setFaseSelecionada] = useState<FaseCopa>("grupos");
+  // Lista normalizada: `partidas` é undefined durante o load. Centralizar o
+  // `?? []` aqui evita espalhar o fallback por todo o componente (DRY).
+  const listaPartidas = partidas ?? [];
+
+  const [vista, setVista] = useState<VistaPalpites>("palpitar");
+  const [faseSelecionada, setFaseSelecionada] = useState<FaseCopa | null>(null);
   const [placaresLocais, setPlacaresLocais] = useState<Record<string, PlacarLocal>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [modalAntecipadoAberto, setModalAntecipadoAberto] = useState(false);
+
+  const userId = useSupabaseUser()?.id ?? null;
+  // Instante de referência reativo: a borda (meia-noite / apito) atualiza este
+  // estado, fazendo a derivação de estados dos jogos reagir sem polling.
+  const [agora, setAgora] = useState<number>(() => Date.now());
+  const onBorda = useCallback(() => {
+    setAgora(Date.now());
+    void refetch();
+  }, [refetch]);
+  useRefetchNaBorda(listaPartidas, onBorda);
 
   const isLoading = isLoadingPartidas || isPendingPalpites;
 
   // "Fase de Grupos" sempre visível; outras apenas se houver partidas nelas
   const fasesDisponiveis: FaseCopa[] = ORDEM_FASES.filter(
-    (fase) => fase === "grupos" || (partidas ?? []).some((p) => p.fase === fase)
+    (fase) => fase === "grupos" || listaPartidas.some((p) => p.fase === fase)
   );
 
-  const partidasFiltradas = (partidas ?? []).filter((p) => p.fase === faseSelecionada);
+  // Fase atual = primeira fase disponível com jogo ainda não encerrado, ou seja,
+  // a mais antiga ainda em jogo. As fases futuras do mata-mata já existem no banco
+  // como placeholders agendados (W101 etc.), então pegar a ÚLTIMA cairia sempre na
+  // final — a primeira em aberto é a que o usuário deve palpitar agora.
+  // Null no estado significa "sem escolha manual" → usa o derivado.
+  const faseAtual: FaseCopa =
+    fasesDisponiveis.find((f) =>
+      listaPartidas.some((p) => p.fase === f && p.status !== "encerrada")
+    ) ??
+    fasesDisponiveis[fasesDisponiveis.length - 1] ??
+    "grupos";
+  const faseEfetiva = faseSelecionada ?? faseAtual;
+
+  // Aba "Palpitar": fase ativa usa o recorte dia a dia (jogos de hoje + próximo
+  // dia). Fase já toda encerrada (ex.: grupos depois que o mata-mata começou)
+  // mostra todos os jogos travados, com placar oficial e pontos — vira um
+  // resumo read-only da fase em vez de uma lista vazia.
+  const partidasDaFase = listaPartidas.filter((p) => p.fase === faseEfetiva);
+  const faseTodaEncerrada =
+    partidasDaFase.length > 0 &&
+    partidasDaFase.every((p) => estadoPalpite(p, agora) === "encerrado");
+  const partidasFiltradas = faseTodaEncerrada
+    ? partidasDaFase
+    : filtrarHojeEProximoDia(partidasDaFase, agora);
+
+  const partidasHidratadas = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!userId) return;
+    const futuras = listaPartidas.filter((p) => estadoPalpite(p, agora) === "futuro");
+    const novos: Record<string, PlacarLocal> = {};
+    for (const partida of futuras) {
+      if (partidasHidratadas.current.has(partida.id)) continue;
+      partidasHidratadas.current.add(partida.id);
+      const rascunho = lerRascunho(userId, partida.id);
+      if (rascunho) novos[partida.id] = rascunho;
+    }
+    if (Object.keys(novos).length === 0) return;
+    // Hidratação única do localStorage (store externo) após o load assíncrono das
+    // partidas; só roda para partidas ainda não hidratadas (guardadas no ref).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPlacaresLocais((prev) => ({ ...prev, ...novos }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, partidas]);
 
   /**
    * Um palpite é "pendente" quando placarLocal existe, ambos os campos estão
@@ -70,33 +131,35 @@ export function PalpitesContent() {
     );
   }
 
-  // Verifica pendências em TODAS as fases para não perder alterações ao trocar tab
-  const hasPendingChanges = (partidas ?? []).some((p) => !estaEmJogo(p) && ehPendente(p.id));
+  // Jogos de hoje (liberado) e antecipados (futuro) contam como pendência
+  // salvável — só os encerrados ficam de fora. O antecipado é gravado no
+  // servidor igual; a trava só fecha no apito.
+  function coletarPendentes(): typeof listaPartidas {
+    return listaPartidas.filter((p) => estadoPalpite(p, agora) !== "encerrado" && ehPendente(p.id));
+  }
+  const hasPendingChanges = coletarPendentes().length > 0;
 
   function handleChangePlacar(
     partidaId: string,
     campo: "mandante" | "visitante",
     valor: string
   ): void {
-    setPlacaresLocais((prev) => {
-      let valorNormalizado: string;
-      if (valor === "") {
-        valorNormalizado = "";
-      } else {
-        const num = parseInt(valor, 10);
-        valorNormalizado = isNaN(num) ? "" : String(Math.min(20, Math.max(0, num)));
-      }
-      const anterior = prev[partidaId] ?? { mandante: "", visitante: "" };
-      return { ...prev, [partidaId]: { ...anterior, [campo]: valorNormalizado } };
-    });
+    const digitos = valor.replace(/\D/g, "");
+    const valorNormalizado =
+      digitos === "" ? "" : String(Math.min(20, Math.max(0, parseInt(digitos, 10))));
+
+    const anterior = placaresLocais[partidaId] ?? { mandante: "", visitante: "" };
+    const atualizado: PlacarLocal = { ...anterior, [campo]: valorNormalizado };
+    setPlacaresLocais((prev) => ({ ...prev, [partidaId]: atualizado }));
+
+    // Jogos futuros: persiste o rascunho no localStorage para sobreviver a reloads.
+    const partida = listaPartidas.find((p) => p.id === partidaId);
+    if (userId && partida && estadoPalpite(partida, agora) === "futuro") {
+      salvarRascunho(userId, partidaId, atualizado);
+    }
   }
 
-  async function handleSalvar(): Promise<void> {
-    // Coleta todos os palpites pendentes válidos em TODAS as fases
-    const pendentes = (partidas ?? []).filter((p) => !estaEmJogo(p) && ehPendente(p.id));
-
-    if (pendentes.length === 0) return;
-
+  async function gravarPendentes(pendentes: typeof listaPartidas): Promise<void> {
     setIsSaving(true);
     const toastId = toast.loading("Salvando palpites...");
 
@@ -122,16 +185,49 @@ export function PalpitesContent() {
         return next;
       });
 
+      // Salvar pressupõe sessão, então `userId` é sempre verdadeiro aqui.
+      for (const p of pendentes) {
+        /* v8 ignore next */
+        if (userId) limparRascunho(userId, p.id);
+      }
+
       toast.success("Palpites salvos!", { id: toastId });
     } catch (err) {
-      const mensagem = err instanceof Error ? err.message : "Tente novamente.";
-      toast.error(`Erro ao salvar. ${mensagem}`, { id: toastId });
+      const bruto = err instanceof Error ? err.message : "";
+      const { tipo, texto } = traduzirErroSalvar(bruto);
+      if (tipo === "lock") {
+        // Trava de horário: aviso amigável, não erro. Recarrega as partidas
+        // para os cards dos jogos que já começaram aparecerem como "Travado".
+        toast.warning(texto, { id: toastId });
+        void refetch();
+      } else {
+        toast.error(texto, { id: toastId });
+      }
     } finally {
       setIsSaving(false);
     }
   }
 
-  // ── Loading skeleton ───────────────────────────────────────────────────────
+  function handleSalvar(): void {
+    const pendentes = coletarPendentes();
+    /* v8 ignore next */
+    if (pendentes.length === 0) return;
+
+    const temAntecipado = pendentes.some((p) => estadoPalpite(p, agora) === "futuro");
+    if (temAntecipado && userId && !jaConfirmouAntecipado(userId)) {
+      setModalAntecipadoAberto(true);
+      return;
+    }
+    void gravarPendentes(pendentes);
+  }
+
+  function handleConfirmarAntecipado(): void {
+    setModalAntecipadoAberto(false);
+    /* v8 ignore next */
+    if (userId) marcarConfirmouAntecipado(userId);
+    void gravarPendentes(coletarPendentes());
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-4" aria-busy="true">
@@ -143,7 +239,6 @@ export function PalpitesContent() {
     );
   }
 
-  // ── Erro ao carregar partidas ──────────────────────────────────────────────
   if (isError) {
     return (
       <div className="flex flex-col items-center gap-3 py-12 text-center">
@@ -161,7 +256,6 @@ export function PalpitesContent() {
     );
   }
 
-  // ── Nenhuma partida cadastrada ─────────────────────────────────────────────
   if (!partidas || partidas.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-card px-6 py-12 text-center">
@@ -176,28 +270,43 @@ export function PalpitesContent() {
     );
   }
 
-  // ── Conteúdo principal ─────────────────────────────────────────────────────
   return (
-    <>
-      <FiltroFase
-        fases={fasesDisponiveis}
-        faseSelecionada={faseSelecionada}
-        onSelect={setFaseSelecionada}
-      />
+    <div className="space-y-4">
+      <SeletorVista vista={vista} onSelect={setVista} />
 
-      <ListaPalpites
-        partidas={partidasFiltradas}
-        meusPalpites={meusPalpites ?? []}
-        placaresLocais={placaresLocais}
-        onChangePlacar={handleChangePlacar}
-        isSaving={isSaving}
-      />
+      {vista === "palpitar" ? (
+        <>
+          <FiltroFase
+            fases={fasesDisponiveis}
+            faseSelecionada={faseEfetiva}
+            onSelect={setFaseSelecionada}
+          />
 
-      <BotaoSalvar
-        hasPendingChanges={hasPendingChanges}
-        isSaving={isSaving}
-        onSalvar={() => void handleSalvar()}
-      />
-    </>
+          <ListaPalpites
+            agora={agora}
+            partidas={partidasFiltradas}
+            meusPalpites={meusPalpites ?? []}
+            placaresLocais={placaresLocais}
+            onChangePlacar={handleChangePlacar}
+            isSaving={isSaving}
+          />
+
+          <BotaoSalvar
+            hasPendingChanges={hasPendingChanges}
+            isSaving={isSaving}
+            onSalvar={handleSalvar}
+          />
+        </>
+      ) : (
+        <HistoricoContent partidas={listaPartidas} meusPalpites={meusPalpites ?? []} />
+      )}
+
+      {modalAntecipadoAberto && (
+        <ModalConfirmarAntecipado
+          onConfirmar={handleConfirmarAntecipado}
+          onCancelar={() => setModalAntecipadoAberto(false)}
+        />
+      )}
+    </div>
   );
 }

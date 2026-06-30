@@ -1,7 +1,7 @@
+import { NovidadesGate } from "@/features/novidades";
 import { TopBar } from "./top-bar";
 import { BottomNav } from "./bottom-nav";
 
-/** Casca do app: barra superior, conteúdo e navegação inferior (mobile-first). */
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background">
@@ -10,6 +10,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       <BottomNav />
+      <NovidadesGate />
     </div>
   );
 }

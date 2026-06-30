@@ -10,7 +10,6 @@ interface AvatarParticipanteProps {
   className?: string;
 }
 
-// Quatro opções de cor selecionadas por hash simples do nome.
 const COLOR_OPTIONS = [
   "bg-brand-100 text-brand-700",
   "bg-brand-200 text-brand-800",
@@ -24,16 +23,18 @@ function getColorClasses(nome: string): string {
 }
 
 function getInitials(nome: string): string {
-  const trimmed = nome.trim();
-  if (!trimmed) return "?";
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) {
-    return (parts[0][0] ?? "?").toUpperCase();
-  }
-  const first = parts[0][0] ?? "";
-  const last = parts[parts.length - 1][0] ?? "";
-  const initials = (first + last).toUpperCase();
-  return initials || "?";
+  // Considera só palavras que começam com letra/número e remove pontuação do
+  // início (ex.: "Você (Demo)" → ["Você", "Demo"] = "VD", nunca "V(").
+  const parts = nome
+    .trim()
+    .split(/\s+/)
+    .map((parte) => parte.replace(/^[^\p{L}\p{N}]+/u, ""))
+    .filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  const first = parts[0][0];
+  const last = parts[parts.length - 1][0];
+  return (first + last).toUpperCase();
 }
 
 /**

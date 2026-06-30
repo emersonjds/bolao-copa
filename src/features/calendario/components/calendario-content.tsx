@@ -7,8 +7,6 @@ import { toDateKey, groupByDay, getWeekStart, type GrupoDiaData } from "../lib";
 import { SeletorSemana } from "./seletor-semana";
 import { AgendaList } from "./agenda-list";
 
-// ─── Loading skeleton ─────────────────────────────────────────────────────────
-
 function SeletorSemanaSkeleton() {
   return (
     <div
@@ -42,20 +40,16 @@ function AgendaListSkeleton() {
   );
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
-
 export function CalendarioContent() {
   const { data: partidas, isLoading, isError, refetch } = usePartidas();
   const { user } = useAuth();
 
-  // today is captured once at mount — never changes within a session.
   const [today] = useState<Date>(() => new Date());
   const todayKey = toDateKey(today);
 
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  // 7-day window for the week selector, starting on Sunday.
   const weekDays = useMemo<readonly Date[]>(() => {
     const baseStart = getWeekStart(today);
     const displayStart = new Date(baseStart);
@@ -76,7 +70,6 @@ export function CalendarioContent() {
     return new Set(allGroups.map((g) => g.dateKey));
   }, [allGroups]);
 
-  // Toggle: clicking the active day deselects it (shows all games again).
   const handleSelectDay = (dateKey: string) => {
     setSelectedDate((prev) => (prev === dateKey ? null : dateKey));
   };
@@ -91,8 +84,6 @@ export function CalendarioContent() {
     setSelectedDate(null);
   };
 
-  // ── Loading ───────────────────────────────────────────────────────────────
-
   if (isLoading) {
     return (
       <>
@@ -101,8 +92,6 @@ export function CalendarioContent() {
       </>
     );
   }
-
-  // ── Error ─────────────────────────────────────────────────────────────────
 
   if (isError) {
     return (
@@ -120,8 +109,6 @@ export function CalendarioContent() {
       </div>
     );
   }
-
-  // ── Normal ────────────────────────────────────────────────────────────────
 
   return (
     <>

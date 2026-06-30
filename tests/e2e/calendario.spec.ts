@@ -1,0 +1,73 @@
+import { test, expect, type Page } from "@playwright/test";
+
+/**
+ * Conteúdo e interação da Agenda (/calendario). Os jogos vêm do Supabase real
+ * (seed do torneio completo); por padrão a agenda lista todas as partidas, então
+ * estas seleções estão presentes no DOM. Tela pública, não depende de sessão.
+ */
+
+const TIMES_NA_AGENDA = ["México", "Brasil", "Argentina", "França", "Espanha", "Inglaterra"];
+
+function seletorSemana(page: Page) {
+  return page.getByRole("group", { name: "Selecionar dia" });
+}
+
+test.describe("Calendário — agenda da Copa (público)", () => {
+  test("exibe título e subtítulo da Copa", async ({ page }) => {
+    await page.goto("/calendario");
+    await expect(page.getByRole("heading", { name: "Copa 2026", level: 1 })).toBeVisible();
+    await expect(page.getByText("Agenda e grupos · Jun–Jul 2026")).toBeVisible();
+  });
+
+  test("a aba Grupos mostra a classificação por grupo", async ({ page }) => {
+    await page.goto("/calendario");
+    await page.getByRole("tab", { name: "Grupos" }).click();
+    await expect(page.getByRole("tab", { name: "Grupo A" })).toBeVisible();
+    // Cabeçalho da tabela de classificação (coluna Pontos).
+    await expect(page.getByRole("columnheader", { name: "P", exact: true }).first()).toBeVisible();
+  });
+
+  test("lista as seleções da agenda (dados do Supabase)", async ({ page }) => {
+    await page.goto("/calendario");
+    for (const time of TIMES_NA_AGENDA) {
+      await expect(
+        page.getByText(time, { exact: true }).first(),
+        `seleção ${time} deveria aparecer na agenda`
+      ).toBeVisible();
+    }
+  });
+
+  test("o seletor de semana oferece navegação anterior/próxima e 7 dias", async ({ page }) => {
+    await page.goto("/calendario");
+    await expect(page.getByRole("button", { name: "Semana anterior" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Próxima semana" })).toBeVisible();
+    await expect(seletorSemana(page).getByRole("button")).toHaveCount(7);
+  });
+
+  test("selecionar um dia sem jogos filtra a agenda para o estado vazio", async ({ page }) => {
+    await page.goto("/calendario");
+    // Garante que a agenda carregou com jogos antes de filtrar.
+    await expect(page.getByText("Brasil", { exact: true }).first()).toBeVisible();
+
+    // Vai para a semana anterior (antes do início da Copa: sem jogos em nenhum dia).
+    await page.getByRole("button", { name: "Semana anterior" }).click();
+    // Seleciona o primeiro dia dessa semana → filtro por dia vazio.
+    await seletorSemana(page).getByRole("button").first().click();
+
+    await expect(page.getByText("Nenhum jogo neste dia.")).toBeVisible();
+  });
+
+  test("desmarcar o dia volta a exibir todos os jogos", async ({ page }) => {
+    await page.goto("/calendario");
+    await page.getByRole("button", { name: "Semana anterior" }).click();
+
+    const primeiroDia = seletorSemana(page).getByRole("button").first();
+    await primeiroDia.click();
+    await expect(page.getByText("Nenhum jogo neste dia.")).toBeVisible();
+
+    // Clicar de novo no mesmo dia (toggle) remove o filtro.
+    await primeiroDia.click();
+    await expect(page.getByText("Nenhum jogo neste dia.")).toHaveCount(0);
+    await expect(page.getByText("Brasil", { exact: true }).first()).toBeVisible();
+  });
+});

@@ -1,9 +1,10 @@
 "use client";
 
-import { Check, Lock } from "lucide-react";
+import { Check, Clock, Lock } from "lucide-react";
 import type { Partida } from "@/entities/partida";
 import type { Palpite } from "@/entities/palpite";
 import { FlagIcon } from "@/shared/ui/flag-icon";
+import type { EstadoPalpite } from "../lib/estado-palpite";
 
 export interface PlacarLocal {
   mandante: string;
@@ -12,11 +13,11 @@ export interface PlacarLocal {
 
 interface CardPalpiteProps {
   partida: Partida;
+  estado: EstadoPalpite;
   palpiteSalvo: Palpite | undefined;
   placarLocal: PlacarLocal | undefined;
   onChangeMandante: (valor: string) => void;
   onChangeVisitante: (valor: string) => void;
-  /** Desabilitado enquanto o salvamento está em andamento. */
   disabled: boolean;
 }
 
@@ -41,11 +42,6 @@ const formatadorHora = new Intl.DateTimeFormat("pt-BR", {
   hour12: false,
 });
 
-/** Regra de trava (client-side): agendada E ainda no futuro → pode editar. */
-function isTravado(partida: Partida): boolean {
-  return partida.status !== "agendada" || new Date(partida.dataHora) <= new Date();
-}
-
 /**
  * Confronto indefinido: fase mata-mata cujos times ainda não foram definidos.
  * O tipo Selecao.codigo é string (nunca null), mas o banco pode devolver
@@ -63,22 +59,20 @@ const INPUT_TRAVADO =
 
 export function CardPalpite({
   partida,
+  estado,
   palpiteSalvo,
   placarLocal,
   onChangeMandante,
   onChangeVisitante,
   disabled,
 }: CardPalpiteProps) {
-  const travado = isTravado(partida);
   const indefinido = isConfrontoIndefinido(partida);
 
-  // Valor exibido: local (em edição) → salvo → vazio
   const valorMandante =
     placarLocal?.mandante ?? (palpiteSalvo ? String(palpiteSalvo.golsMandante) : "");
   const valorVisitante =
     placarLocal?.visitante ?? (palpiteSalvo ? String(palpiteSalvo.golsVisitante) : "");
 
-  // Pendente: placarLocal existe, ambos os campos preenchidos e diferem do salvo
   const hasPendente = (() => {
     if (!placarLocal) return false;
     if (placarLocal.mandante === "" || placarLocal.visitante === "") return false;
@@ -89,19 +83,16 @@ export function CardPalpite({
     );
   })();
 
-  // Salvo: palpite existe no servidor e não há alterações locais pendentes
   const hasSalvo = !!palpiteSalvo && !hasPendente;
 
   const badgeGrupo = partida.grupo
     ? `Grupo ${partida.grupo}`
     : (FASE_LABEL[partida.fase] ?? partida.fase);
 
-  // Horário local do usuário (spec: "horário local do usuário via Intl")
   const dataFormatada = formatadorData.format(new Date(partida.dataHora)).replace(" de ", " ");
   const horaFormatada = formatadorHora.format(new Date(partida.dataHora)).replace(":", "h");
   const horarioDisplay = `${dataFormatada} · ${horaFormatada}`;
 
-  // ── Estado: confronto indefinido (mata-mata sem times definidos) ──────────
   if (indefinido) {
     return (
       <article className="rounded-2xl border border-dashed border-border bg-muted/30 p-4">
@@ -109,7 +100,9 @@ export function CardPalpite({
           <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] font-semibold text-brand-700">
             {badgeGrupo}
           </span>
-          <span className="text-[11px] text-muted-foreground">{horarioDisplay}</span>
+          <span className="rounded-full bg-sky-700 px-2 py-0.5 text-[11px] font-medium text-white">
+            {horarioDisplay}
+          </span>
         </div>
         <p className="py-2 text-center text-sm text-muted-foreground">
           Classificados após os jogos de grupos
@@ -118,8 +111,7 @@ export function CardPalpite({
     );
   }
 
-  // ── Estado: travado (partida iniciou ou encerrou) ─────────────────────────
-  if (travado) {
+  if (estado === "encerrado") {
     const temPlacarOficial = partida.golsMandante !== null && partida.golsVisitante !== null;
 
     return (
@@ -141,14 +133,15 @@ export function CardPalpite({
               nome={partida.mandante.nome}
               tamanho="md"
             />
-            <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
+            <span className="max-w-20 truncate text-center text-xs font-medium text-foreground">
               {partida.mandante.nome}
             </span>
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={valorMandante}
               readOnly
               disabled
@@ -160,7 +153,8 @@ export function CardPalpite({
               ×
             </span>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={valorVisitante}
               readOnly
               disabled
@@ -176,7 +170,7 @@ export function CardPalpite({
               nome={partida.visitante.nome}
               tamanho="md"
             />
-            <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
+            <span className="max-w-20 truncate text-center text-xs font-medium text-foreground">
               {partida.visitante.nome}
             </span>
           </div>
@@ -198,7 +192,86 @@ export function CardPalpite({
     );
   }
 
-  // ── Estado: aberto (editável, com ou sem alterações) ──────────────────────
+  if (estado === "futuro") {
+    return (
+      <article className="rounded-2xl border border-dashed border-amber-200 bg-amber-50/40 p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] font-semibold text-brand-700">
+            {badgeGrupo}
+          </span>
+          <div className="flex items-center gap-2">
+            {hasSalvo && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold text-brand-700">
+                <Check className="h-3 w-3" aria-hidden="true" />
+                Salvo
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+              <Clock className="h-3 w-3" aria-hidden="true" />
+              Amanhã
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="flex flex-1 flex-col items-center gap-1.5">
+            <FlagIcon
+              codigoFifa={partida.mandante.codigo}
+              nome={partida.mandante.nome}
+              tamanho="md"
+            />
+            <span className="max-w-20 truncate text-center text-xs font-medium text-foreground">
+              {partida.mandante.nome}
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={2}
+              value={valorMandante}
+              onChange={(e) => onChangeMandante(e.target.value)}
+              disabled={disabled}
+              aria-label={`Gols do ${partida.mandante.nome}`}
+              className={INPUT_BASE}
+            />
+            <span className="font-mono text-lg font-bold text-muted-foreground" aria-hidden="true">
+              ×
+            </span>
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={2}
+              value={valorVisitante}
+              onChange={(e) => onChangeVisitante(e.target.value)}
+              disabled={disabled}
+              aria-label={`Gols do ${partida.visitante.nome}`}
+              className={INPUT_BASE}
+            />
+          </div>
+          <div className="flex flex-1 flex-col items-center gap-1.5">
+            <FlagIcon
+              codigoFifa={partida.visitante.codigo}
+              nome={partida.visitante.nome}
+              tamanho="md"
+            />
+            <span className="max-w-20 truncate text-center text-xs font-medium text-foreground">
+              {partida.visitante.nome}
+            </span>
+          </div>
+        </div>
+
+        <p className="mt-3 text-center text-xs text-amber-700">
+          {hasSalvo
+            ? "Palpite salvo · ajuste até o jogo começar"
+            : hasPendente
+              ? "Toque em Salvar para confirmar este palpite"
+              : "Palpite antecipado · você já pode deixar pronto"}
+        </p>
+      </article>
+    );
+  }
+
   const wrapperClass = hasPendente
     ? "rounded-2xl border border-brand-400 bg-card p-4 shadow-sm ring-1 ring-brand-400/30"
     : hasSalvo
@@ -212,7 +285,9 @@ export function CardPalpite({
           {badgeGrupo}
         </span>
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-muted-foreground">{horarioDisplay}</span>
+          <span className="rounded-full bg-sky-700 px-2 py-0.5 text-[11px] font-medium text-white">
+            {horarioDisplay}
+          </span>
           {hasSalvo && (
             <span className="inline-flex items-center gap-1 rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold text-brand-700">
               <Check className="h-3 w-3" aria-hidden="true" />
@@ -229,17 +304,16 @@ export function CardPalpite({
             nome={partida.mandante.nome}
             tamanho="md"
           />
-          <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
+          <span className="max-w-20 truncate text-center text-xs font-medium text-foreground">
             {partida.mandante.nome}
           </span>
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5">
           <input
-            type="number"
-            min={0}
-            max={20}
+            type="text"
             inputMode="numeric"
+            maxLength={2}
             value={valorMandante}
             onChange={(e) => onChangeMandante(e.target.value)}
             disabled={disabled}
@@ -250,10 +324,9 @@ export function CardPalpite({
             ×
           </span>
           <input
-            type="number"
-            min={0}
-            max={20}
+            type="text"
             inputMode="numeric"
+            maxLength={2}
             value={valorVisitante}
             onChange={(e) => onChangeVisitante(e.target.value)}
             disabled={disabled}
@@ -268,7 +341,7 @@ export function CardPalpite({
             nome={partida.visitante.nome}
             tamanho="md"
           />
-          <span className="max-w-[80px] truncate text-center text-xs font-medium text-foreground">
+          <span className="max-w-20 truncate text-center text-xs font-medium text-foreground">
             {partida.visitante.nome}
           </span>
         </div>

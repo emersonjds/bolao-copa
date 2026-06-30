@@ -4,22 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 import { getSupabaseBrowserClient } from "@/shared/lib/supabase";
 import type { Selecao } from "@/entities/partida";
 
-// ---------------------------------------------------------------------------
-// Tipos internos
-// ---------------------------------------------------------------------------
-
 interface SelecaoDb {
   id: string;
   nome: string;
   codigo: string;
 }
 
-// ---------------------------------------------------------------------------
-// Fetcher
-// ---------------------------------------------------------------------------
-
 async function listarSelecoes(): Promise<Selecao[]> {
-  // TODO: API — substituir pelo endpoint REST quando o backend existir
   const { data, error } = await getSupabaseBrowserClient()
     .from("selecoes")
     .select("id, nome, codigo")
@@ -36,15 +27,7 @@ async function listarSelecoes(): Promise<Selecao[]> {
   }));
 }
 
-// ---------------------------------------------------------------------------
-// Hook
-// ---------------------------------------------------------------------------
-
-/**
- * Lista todas as seleções da Copa, ordenadas alfabeticamente.
- * Usado no diálogo "Definir confronto" para mata-mata.
- * staleTime: Infinity — seleções não mudam durante a Copa.
- */
+/** staleTime: Infinity — seleções não mudam durante a Copa. */
 export function useSelecoes() {
   return useQuery({
     queryKey: ["selecoes"],

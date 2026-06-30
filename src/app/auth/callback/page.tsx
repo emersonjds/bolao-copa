@@ -16,7 +16,9 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
-    const next = params.get("next") ?? "/";
+    // Aceita só caminhos internos: evita open redirect via ?next=https://evil.com
+    const rawNext = params.get("next") ?? "/";
+    const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
 
     if (!code) {
       router.replace(next);

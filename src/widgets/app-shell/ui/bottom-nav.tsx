@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Target, Trophy, BookOpen, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Target, Trophy, Gift, Globe, ShieldCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useIsAdmin } from "@/features/auth";
 
@@ -16,7 +16,8 @@ const BASE_NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Início", icon: LayoutDashboard },
   { href: "/palpites", label: "Palpites", icon: Target },
   { href: "/ranking", label: "Ranking", icon: Trophy },
-  { href: "/regras", label: "Regras", icon: BookOpen },
+  { href: "/calendario", label: "Copa", icon: Globe },
+  { href: "/premiacao", label: "Premiação", icon: Gift },
 ];
 
 const ADMIN_NAV_ITEM: NavItem = { href: "/admin", label: "Admin", icon: ShieldCheck };
@@ -25,7 +26,6 @@ function isActive(pathname: string, href: string): boolean {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
-/** Navegação inferior mobile-first (4 abas + aba Admin condicional para admins). */
 export function BottomNav() {
   const pathname = usePathname();
   const isAdmin = useIsAdmin();

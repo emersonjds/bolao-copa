@@ -31,7 +31,6 @@ const DATA_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
   hour12: false,
 });
 
-/** Diálogo de bottom sheet (mobile) / modal centrado (desktop) para definir o confronto de mata-mata. */
 export function DefinirConfrontoDialog({ partida, open, onOpenChange }: Props) {
   const { data: selecoes, isLoading: loadingSelecoes } = useSelecoes();
   const mutation = useDefinirConfronto();
@@ -43,9 +42,6 @@ export function DefinirConfrontoDialog({ partida, open, onOpenChange }: Props) {
   const dataLabel = DATA_FORMATTER.format(new Date(partida.dataHora));
 
   function handleConfirmar() {
-    if (!mandanteId || !visitanteId) return;
-    if (mandanteId === visitanteId) return;
-
     mutation.mutate(
       { partidaId: partida.id, mandanteId, visitanteId },
       {
@@ -61,15 +57,12 @@ export function DefinirConfrontoDialog({ partida, open, onOpenChange }: Props) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        {/* Overlay */}
         <Dialog.Overlay className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
 
-        {/* Content — bottom sheet em mobile, dialog centrado em sm+ */}
         <Dialog.Content
           aria-describedby="confronto-desc"
           className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-card p-6 shadow-xl focus:outline-none sm:inset-auto sm:top-1/2 sm:left-1/2 sm:w-full sm:max-w-md sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl"
         >
-          {/* Handle bar mobile */}
           <div
             className="mx-auto mb-4 h-1 w-10 rounded-full bg-border sm:hidden"
             aria-hidden="true"
@@ -99,7 +92,6 @@ export function DefinirConfrontoDialog({ partida, open, onOpenChange }: Props) {
           </div>
 
           <div className="mt-5 space-y-4">
-            {/* Select mandante */}
             <div className="space-y-1.5">
               <label htmlFor="select-mandante" className="text-sm font-medium text-foreground">
                 Mandante (casa)
@@ -120,7 +112,6 @@ export function DefinirConfrontoDialog({ partida, open, onOpenChange }: Props) {
               </select>
             </div>
 
-            {/* Select visitante */}
             <div className="space-y-1.5">
               <label htmlFor="select-visitante" className="text-sm font-medium text-foreground">
                 Visitante (fora)
@@ -141,7 +132,6 @@ export function DefinirConfrontoDialog({ partida, open, onOpenChange }: Props) {
               </select>
             </div>
 
-            {/* Botões */}
             <div className="mt-6 space-y-2">
               <button
                 type="button"

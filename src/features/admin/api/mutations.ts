@@ -5,10 +5,6 @@ import { toast } from "sonner";
 import { getSupabaseBrowserClient } from "@/shared/lib/supabase";
 import type { StatusPartida } from "@/entities/partida";
 
-// ---------------------------------------------------------------------------
-// Tipos de entrada
-// ---------------------------------------------------------------------------
-
 export interface SalvarResultadoInput {
   partidaId: string;
   golsMandante: number;
@@ -25,23 +21,11 @@ export interface DefinirConfrontoInput {
   visitanteId: string;
 }
 
-// ---------------------------------------------------------------------------
-// Mutations
-// ---------------------------------------------------------------------------
-
-/**
- * Atualiza placar e status de uma partida.
- * Ao salvar com status "encerrada", o trigger `apurar_pontos` do banco
- * calcula automaticamente os pontos dos palpites.
- *
- * Invalida: ["partidas"], ["ranking"], ["destaque-rodada"] no sucesso.
- */
 export function useSalvarResultado() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: SalvarResultadoInput) => {
-      // TODO: API — substituir pelo endpoint REST quando o backend existir
       const supabase = getSupabaseBrowserClient();
       const { error } = await supabase
         .from("partidas")
@@ -72,15 +56,12 @@ export function useSalvarResultado() {
 /**
  * Define os times de uma partida de mata-mata cujo confronto ainda não foi
  * determinado (mandante_id / visitante_id nulos no banco).
- *
- * Invalida: ["partidas"] no sucesso.
  */
 export function useDefinirConfronto() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: DefinirConfrontoInput) => {
-      // TODO: API — substituir pelo endpoint REST quando o backend existir
       const supabase = getSupabaseBrowserClient();
       const { error } = await supabase
         .from("partidas")

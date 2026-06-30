@@ -1,0 +1,28 @@
+# Headers do deploy estático (Netlify e Cloudflare honram este arquivo; o Next
+# copia public/_headers -> out/_headers no export).
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  # CSP: 'unsafe-inline' em script/style é necessário no static export do Next
+  # (sem servidor não há nonce). connect-src fixado no projeto Supabase deste
+  # bolão (não wildcard *.supabase.co): reduz a superfície de exfiltração via
+  # XSS a este host. ATUALIZE este ref se trocar de projeto Supabase. img-src
+  # libera bandeiras (flagcdn) e avatares do Google. Sem `data:` em img-src: o
+  # QR do PIX é SVG inline (qrcode.react), não data-URI — remover fecha a janela
+  # de trocar a imagem por um data-URI via XSS. object-src 'none' bloqueia
+  # plugins; upgrade-insecure-requests reforça HTTPS-only.
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://flagcdn.com https://lh3.googleusercontent.com; font-src 'self'; connect-src 'self' https://gbspiwzdqkbhkckdaajz.supabase.co wss://gbspiwzdqkbhkckdaajz.supabase.co; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
+
+# HTML: cache curto + revalidação em segundo plano (conteúdo pode mudar a cada deploy).
+/*.html
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+
+# Assets com hash no nome são imutáveis: cache agressivo.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable

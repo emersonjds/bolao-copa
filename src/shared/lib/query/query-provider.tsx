@@ -27,7 +27,9 @@ export function QueryProvider({ children }: QueryProviderProps) {
     <QueryClientProvider client={client}>
       {children}
       {process.env.NODE_ENV === "development" && (
-        <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />
+        // top-left: o botão flutuante no rodapé cobria a bottom-nav no mobile e
+        // interceptava cliques nos testes E2E (o indicador do Next já é top-right).
+        <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-left" />
       )}
     </QueryClientProvider>
   );

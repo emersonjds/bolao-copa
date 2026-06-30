@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePartidas } from "@/features/partidas";
+import { encontrarProximoJogo } from "@/features/partidas/lib/proximo-jogo";
 import { FlagIcon } from "@/shared/ui/flag-icon";
-import type { FaseCopa, Partida } from "@/entities/partida";
+import { StatusJogoBadge } from "@/shared/ui/status-jogo-badge";
+import type { FaseCopa } from "@/entities/partida";
 
 const FASE_LABEL: Record<FaseCopa, string> = {
   grupos: "Fase de Grupos",
@@ -20,27 +22,7 @@ const horarioFmt = new Intl.DateTimeFormat("pt-BR", {
   minute: "2-digit",
 });
 
-/** Retorna o primeiro jogo agendado dentro das próximas 24h, ou null. */
-function encontrarProximoJogo(partidas: readonly Partida[]): Partida | null {
-  const agora = Date.now();
-  const limite24h = agora + 24 * 60 * 60 * 1000;
-
-  const candidatos = partidas
-    .filter((p) => {
-      if (p.status !== "agendada") return false;
-      const t = new Date(p.dataHora).getTime();
-      return t >= agora && t <= limite24h;
-    })
-    .slice()
-    .sort((a, b) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime());
-
-  return candidatos[0] ?? null;
-}
-
-/**
- * Card com borda dourada que destaca o próximo jogo nas próximas 24h.
- * Retorna null quando não há jogo iminente ou enquanto os dados carregam.
- */
+/** Retorna null quando não há jogo iminente nas próximas 24h ou enquanto os dados carregam. */
 export function ProximoJogoDestaque() {
   const { data: partidas, isLoading } = usePartidas();
 
@@ -71,13 +53,10 @@ export function ProximoJogoDestaque() {
         <span className="rounded-md bg-brand-100 px-2 py-0.5 text-[11px] font-semibold text-brand-700">
           {faseLegenda}
         </span>
-        <span className="rounded-full bg-gold-500/15 px-2 py-0.5 text-[11px] font-semibold text-gold-600">
-          Em breve
-        </span>
+        <StatusJogoBadge partida={jogo} />
       </div>
 
       <div className="flex items-center gap-2">
-        {/* Mandante */}
         <div className="flex flex-1 flex-col items-center gap-1.5">
           <FlagIcon codigoFifa={jogo.mandante.codigo} nome={jogo.mandante.nome} tamanho="lg" />
           <span className="max-w-[80px] truncate text-center text-sm font-semibold text-foreground">
@@ -85,15 +64,16 @@ export function ProximoJogoDestaque() {
           </span>
         </div>
 
-        {/* Centro: vs + horário */}
         <div className="flex flex-col items-center gap-0.5">
-          <span className="font-mono text-base font-bold text-muted-foreground">vs</span>
-          <time dateTime={jogo.dataHora} className="text-[11px] text-muted-foreground">
+          <span className="font-mono text-base font-medium text-muted-foreground">vs</span>
+          <time
+            dateTime={jogo.dataHora}
+            className="rounded-full bg-sky-700 px-2 py-0.5 text-[11px] font-medium text-white"
+          >
             {horario}
           </time>
         </div>
 
-        {/* Visitante */}
         <div className="flex flex-1 flex-col items-center gap-1.5">
           <FlagIcon codigoFifa={jogo.visitante.codigo} nome={jogo.visitante.nome} tamanho="lg" />
           <span className="max-w-[80px] truncate text-center text-sm font-semibold text-foreground">
@@ -106,7 +86,7 @@ export function ProximoJogoDestaque() {
         href="/palpites"
         className="mt-4 flex min-h-11 w-full items-center justify-center rounded-xl bg-brand-800 text-sm font-semibold text-white transition-colors hover:bg-brand-900"
       >
-        Dar palpite
+        Fazer palpite
       </Link>
     </section>
   );

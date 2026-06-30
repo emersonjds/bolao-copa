@@ -6,11 +6,17 @@
   "packageManager": "pnpm@10.0.0",
   "scripts": {
     "dev": "next dev",
+    "dev:local": "next dev",
     "seed:generate": "tsx scripts/generate-seed.ts",
+    "scenario:seed": "tsx scripts/scenario-e2e.ts",
+    "scenario:open": "tsx scripts/dev-login.ts",
+    "backup": "tsx scripts/backup.ts",
+    "notificar": "tsx scripts/notificar.ts",
+    "restore": "tsx scripts/restore.ts",
+    "trinta-e-dois": "tsx scripts/gerar-trinta-e-dois.ts",
     "build": "next build",
     "start": "next start",
-    "preview": "next build && wrangler dev",
-    "deploy": "next build && wrangler deploy",
+    "preview": "next build && npx serve out",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -19,6 +25,11 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:db": "vitest run -c vitest.db.config.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report",
+    "demo": "playwright test -c playwright.demo.config.ts && tsx scripts/demo-to-mp4.ts",
     "validate": "pnpm type-check && pnpm lint && pnpm format:check && pnpm test:run",
     "prepare": "git config --local core.hooksPath .githooks || true"
   },
@@ -48,9 +59,10 @@
     "autoprefixer": "^10.4.22",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "flag-icons": "^7.5.0",
     "lucide-react": "^1.17.0",
     "next": "16.2.6",
+    "nodemailer": "^9.0.1",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.76.1",
@@ -62,6 +74,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@faker-js/faker": "^10.3.0",
+    "@playwright/test": "^1.60.0",
     "@svgr/webpack": "^8.1.0",
     "@tanstack/react-query-devtools": "^5.100.14",
     "@testing-library/dom": "^10.4.1",
@@ -69,6 +82,8 @@
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/node": "^25.9.1",
+    "@types/nodemailer": "^8.0.1",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.1",
     "@vitejs/plugin-react": "^6.0.1",
@@ -81,6 +96,7 @@
     "jsdom": "^29.0.2",
     "lint-staged": "^17.0.5",
     "msw": "^2.14.6",
+    "pg": "^8.21.0",
     "postcss": "^8.5.15",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
@@ -88,12 +104,11 @@
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.60.0",
-    "vitest": "^4.1.7",
-    "wrangler": "^4.97.0"
+    "vitest": "^4.1.7"
   },
-  "msw": {
-    "workerDirectory": [
-      "public"
-    ]
+  "pnpm": {
+    "overrides": {
+      "postcss@<8.5.10": ">=8.5.10"
+    }
   }
 }

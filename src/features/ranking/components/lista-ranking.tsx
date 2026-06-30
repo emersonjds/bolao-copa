@@ -7,7 +7,6 @@ interface ListaRankingProps {
   /** Itens da posição 4 em diante, já fatiados pelo componente pai. */
   items: ItemRanking[];
   meuParticipanteId: string | null;
-  /** Número da posição do primeiro item (padrão: 4). */
   startPosition?: number;
 }
 
@@ -18,6 +17,10 @@ interface ItemRankingRowProps {
 }
 
 function ItemRankingRow({ item, posicao, ehMeuPerfil }: ItemRankingRowProps) {
+  // Espelha o padrão do pódio: a própria linha vira "Você" em vez do nome,
+  // tornando o banner separado redundante (decisão de UX — uma identidade só).
+  const nomeExibido = ehMeuPerfil ? "Você" : item.nome;
+
   return (
     <li
       className={`flex items-center gap-3 rounded-2xl border px-4 py-3 shadow-sm transition-colors ${
@@ -25,7 +28,6 @@ function ItemRankingRow({ item, posicao, ehMeuPerfil }: ItemRankingRowProps) {
       }`}
       aria-current={ehMeuPerfil ? "true" : undefined}
     >
-      {/* Número da posição */}
       <span
         className="w-6 shrink-0 text-right font-mono text-sm font-bold text-muted-foreground"
         aria-label={`${posicao}º lugar`}
@@ -41,7 +43,9 @@ function ItemRankingRow({ item, posicao, ehMeuPerfil }: ItemRankingRowProps) {
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <p className="truncate text-sm font-semibold text-foreground">{item.nome}</p>
+        <p className="truncate text-sm font-semibold text-foreground" title={item.nome}>
+          {nomeExibido}
+        </p>
         <p className="text-xs text-muted-foreground">
           {item.jogosPontuados} {item.jogosPontuados === 1 ? "jogo pontuado" : "jogos pontuados"}
         </p>
@@ -50,14 +54,17 @@ function ItemRankingRow({ item, posicao, ehMeuPerfil }: ItemRankingRowProps) {
       <span className="shrink-0 font-mono text-sm font-bold text-foreground">
         {item.pontosTotais} {item.pontosTotais === 1 ? "pt" : "pts"}
       </span>
+
+      {/* Âncora visual: substitui o antigo banner "Sua posição" */}
+      {ehMeuPerfil && (
+        <span className="shrink-0 rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-semibold text-white">
+          Você
+        </span>
+      )}
     </li>
   );
 }
 
-/**
- * Lista de participantes a partir da 4ª posição.
- * Retorna null quando a lista está vazia (sem ruído visual desnecessário).
- */
 export function ListaRanking({ items, meuParticipanteId, startPosition = 4 }: ListaRankingProps) {
   if (items.length === 0) return null;
 

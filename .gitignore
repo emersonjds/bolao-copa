@@ -12,6 +12,7 @@
 /playwright-report
 /test-results
 /playwright/.cache
+/tests/e2e/.auth
 
 # next.js
 /.next/
@@ -63,3 +64,14 @@ next-env.d.ts
 .mcp.json.local
 .serena/
 skills-lock.json
+
+# Vídeos de demonstração (gerados localmente, não versionados)
+demo/*.webm
+test-results/demo-raw/
+demo/*.mp4
+
+# backups locais de teste (os reais vivem no repo privado backup-bolao-da-copa)
+/backups/
+
+# credenciais de teste de envio (local, nunca versionar)
+.env.teste*

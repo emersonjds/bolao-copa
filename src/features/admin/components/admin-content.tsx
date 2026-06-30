@@ -8,10 +8,6 @@ import { FiltroStatus, type FiltroStatusValue } from "./filtro-status";
 import { FiltroFase, type FiltroFaseValue } from "./filtro-fase";
 import { CardAdmin, CardAdminSkeleton } from "./card-admin";
 
-// ---------------------------------------------------------------------------
-// Helpers de filtro
-// ---------------------------------------------------------------------------
-
 /** Ordem canônica das fases para estabilizar o Set → Array. */
 const ORDEM_FASES: readonly FaseCopa[] = [
   "grupos",
@@ -23,18 +19,12 @@ const ORDEM_FASES: readonly FaseCopa[] = [
   "final",
 ];
 
-// ---------------------------------------------------------------------------
-// Componente principal
-// ---------------------------------------------------------------------------
-
 /** Conteúdo da tela admin. Só renderiza quando `useIsAdmin()` confirma acesso. */
 export function AdminContent() {
   const { data: partidas, isLoading, isError, refetch } = usePartidas();
 
   const [filtroStatus, setFiltroStatus] = useState<FiltroStatusValue>("pendentes");
   const [filtroFase, setFiltroFase] = useState<FiltroFaseValue>("todas");
-
-  // ----- Filtragem -----
 
   const partidasPorStatus = (partidas ?? []).filter((p) =>
     filtroStatus === "pendentes"
@@ -56,8 +46,6 @@ export function AdminContent() {
   const partidasFiltradas = partidasPorStatus.filter(
     (p) => filtroFaseEfetivo === "todas" || p.fase === filtroFaseEfetivo
   );
-
-  // ----- Estados de carregamento -----
 
   if (isLoading) {
     return (
@@ -102,8 +90,6 @@ export function AdminContent() {
     );
   }
 
-  // ----- Render principal -----
-
   return (
     <div className="space-y-4">
       <PageHeader />
@@ -145,10 +131,6 @@ export function AdminContent() {
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Sub-componente estático
-// ---------------------------------------------------------------------------
 
 function PageHeader() {
   return (
