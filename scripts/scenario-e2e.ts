@@ -166,7 +166,6 @@ async function run(pgClient: Client) {
   // (2) escolher um "vencedor nos pênaltis" (a FK exige seleção real).
   const { data: sels } = await admin.from("selecoes").select("id").order("codigo");
   const selIds = (sels ?? []).map((s) => s.id);
-  const penaltiSelecao = selIds[0];
 
   console.log("→ resetando estado anterior do cenário…");
   await admin
@@ -258,9 +257,7 @@ async function run(pgClient: Client) {
             visitante_id: selIds[(2 * kc + 1) % selIds.length],
           }
         : {};
-      if (ehTrintaEDois) kc++;
-      // ponytail: oitavas+ evitam empate para não precisar de vencedor_penaltis
-      // com times desconhecidos; 32-avos usam penaltiSelecao (FK válida).
+      // ponytail: oitavas+ força resultado com vencedor p/ evitar empate sem times definidos
       const safeRes = !ehTrintaEDois && res[0] === res[1] ? [2, 1] : res;
       const empate = safeRes[0] === safeRes[1];
       const { error } = await admin
@@ -269,10 +266,11 @@ async function run(pgClient: Client) {
           status: "encerrada",
           gols_mandante: safeRes[0],
           gols_visitante: safeRes[1],
-          vencedor_penaltis: empate ? penaltiSelecao : null,
+          vencedor_penaltis: empate && "mandante_id" in times ? times.mandante_id : null,
           ...times,
         })
         .eq("id", jogo.id);
+      if (ehTrintaEDois) kc++;
       if (error) throw new Error(`Falha ao encerrar jogo ${jogo.id}: ${error.message}`);
       gi++;
     }
