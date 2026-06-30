@@ -23,7 +23,7 @@ describe("AVISOS", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("ordem: novidades, mata-mata, oitavas, quartas, semi, final, chaveamento", () => {
+  it("ordem: novidades, mata-mata, oitavas, quartas, semi, final, pontuacao-mata-mata, chaveamento", () => {
     expect(AVISOS.map((a) => a.id)).toEqual([
       "novidades-2026-06",
       "mata-mata-2026-06",
@@ -31,6 +31,7 @@ describe("AVISOS", () => {
       "quartas-2026",
       "semifinal-2026",
       "final-2026",
+      "pontuacao-mata-mata-2026-06",
       "chaveamento-2026",
     ]);
   });

@@ -135,6 +135,38 @@ export const AVISO_FINAL: Aviso = {
   ],
 };
 
+export const AVISO_PONTUACAO_MATA_MATA: Aviso = {
+  id: "pontuacao-mata-mata-2026-06",
+  titulo: "Mudou a pontuação do mata-mata",
+  gatilho: "mata-mata-definido",
+  itens: [
+    {
+      emoji: "🎯",
+      titulo: "Agora vale quem passa",
+      descricao:
+        "Na eliminatória não tem empate no fim — alguém sempre avança. Pela regra antiga quase todo palpite zerava; agora o que pontua é acertar quem passa.",
+    },
+    {
+      emoji: "🏆",
+      titulo: "Como soma os pontos",
+      descricao:
+        "5: cravou a vitória e acertou quem passa. 4: cravou o empate e acertou quem passa. 3: acertou só quem passa. 0: errou quem passa. Tudo × o peso da fase.",
+    },
+    {
+      emoji: "⚽",
+      titulo: "Palpitou empate?",
+      descricao:
+        "É só escolher quem passa. Prorrogação e pênaltis contam só pra definir quem avança — não mudam o placar do tempo normal.",
+    },
+    {
+      emoji: "🔄",
+      titulo: "Jogos que já passaram",
+      descricao:
+        "Repontuamos os jogos de mata-mata já encerrados pela regra nova, pra ficar tudo justo. Sua pontuação nesses jogos pode ter mudado.",
+    },
+  ],
+};
+
 export const AVISO_CHAVEAMENTO: Aviso = {
   id: "chaveamento-2026",
   titulo: "Veja o chaveamento!",
@@ -162,5 +194,6 @@ export const AVISOS: Aviso[] = [
   AVISO_QUARTAS,
   AVISO_SEMI,
   AVISO_FINAL,
+  AVISO_PONTUACAO_MATA_MATA,
   AVISO_CHAVEAMENTO,
 ];
