@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { HeroStats, ProximoJogoDestaque } from "@/features/dashboard";
 import { ProximosJogos } from "@/features/partidas";
-import { DestaqueRodadaCard } from "@/features/ranking";
+import { DestaqueDiaCard } from "@/features/ranking";
 
 export default function DashboardPage() {
   return (
@@ -27,7 +27,7 @@ export default function DashboardPage() {
         <ProximosJogos excluirProximoDestaque />
       </section>
 
-      <DestaqueRodadaCard />
+      <DestaqueDiaCard />
     </div>
   );
 }

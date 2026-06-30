@@ -61,10 +61,10 @@ export const itemRankingRpc = {
   jogos_pontuados: 4,
 };
 
-export const destaqueRodadaRpc = {
-  rodada: 1,
+export const destaqueDiaRpc = {
+  dia: "2026-06-30",
   participante_id: "part-id-1",
   nome: "Tester",
   avatar_url: null,
-  pontos_rodada: 8,
+  pontos_dia: 8,
 };

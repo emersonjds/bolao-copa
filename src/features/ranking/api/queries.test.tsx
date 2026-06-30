@@ -4,9 +4,9 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { type ReactNode } from "react";
 import { server } from "@/test/msw/server";
 import { rpc, rpcError } from "@/test/msw/handlers";
-import { itemRankingRpc, destaqueRodadaRpc } from "@/test/fixtures";
+import { itemRankingRpc, destaqueDiaRpc } from "@/test/fixtures";
 import { createTestQueryClient } from "@/test/render";
-import { useRanking, useDestaqueRodada, rankingKeys, destaqueRodadaKeys } from "./queries";
+import { useRanking, useDestaqueDia, rankingKeys, destaqueDiaKeys } from "./queries";
 
 /** Cria um wrapper com QueryClient isolado por teste (sem cache vazando entre casos). */
 function createWrapper() {
@@ -26,13 +26,13 @@ describe("rankingKeys", () => {
   });
 });
 
-describe("destaqueRodadaKeys", () => {
-  it("ultima() retorna ['destaque-rodada'] sem rodada", () => {
-    expect(destaqueRodadaKeys.ultima()).toEqual(["destaque-rodada"]);
+describe("destaqueDiaKeys", () => {
+  it("ultimo() retorna ['destaque-dia'] sem dia", () => {
+    expect(destaqueDiaKeys.ultimo()).toEqual(["destaque-dia"]);
   });
 
-  it("porRodada(n) inclui a rodada na chave para cache separado", () => {
-    expect(destaqueRodadaKeys.porRodada(3)).toEqual(["destaque-rodada", 3]);
+  it("porDia(d) inclui o dia na chave para cache separado", () => {
+    expect(destaqueDiaKeys.porDia("2026-06-30")).toEqual(["destaque-dia", "2026-06-30"]);
   });
 });
 
@@ -84,14 +84,14 @@ describe("useRanking", () => {
 });
 
 // ---------------------------------------------------------------------------
-// useDestaqueRodada — integração via MSW
+// useDestaqueDia — integração via MSW
 // ---------------------------------------------------------------------------
 
-describe("useDestaqueRodada", () => {
-  it("retorna destaque mapeado quando chamado sem rodada (última apurada)", async () => {
-    server.use(rpc("get_destaque_rodada", [destaqueRodadaRpc]));
+describe("useDestaqueDia", () => {
+  it("retorna destaque mapeado quando chamado sem dia (mais recente)", async () => {
+    server.use(rpc("get_destaque_dia", [destaqueDiaRpc]));
 
-    const { result } = renderHook(() => useDestaqueRodada(), {
+    const { result } = renderHook(() => useDestaqueDia(), {
       wrapper: createWrapper(),
     });
 
@@ -99,29 +99,29 @@ describe("useDestaqueRodada", () => {
 
     expect(result.current.data).toHaveLength(1);
     expect(result.current.data![0]).toEqual({
-      rodada: 1,
+      dia: "2026-06-30",
       participanteId: "part-id-1",
       nome: "Tester",
       avatarUrl: null,
-      pontosRodada: 8,
+      pontosDia: 8,
     });
   });
 
-  it("retorna destaque mapeado quando chamado com rodada explícita", async () => {
-    server.use(rpc("get_destaque_rodada", [destaqueRodadaRpc]));
+  it("retorna destaque mapeado quando chamado com dia explícito", async () => {
+    server.use(rpc("get_destaque_dia", [destaqueDiaRpc]));
 
-    const { result } = renderHook(() => useDestaqueRodada(1), {
+    const { result } = renderHook(() => useDestaqueDia("2026-06-30"), {
       wrapper: createWrapper(),
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data![0].rodada).toBe(1);
+    expect(result.current.data![0].dia).toBe("2026-06-30");
   });
 
-  it("retorna lista vazia quando não há destaque na rodada", async () => {
-    server.use(rpc("get_destaque_rodada", []));
+  it("retorna lista vazia quando não há destaque no dia", async () => {
+    server.use(rpc("get_destaque_dia", []));
 
-    const { result } = renderHook(() => useDestaqueRodada(), {
+    const { result } = renderHook(() => useDestaqueDia(), {
       wrapper: createWrapper(),
     });
 
@@ -130,9 +130,9 @@ describe("useDestaqueRodada", () => {
   });
 
   it("expõe isError quando a RPC falha", async () => {
-    server.use(rpcError("get_destaque_rodada", { status: 400 }));
+    server.use(rpcError("get_destaque_dia", { status: 400 }));
 
-    const { result } = renderHook(() => useDestaqueRodada(), {
+    const { result } = renderHook(() => useDestaqueDia(), {
       wrapper: createWrapper(),
     });
 

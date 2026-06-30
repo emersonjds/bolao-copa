@@ -54,7 +54,7 @@ describe("useSalvarResultado (integração Supabase via MSW)", () => {
     expect(toast.error).not.toHaveBeenCalled();
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["partidas"] });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["ranking"] });
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["destaque-rodada"] });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["destaque-dia"] });
   });
 
   it("dispara toast de erro quando o PATCH falha (403 RLS)", async () => {

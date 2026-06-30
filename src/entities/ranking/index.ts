@@ -1,2 +1,2 @@
 export type { ItemRanking } from "./model/ranking";
-export type { DestaqueRodada } from "./model/destaque-rodada";
+export type { DestaqueDia } from "./model/destaque-dia";

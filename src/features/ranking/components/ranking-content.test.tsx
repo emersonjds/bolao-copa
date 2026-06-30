@@ -6,20 +6,20 @@ import type { ItemRanking } from "@/entities/ranking";
 // vi.mock é hoisted — os módulos abaixo já recebem as versões mockadas
 vi.mock("../api/queries", () => ({
   useRanking: vi.fn(),
-  // useDestaqueRodada é usado pelo DestaqueRodadaCard renderizado dentro de RankingContent
-  useDestaqueRodada: vi.fn(),
+  // useDestaqueDia é usado pelo DestaqueDiaCard renderizado dentro de RankingContent
+  useDestaqueDia: vi.fn(),
 }));
 
 vi.mock("@/shared/lib/supabase", () => ({
   useMeuParticipanteId: vi.fn(),
 }));
 
-import { useRanking, useDestaqueRodada } from "../api/queries";
+import { useRanking, useDestaqueDia } from "../api/queries";
 import { useMeuParticipanteId } from "@/shared/lib/supabase";
 import { RankingContent } from "./ranking-content";
 
 const mockedUseRanking = vi.mocked(useRanking);
-const mockedUseDestaqueRodada = vi.mocked(useDestaqueRodada);
+const mockedUseDestaqueDia = vi.mocked(useDestaqueDia);
 const mockedUseMeuParticipanteId = vi.mocked(useMeuParticipanteId);
 
 function makeItem(
@@ -49,12 +49,12 @@ function makeRanking(quantidade: number, meuId?: string): ItemRanking[] {
 describe("RankingContent", () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    // DestaqueRodadaCard renderiza dentro de RankingContent em todos os estados
+    // DestaqueDiaCard renderiza dentro de RankingContent em todos os estados
     // que chegam até os dados; retornamos vazio para não interferir nos demais asserts.
-    mockedUseDestaqueRodada.mockReturnValue({
+    mockedUseDestaqueDia.mockReturnValue({
       data: [],
       isLoading: false,
-    } as unknown as ReturnType<typeof useDestaqueRodada>);
+    } as unknown as ReturnType<typeof useDestaqueDia>);
     mockedUseMeuParticipanteId.mockReturnValue(null);
   });
 

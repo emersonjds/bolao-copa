@@ -2,7 +2,7 @@
 
 import { RotateCcw, Trophy } from "lucide-react";
 import { useRanking } from "../api/queries";
-import { DestaqueRodadaCard } from "./destaque-rodada-card";
+import { DestaqueDiaCard } from "./destaque-dia-card";
 import { useMeuParticipanteId } from "@/shared/lib/supabase";
 import { Podio } from "./podio";
 import { ListaRanking } from "./lista-ranking";
@@ -34,7 +34,7 @@ export function RankingContent() {
   if (isLoading) {
     return (
       <div className="space-y-4" aria-busy="true" aria-label="Carregando ranking">
-        <DestaqueRodadaCard />
+        <DestaqueDiaCard />
         <PodioSkeleton />
         <ListaSkeleton />
       </div>
@@ -78,7 +78,7 @@ export function RankingContent() {
 
   return (
     <div className="space-y-4">
-      <DestaqueRodadaCard />
+      <DestaqueDiaCard />
 
       <Podio top3={top3} meuParticipanteId={meuParticipanteId} />
 

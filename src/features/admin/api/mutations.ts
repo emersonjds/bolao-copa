@@ -44,7 +44,7 @@ export function useSalvarResultado() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["partidas"] });
       void queryClient.invalidateQueries({ queryKey: ["ranking"] });
-      void queryClient.invalidateQueries({ queryKey: ["destaque-rodada"] });
+      void queryClient.invalidateQueries({ queryKey: ["destaque-dia"] });
       toast.success("Resultado salvo! Pontos apurados automaticamente.");
     },
     onError: (error: Error) => {

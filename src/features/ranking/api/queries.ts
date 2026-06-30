@@ -1,16 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { listarRanking } from "./ranking-fetcher";
-import { listarDestaqueRodada } from "./destaque-rodada-fetcher";
+import { listarDestaqueDia } from "./destaque-dia-fetcher";
 
 export const rankingKeys = {
   all: ["ranking"] as const,
 };
 
-export const destaqueRodadaKeys = {
-  /** Chave sem rodada → consulta a última rodada apurada (RPC usa default). */
-  ultima: () => ["destaque-rodada"] as const,
-  /** Chave com rodada específica → cache separado por jornada. */
-  porRodada: (rodada: number) => ["destaque-rodada", rodada] as const,
+export const destaqueDiaKeys = {
+  /** Chave sem dia → consulta o dia apurado mais recente (RPC usa default). */
+  ultimo: () => ["destaque-dia"] as const,
+  /** Chave com dia específico → cache separado por dia. */
+  porDia: (dia: string) => ["destaque-dia", dia] as const,
 };
 
 /**
@@ -27,20 +27,19 @@ export function useRanking() {
 }
 
 /**
- * @param rodada - Número da jornada a consultar. Se omitido, a RPC retorna
- *   automaticamente a última rodada com jogo encerrado/apurado.
+ * @param dia - Dia a consultar (ISO `YYYY-MM-DD`). Se omitido, a RPC retorna
+ *   automaticamente o dia com jogo encerrado mais recente (fuso de Brasília).
  *
  * staleTime de 2 minutos: o destaque só muda após a apuração de pontos
  * (trigger no banco), então atualizações frequentes não trazem benefício.
  *
- * Array vazio = nenhum jogo da rodada foi encerrado ainda, ou todos
+ * Array vazio = nenhum jogo do dia foi encerrado ainda, ou todos
  * pontuaram 0. O componente deve tratar esse estado graciosamente.
  */
-export function useDestaqueRodada(rodada?: number) {
+export function useDestaqueDia(dia?: string) {
   return useQuery({
-    queryKey:
-      rodada !== undefined ? destaqueRodadaKeys.porRodada(rodada) : destaqueRodadaKeys.ultima(),
-    queryFn: () => listarDestaqueRodada(rodada),
+    queryKey: dia !== undefined ? destaqueDiaKeys.porDia(dia) : destaqueDiaKeys.ultimo(),
+    queryFn: () => listarDestaqueDia(dia),
     staleTime: 2 * 60 * 1000,
   });
 }
