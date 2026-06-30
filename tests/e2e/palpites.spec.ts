@@ -21,24 +21,27 @@ function adminClient(url: string, key: string) {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
-// Mecânica dia a dia (migration 0019): só dá pra SALVAR jogos "liberados" — cuja
-// janela [meia-noite BRT do dia do jogo, apito) já abriu. Com as fixtures reais
-// da Copa (jun/26) nenhum jogo fica liberado "hoje", então o setup empurra UM
-// jogo de grupos para hoje (e restaura no afterAll), tornando-o o único salvável.
-let jogoLiberado: { id: string; dataHoraOriginal: string } | null = null;
+// Setup move UM jogo de grupos para amanhã 22h (sempre "futuro" — janelaInicio =
+// meia-noite BRT de amanhã, ainda não chegou). Ambos os testes usam o mesmo jogo:
+//   · teste 1 (salva/edita): pré-confirma o modal para salvamento direto
+//   · teste 2 (antecipado): limpa a confirmação → modal aparece na 1ª vez
+let jogoFuturo: { id: string; dataHoraOriginal: string } | null = null;
 
-/** Hoje às 22h locais (ISO): já passou da meia-noite e ainda falta para o apito. */
-function hojeDentroDaJanelaISO(): string {
+/** Amanhã às 22h locais — sempre no futuro, independente do fuso. */
+function amanhaISO(): string {
   const d = new Date();
+  d.setDate(d.getDate() + 1);
   d.setHours(22, 0, 0, 0);
   return d.toISOString();
 }
 
 test.describe("Palpites (autenticado)", () => {
+  // Serial: beforeAll/afterAll manipulam DB compartilhado (jogo e usuário).
+  // Paralelo causaria dois workers executando beforeAll/afterAll simultaneamente,
+  // gerando race conditions no setup e dupla deleção do usuário no teardown.
+  test.describe.configure({ mode: "serial" });
   test.skip(!SUPABASE_URL || !SERVICE_KEY, "requer SUPABASE_SERVICE_ROLE_KEY em .env.local");
 
-  // Garante um jogo salvável HOJE (ver nota acima). Sem service_role o describe
-  // inteiro se pula, então este hook só roda quando há credencial.
   test.beforeAll(async () => {
     if (!SUPABASE_URL || !SERVICE_KEY) return;
     const admin = adminClient(SUPABASE_URL, SERVICE_KEY);
@@ -55,24 +58,34 @@ test.describe("Palpites (autenticado)", () => {
         `Setup do palpite: nenhum jogo de grupos agendado (${error?.message ?? "vazio"})`
       );
     }
-    jogoLiberado = { id: data.id, dataHoraOriginal: data.data_hora };
-    const { error: erroUpdate } = await admin
+    jogoFuturo = { id: data.id, dataHoraOriginal: data.data_hora };
+
+    const { error: e } = await admin
       .from("partidas")
-      .update({ data_hora: hojeDentroDaJanelaISO() })
+      .update({ data_hora: amanhaISO() })
       .eq("id", data.id);
-    if (erroUpdate) {
-      throw new Error(`Setup do palpite: falha ao liberar o jogo (${erroUpdate.message})`);
-    }
+    if (e) throw new Error(`Setup do palpite: falha ao mover jogo para amanhã (${e.message})`);
   });
 
   test("salva e edita um palpite sem 'permission denied'", async ({ page }) => {
+    // Pré-confirma o modal de palpite antecipado para este teste não precisar
+    // interagir com ele — o fluxo do modal é coberto pelo teste seguinte.
+    const meta = fs.existsSync(META_FILE)
+      ? (JSON.parse(fs.readFileSync(META_FILE, "utf-8")) as { userId?: string })
+      : {};
+    if (meta.userId) {
+      await page.addInitScript((uid: string) => {
+        localStorage.setItem(`palpite-antecipado-confirmado:${uid}`, "1");
+      }, meta.userId);
+    }
+
     await page.goto("/palpites");
 
     // Logado: renderiza o conteúdo, não o CTA de login.
     await expect(page.getByRole("heading", { name: "Meus palpites" })).toBeVisible();
     await expect(page.getByText("Entrar com Google")).toHaveCount(0);
 
-    // Primeiro par de inputs editáveis (jogo aberto na aba Palpitar).
+    // Primeiro par de inputs editáveis (card do jogo futuro na aba Palpitar).
     const inputsEditaveis = page.locator('input[type="text"][inputmode="numeric"]:not([disabled])');
     await expect(inputsEditaveis.first()).toBeVisible();
 
@@ -129,7 +142,9 @@ test.describe("Palpites (autenticado)", () => {
     await inputs.nth(0).fill("2");
     await inputs.nth(1).fill("1");
 
-    await page.getByRole("button", { name: "Salvar palpites" }).click();
+    const btnSalvar = page.getByRole("button", { name: "Salvar palpites" });
+    await expect(btnSalvar).toBeVisible({ timeout: 3000 });
+    await btnSalvar.click();
 
     // 1ª vez: o modal explica que o antecipado vale e é ajustável. EVIDÊNCIA.
     const modal = page.getByRole("dialog");
@@ -170,13 +185,13 @@ test.describe("Palpites (autenticado)", () => {
     if (!SUPABASE_URL || !SERVICE_KEY) return;
     const admin = adminClient(SUPABASE_URL, SERVICE_KEY);
 
-    // Restaura o data_hora original do jogo que empurramos para hoje.
-    if (jogoLiberado) {
+    // Restaura o data_hora original do jogo que movemos.
+    if (jogoFuturo) {
       await admin
         .from("partidas")
-        .update({ data_hora: jogoLiberado.dataHoraOriginal })
-        .eq("id", jogoLiberado.id);
-      jogoLiberado = null;
+        .update({ data_hora: jogoFuturo.dataHoraOriginal })
+        .eq("id", jogoFuturo.id);
+      jogoFuturo = null;
     }
 
     // Remove o usuário de teste (cascata apaga participante + palpites).
