@@ -104,6 +104,27 @@ async function buscarLados(
   return r.rows[0];
 }
 
+/**
+ * Insere um jogo já ENCERRADO via INSERT. Como o trigger de avanço é
+ * `after update`, o INSERT não dispara o avanço — reproduz o estado do prod:
+ * jogo encerrado antes da 0029, com a fase seguinte ainda nula.
+ */
+async function inserirJogoEncerrado(
+  numero: number,
+  mandanteId: string,
+  visitanteId: string,
+  golsMandante: number,
+  golsVisitante: number
+): Promise<string> {
+  const r = await db.query(
+    `insert into partidas (fase, data_hora, estadio, status, mandante_id, visitante_id, numero, gols_mandante, gols_visitante)
+     values ('trinta-e-dois', now() - interval '1 hour', 'Arena Velha', 'encerrada', $1, $2, $3, $4, $5)
+     returning id`,
+    [mandanteId, visitanteId, numero, golsMandante, golsVisitante]
+  );
+  return r.rows[0].id as string;
+}
+
 describe("avancar_mata_mata — trigger de auto-avanço", () => {
   it("preenche mandante_id do próximo jogo via W{numero}", async () => {
     const fonte = await inserirJogo(10001, selA, selB);
@@ -195,6 +216,23 @@ describe("avancar_mata_mata — trigger de auto-avanço", () => {
     const fonte = await inserirJogo(10081, selA, selB);
 
     await expect(encerrar(fonte, 0, 0, selC)).rejects.toThrow(/vencedor_penaltis/);
+  });
+
+  it("backfill (0032) avança jogos já encerrados que o trigger não tocou", async () => {
+    // Reproduz o prod: fonte inserida já encerrada (INSERT não dispara o trigger).
+    await inserirJogoEncerrado(10091, selA, selB, 2, 1);
+    const alvo = await inserirJogoAlvo(10092, "W10091", "W10099");
+
+    // Confirma o bug: sem o trigger ter disparado, o alvo segue nulo.
+    expect((await buscarLados(alvo)).mandante_id).toBeNull();
+
+    const sql = fs.readFileSync(
+      path.join(process.cwd(), "supabase/migrations/0032_backfill_avanco_mata_mata.sql"),
+      "utf-8"
+    );
+    await db.query(sql);
+
+    expect((await buscarLados(alvo)).mandante_id).toBe(selA);
   });
 
   it("partida de grupos (numero null) não dispara avanço", async () => {
