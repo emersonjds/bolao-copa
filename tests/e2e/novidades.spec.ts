@@ -23,6 +23,18 @@ test.describe("Modal de novidades (público)", () => {
     await page.screenshot({ path: path.join(dir, "01-modal-novidades.png") });
 
     await modal.getByRole("button", { name: "Bora!" }).click();
+
+    // After each dismiss, a chained aviso may appear (async Supabase gatilho check).
+    // Drain the chain: wait up to 2s per iteration; break when no new dialog appears.
+    for (let i = 0; i < 10; i++) {
+      try {
+        await page.waitForSelector('[role="dialog"]', { state: "visible", timeout: 2000 });
+        await page.getByRole("dialog").getByRole("button", { name: "Bora!" }).click();
+      } catch {
+        break;
+      }
+    }
+
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await page.screenshot({ path: path.join(dir, "02-fechado.png") });
 
