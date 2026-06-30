@@ -167,8 +167,8 @@ describe("apurar_pontos — multiplicador por fase", () => {
     expect(await caso([3, 0], [2, 1], false, "quartas")).toBe(6);
   });
 
-  it("semifinal: ×3 (cravou empate = 12)", async () => {
-    expect(await caso([1, 1], [1, 1], false, "semifinal")).toBe(12);
+  it("semifinal: ×3 (acertou quem passa = 9)", async () => {
+    expect(await caso([3, 0], [2, 1], false, "semifinal")).toBe(9);
   });
 
   it("final: ×3 (cravou vitória = 15)", async () => {
@@ -180,13 +180,13 @@ describe("apurar_pontos — multiplicador por fase", () => {
   });
 });
 
-describe("apurar_pontos — pênaltis não contam (com multiplicador)", () => {
-  it("final: empate cravado nos pênaltis vale 12 (4×3, não 5×3)", async () => {
-    expect(await caso([1, 1], [1, 1], true, "final")).toBe(12);
+describe("apurar_pontos — pênaltis não contam em grupos", () => {
+  it("grupos: empate cravado com pênaltis vale 4 (4×1)", async () => {
+    expect(await caso([1, 1], [1, 1], true, "grupos")).toBe(4);
   });
 
-  it("final: empate acertado (placar errado) nos pênaltis vale 6 (2×3)", async () => {
-    expect(await caso([2, 2], [1, 1], true, "final")).toBe(6);
+  it("grupos: empate acertado (placar errado) com pênaltis vale 2 (2×1)", async () => {
+    expect(await caso([2, 2], [1, 1], true, "grupos")).toBe(2);
   });
 });
 
