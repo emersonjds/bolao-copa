@@ -169,7 +169,14 @@ export function PalpitesContent() {
   }
 
   function handleChangeVencedorAvanca(partidaId: string, selecaoId: string | null): void {
-    const anterior = placaresLocais[partidaId] ?? { mandante: "", visitante: "" };
+    // Sem placar local (palpite já salvo sendo reaberto), herda o placar do
+    // servidor — senão a troca de "quem passa" não conta como pendência e não salva.
+    const salvo = (meusPalpites ?? []).find((p) => p.partidaId === partidaId);
+    const anterior =
+      placaresLocais[partidaId] ??
+      (salvo
+        ? { mandante: String(salvo.golsMandante), visitante: String(salvo.golsVisitante) }
+        : { mandante: "", visitante: "" });
     const atualizado: PlacarLocal = { ...anterior, vencedorAvanca: selecaoId };
     setPlacaresLocais((prev) => ({ ...prev, [partidaId]: atualizado }));
 

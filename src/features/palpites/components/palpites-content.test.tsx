@@ -881,6 +881,38 @@ describe("PalpitesContent", () => {
     });
   });
 
+  it("permite trocar só quem passa num palpite de mata-mata empate já salvo", async () => {
+    const user = userEvent.setup();
+    mockPartidasOk([partidaOitavas]);
+    mockPalpitesOk([
+      {
+        id: "palp-oitavas",
+        participanteId: "part-id-1",
+        partidaId: "part-oitavas",
+        golsMandante: 1,
+        golsVisitante: 1,
+        pontos: null,
+        vencedorAvanca: "sel-bra",
+      },
+    ]);
+    const { mutateAsync } = mockSalvarOk();
+
+    render(<PalpitesContent />);
+
+    // Sem retocar o placar (herdado do salvo), troca apenas quem passa.
+    await user.selectOptions(screen.getByLabelText(/quem passa/i), "sel-arg");
+    await user.click(screen.getByRole("button", { name: /salvar palpites/i }));
+
+    await waitFor(() => {
+      expect(mutateAsync).toHaveBeenCalledWith({
+        partidaId: "part-oitavas",
+        golsMandante: 1,
+        golsVisitante: 1,
+        vencedorAvanca: "sel-arg",
+      });
+    });
+  });
+
   it("reage à borda: ao virar a janela do jogo, atualiza o instante e refaz o fetch", () => {
     vi.useFakeTimers();
     try {
