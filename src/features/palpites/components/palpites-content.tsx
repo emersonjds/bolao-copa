@@ -157,7 +157,12 @@ export function PalpitesContent() {
     const valorNormalizado =
       digitos === "" ? "" : String(Math.min(20, Math.max(0, parseInt(digitos, 10))));
 
-    const anterior = placaresLocais[partidaId] ?? { mandante: "", visitante: "" };
+    // Primeiro placar local de um palpite já salvo: herda o "quem passa" do
+    // servidor — senão redigitar o mesmo placar perderia a escolha de avanço.
+    const salvo = (meusPalpites ?? []).find((p) => p.partidaId === partidaId);
+    const anterior =
+      placaresLocais[partidaId] ??
+      { mandante: "", visitante: "", vencedorAvanca: salvo?.vencedorAvanca ?? undefined };
     const atualizado: PlacarLocal = { ...anterior, [campo]: valorNormalizado };
     setPlacaresLocais((prev) => ({ ...prev, [partidaId]: atualizado }));
 

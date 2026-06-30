@@ -913,6 +913,45 @@ describe("PalpitesContent", () => {
     });
   });
 
+  it("mantém quem passa ao mudar o placar de um empate de mata-mata já salvo", async () => {
+    const user = userEvent.setup();
+    mockPartidasOk([partidaOitavas]);
+    mockPalpitesOk([
+      {
+        id: "palp-oitavas",
+        participanteId: "part-id-1",
+        partidaId: "part-oitavas",
+        golsMandante: 1,
+        golsVisitante: 1,
+        pontos: null,
+        vencedorAvanca: "sel-bra",
+      },
+    ]);
+    const { mutateAsync } = mockSalvarOk();
+
+    render(<PalpitesContent />);
+
+    // Muda 1×1 → 2×2 (segue empate) sem retocar o seletor: a escolha salva
+    // (Brasil) deve ser preservada no upsert.
+    const mandante = screen.getByRole("textbox", { name: /gols do brasil/i });
+    const visitante = screen.getByRole("textbox", { name: /gols do argentina/i });
+    await user.clear(mandante);
+    await user.type(mandante, "2");
+    await user.clear(visitante);
+    await user.type(visitante, "2");
+
+    await user.click(screen.getByRole("button", { name: /salvar palpites/i }));
+
+    await waitFor(() => {
+      expect(mutateAsync).toHaveBeenCalledWith({
+        partidaId: "part-oitavas",
+        golsMandante: 2,
+        golsVisitante: 2,
+        vencedorAvanca: "sel-bra",
+      });
+    });
+  });
+
   it("reage à borda: ao virar a janela do jogo, atualiza o instante e refaz o fetch", () => {
     vi.useFakeTimers();
     try {
