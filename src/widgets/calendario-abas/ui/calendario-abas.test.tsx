@@ -2,29 +2,25 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-vi.mock("next/link", () => ({
-  default: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
-}));
-
 vi.mock("@/features/calendario", () => ({
   CalendarioContent: () => <p>conteúdo-agenda</p>,
 }));
 vi.mock("@/features/grupos", () => ({
   GruposContent: () => <p>conteúdo-grupos</p>,
 }));
+vi.mock("@/features/chaveamento", () => ({
+  ChaveamentoContent: () => <p>conteúdo-chaveamento</p>,
+}));
 
 import { CalendarioAbas } from "./calendario-abas";
 
 describe("CalendarioAbas", () => {
-  it("renderiza o tablist com rótulo acessível e as duas abas", () => {
+  it("renderiza o tablist com rótulo acessível e as três abas", () => {
     render(<CalendarioAbas />);
     expect(screen.getByRole("tablist", { name: "Visualização da Copa" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Agenda" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Grupos" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Chaveamento" })).toBeInTheDocument();
   });
 
   it("a aba Agenda está selecionada e Grupos não ao montar", () => {
@@ -63,10 +59,11 @@ describe("CalendarioAbas", () => {
     expect(screen.getByRole("tab", { name: "Grupos" })).toHaveAttribute("aria-selected", "false");
   });
 
-  it("exibe link para o chaveamento apontando para /chaveamento", () => {
+  it("ao clicar em Chaveamento, exibe ChaveamentoContent e remove a agenda", async () => {
     render(<CalendarioAbas />);
-    const link = screen.getByRole("link", { name: /chaveamento/i });
-    expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", "/chaveamento");
+    await userEvent.click(screen.getByRole("tab", { name: "Chaveamento" }));
+    expect(screen.getByText("conteúdo-chaveamento")).toBeInTheDocument();
+    expect(screen.queryByText("conteúdo-agenda")).not.toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Chaveamento" })).toHaveAttribute("aria-selected", "true");
   });
 });

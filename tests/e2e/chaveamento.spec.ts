@@ -61,13 +61,13 @@ test.describe("Chaveamento — bracket e controles (público)", () => {
     await page.screenshot({ path: path.join(DIR, "02-zoom.png") });
   });
 
-  test("link 'Ver chaveamento' na aba Copa navega para /chaveamento", async ({ page }) => {
+  test("aba Chaveamento na tela Copa renderiza o bracket inline", async ({ page }) => {
     fs.mkdirSync(DIR, { recursive: true });
     await page.goto("/calendario");
-    await expect(page.getByRole("link", { name: /Ver chaveamento/ })).toBeVisible();
-    await page.getByRole("link", { name: /Ver chaveamento/ }).click();
-    await expect(page).toHaveURL(/\/chaveamento/);
-    await expect(page.getByRole("heading", { name: "Chaveamento" })).toBeVisible();
+    await page.getByRole("tab", { name: "Chaveamento" }).click();
+    await expect(page.getByText("32-avos").first()).toBeVisible();
+    await expect(page.getByText("Oitavas").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Aumentar zoom" })).toBeVisible();
     await page.screenshot({ path: path.join(DIR, "03-acesso-copa.png") });
   });
 });
