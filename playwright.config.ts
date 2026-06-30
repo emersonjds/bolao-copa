@@ -63,7 +63,14 @@ export default defineConfig({
     {
       name: "mobile-chrome",
       use: { ...devices["Pixel 7"], storageState: SEED_PUBLIC },
-      testIgnore: [/palpites\.spec\.ts/, /novidades\.spec\.ts/, /placar-centralizado\.spec\.ts/],
+      testIgnore: [
+        /palpites\.spec\.ts/,
+        /novidades\.spec\.ts/,
+        /placar-centralizado\.spec\.ts/,
+        // pontuacao-mata-mata move um jogo compartilhado: roda só no desktop-chrome
+        // para não correr em paralelo com o mobile no mesmo jogo.
+        /pontuacao-mata-mata\.spec\.ts/,
+      ],
     },
 
     // Modal de novidades: contexto limpo (sem a semente) para o aviso aparecer.

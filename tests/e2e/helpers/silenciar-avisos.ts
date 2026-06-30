@@ -7,6 +7,7 @@ const TODOS_AVISOS = [
   "quartas-2026",
   "semifinal-2026",
   "final-2026",
+  "pontuacao-mata-mata-2026-06",
   "chaveamento-2026",
 ];
 
