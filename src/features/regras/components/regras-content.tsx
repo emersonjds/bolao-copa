@@ -140,6 +140,35 @@ const ACERTOS_BASE: AcertoBase[] = [
   { rotulo: "Acertou o empate", base: 2 },
 ];
 
+interface AcertoMataMata {
+  pontos: number;
+  titulo: string;
+  descricao: string;
+}
+
+const PONTOS_MATA_MATA: AcertoMataMata[] = [
+  {
+    pontos: 5,
+    titulo: "Cravou a vitória e acertou quem passa",
+    descricao: "Placar exato de um jogo com vencedor, e o time certo avançou.",
+  },
+  {
+    pontos: 4,
+    titulo: "Cravou o empate e acertou quem passa",
+    descricao: "Placar exato do empate nos 90 min, e acertou quem avançou na decisão.",
+  },
+  {
+    pontos: 3,
+    titulo: "Acertou quem passa",
+    descricao: "O time certo avançou, mas você errou o placar.",
+  },
+  {
+    pontos: 0,
+    titulo: "Errou quem passa",
+    descricao: "O time que você apontou não avançou.",
+  },
+];
+
 function getPalpiteBadgeClasses(pontos: number): string {
   if (pontos >= 3) return "bg-brand-800 text-gold-400";
   if (pontos > 0) return "bg-brand-600 text-white";
@@ -232,6 +261,39 @@ export function RegrasContent() {
         </p>
       </section>
 
+      <section aria-labelledby="titulo-mata-mata">
+        <h2 id="titulo-mata-mata" className="mb-1 font-display text-base font-bold text-foreground">
+          Como funciona no mata-mata
+        </h2>
+        <p className="mb-3 text-xs text-muted-foreground">
+          Na eliminatória não tem empate no fim: alguém sempre passa. Por isso o que vale é{" "}
+          <span className="font-semibold text-foreground">acertar quem avança</span>. O placar do
+          tempo normal entra como bônus de precisão.
+        </p>
+        <ul className="space-y-2">
+          {PONTOS_MATA_MATA.map((item) => (
+            <li
+              key={item.pontos}
+              className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm"
+            >
+              <span
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl font-mono text-base font-bold ${getPalpiteBadgeClasses(item.pontos)}`}
+              >
+                {item.pontos}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground">{item.titulo}</p>
+                <p className="text-xs text-muted-foreground">{item.descricao}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Prorrogação e pênaltis contam só para definir quem avança — não mudam o placar dos 90
+          minutos. Ao palpitar empate num jogo de mata-mata, escolha quem passa.
+        </p>
+      </section>
+
       <section aria-labelledby="titulo-pontos-fase">
         <h2
           id="titulo-pontos-fase"
@@ -295,8 +357,9 @@ export function RegrasContent() {
           ))}
         </ul>
         <p className="mt-2 text-xs text-muted-foreground">
-          Errar o resultado é sempre <span className="font-semibold">0</span>, em qualquer fase.
-          Pênaltis não contam — vale o placar dos 90 minutos.
+          Errar o resultado é sempre <span className="font-semibold">0</span>, em qualquer fase. O
+          placar que vale é sempre o dos 90 minutos. No mata-mata, quem avança também conta (veja
+          acima).
         </p>
       </section>
 
@@ -373,13 +436,15 @@ export function RegrasContent() {
 
       <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-3">
         <p className="text-xs leading-relaxed text-muted-foreground">
-          <span className="font-semibold">Prorrogação e pênaltis não contam.</span> Vale só o placar
-          do tempo normal (90 min). Se o jogo empatar e for decidido na prorrogação ou nos pênaltis,
-          para o bolão ele continua <span className="font-semibold">empate</span> — quem palpitou
-          empate pontua, quem palpitou vitória de um dos times erra.
+          <span className="font-semibold">O placar que vale é o dos 90 minutos.</span> Prorrogação e
+          pênaltis não mudam o placar do tempo normal — só decidem quem avança no mata-mata.
           <br />
-          <span className="font-semibold">Exemplo:</span> 1×1 que a França vence nos pênaltis conta
-          como empate 1×1, não importa quem avançou.
+          <span className="font-semibold">Nos grupos:</span> se o jogo termina empatado, vale empate
+          — quem palpitou empate pontua.
+          <br />
+          <span className="font-semibold">No mata-mata:</span> 1×1 que a França vence nos pênaltis
+          conta como empate 1×1 no placar, e quem apontou a França passando pontua por acertar quem
+          avança.
         </p>
       </div>
     </div>

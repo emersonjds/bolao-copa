@@ -113,14 +113,23 @@ describe("RegrasContent", () => {
     expect(within(secao).getByText(/dividem o prêmio/i)).toBeInTheDocument();
   });
 
-  it("exibe o aviso de que prorrogação e pênaltis não contam no placar", () => {
+  it("explica a pontuação do mata-mata: vale quem passa (5/4/3/0)", () => {
+    render(<RegrasContent />);
+
+    const secao = screen.getByRole("region", { name: /como funciona no mata-mata/i });
+    expect(within(secao).getByText("Cravou a vitória e acertou quem passa")).toBeInTheDocument();
+    expect(within(secao).getByText("Cravou o empate e acertou quem passa")).toBeInTheDocument();
+    expect(within(secao).getByText("Acertou quem passa")).toBeInTheDocument();
+    expect(within(secao).getByText("Errou quem passa")).toBeInTheDocument();
+    expect(within(secao).getByText(/escolha quem passa/i)).toBeInTheDocument();
+  });
+
+  it("esclarece que o placar vale pelos 90 min e que pênaltis decidem quem avança", () => {
     render(<RegrasContent />);
 
     // Span com texto exato — o pai contém mais texto, mas o span em si tem esse texto.
-    expect(screen.getByText("Prorrogação e pênaltis não contam.")).toBeInTheDocument();
-    // "90 min" aparece apenas no último parágrafo; usa getAllByText para evitar
-    // erro de múltiplos matches com o elemento pai que herda o texto.
-    expect(screen.getAllByText(/90 min/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("O placar que vale é o dos 90 minutos.")).toBeInTheDocument();
+    expect(screen.getAllByText(/quem avança/i).length).toBeGreaterThanOrEqual(1);
   });
 });
 
