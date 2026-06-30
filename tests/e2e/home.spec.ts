@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { silenciarAvisos } from "./helpers/silenciar-avisos";
 
 /**
  * Estado da home para visitante sem sessão. Cobre o card de login (HeroStats
@@ -8,6 +9,10 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("Home — estado público", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenciarAvisos(page);
+  });
+
   test("mostra o card de login no lugar da posição do bolão", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByText("Faça login para ver sua posição")).toBeVisible();

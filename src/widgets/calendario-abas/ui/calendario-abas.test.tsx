@@ -8,15 +8,19 @@ vi.mock("@/features/calendario", () => ({
 vi.mock("@/features/grupos", () => ({
   GruposContent: () => <p>conteúdo-grupos</p>,
 }));
+vi.mock("@/features/chaveamento", () => ({
+  ChaveamentoContent: () => <p>conteúdo-chaveamento</p>,
+}));
 
 import { CalendarioAbas } from "./calendario-abas";
 
 describe("CalendarioAbas", () => {
-  it("renderiza o tablist com rótulo acessível e as duas abas", () => {
+  it("renderiza o tablist com rótulo acessível e as três abas", () => {
     render(<CalendarioAbas />);
     expect(screen.getByRole("tablist", { name: "Visualização da Copa" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Agenda" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Grupos" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Chaveamento" })).toBeInTheDocument();
   });
 
   it("a aba Agenda está selecionada e Grupos não ao montar", () => {
@@ -53,5 +57,13 @@ describe("CalendarioAbas", () => {
     expect(screen.queryByText("conteúdo-grupos")).not.toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Agenda" })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("tab", { name: "Grupos" })).toHaveAttribute("aria-selected", "false");
+  });
+
+  it("ao clicar em Chaveamento, exibe ChaveamentoContent e remove a agenda", async () => {
+    render(<CalendarioAbas />);
+    await userEvent.click(screen.getByRole("tab", { name: "Chaveamento" }));
+    expect(screen.getByText("conteúdo-chaveamento")).toBeInTheDocument();
+    expect(screen.queryByText("conteúdo-agenda")).not.toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Chaveamento" })).toHaveAttribute("aria-selected", "true");
   });
 });

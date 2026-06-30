@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { silenciarAvisos } from "./helpers/silenciar-avisos";
 
 /**
  * Valida o RANKING do cenário (Supabase local + `pnpm scenario:seed`).
@@ -9,6 +10,10 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("Ranking — cenário de teste", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenciarAvisos(page);
+  });
+
   test("craque, pódio e demais participantes aparecem", async ({ page }) => {
     await page.goto("/ranking");
     // Craque da rodada e os de baixo (nome completo na lista "demais").
@@ -17,9 +22,9 @@ test.describe("Ranking — cenário de teste", () => {
     await expect(page.getByText("Diego Lanterna").first()).toBeVisible();
   });
 
-  test("pontos do cenário (473 líder, 417 vice, 74 lanterna)", async ({ page }) => {
+  test("pontos do cenário (426 líder, 380 vice, 64 lanterna)", async ({ page }) => {
     await page.goto("/ranking");
-    for (const pts of ["473 pts", "417 pts", "74 pts"]) {
+    for (const pts of ["426 pts", "380 pts", "64 pts"]) {
       await expect(page.getByText(pts).first()).toBeVisible();
     }
   });

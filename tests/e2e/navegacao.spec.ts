@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { silenciarAvisos } from "./helpers/silenciar-avisos";
 
 /**
  * Navegação real pela bottom-nav (sem login). Verifica que clicar em cada aba
@@ -9,6 +10,10 @@ import { test, expect, type Page } from "@playwright/test";
 function navPrincipal(page: Page) {
   return page.getByRole("navigation", { name: "Navegação principal" });
 }
+
+test.beforeEach(async ({ page }) => {
+  await silenciarAvisos(page);
+});
 
 test.describe("Navegação — bottom-nav (público)", () => {
   test("as quatro abas públicas estão visíveis na home", async ({ page }) => {

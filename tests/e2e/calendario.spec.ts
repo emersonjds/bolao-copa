@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { silenciarAvisos } from "./helpers/silenciar-avisos";
 
 /**
  * Conteúdo e interação da Agenda (/calendario). Os jogos vêm do Supabase real
@@ -13,6 +14,10 @@ function seletorSemana(page: Page) {
 }
 
 test.describe("Calendário — agenda da Copa (público)", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenciarAvisos(page);
+  });
+
   test("exibe título e subtítulo da Copa", async ({ page }) => {
     await page.goto("/calendario");
     await expect(page.getByRole("heading", { name: "Copa 2026", level: 1 })).toBeVisible();
@@ -49,8 +54,12 @@ test.describe("Calendário — agenda da Copa (público)", () => {
     // Garante que a agenda carregou com jogos antes de filtrar.
     await expect(page.getByText("Brasil", { exact: true }).first()).toBeVisible();
 
-    // Vai para a semana anterior (antes do início da Copa: sem jogos em nenhum dia).
-    await page.getByRole("button", { name: "Semana anterior" }).click();
+    // Navega para uma semana pós-Copa (após 19/jul/2026 — sem jogos).
+    // "Semana anterior" ficou inválida: estamos em jun/2026, dentro da Copa,
+    // então semanas passadas também têm jogos.
+    for (let i = 0; i < 4; i++) {
+      await page.getByRole("button", { name: "Próxima semana" }).click();
+    }
     // Seleciona o primeiro dia dessa semana → filtro por dia vazio.
     await seletorSemana(page).getByRole("button").first().click();
 
@@ -59,7 +68,10 @@ test.describe("Calendário — agenda da Copa (público)", () => {
 
   test("desmarcar o dia volta a exibir todos os jogos", async ({ page }) => {
     await page.goto("/calendario");
-    await page.getByRole("button", { name: "Semana anterior" }).click();
+    // Navega para uma semana pós-Copa (após 19/jul/2026 — sem jogos).
+    for (let i = 0; i < 4; i++) {
+      await page.getByRole("button", { name: "Próxima semana" }).click();
+    }
 
     const primeiroDia = seletorSemana(page).getByRole("button").first();
     await primeiroDia.click();

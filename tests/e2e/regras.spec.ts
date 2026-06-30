@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { silenciarAvisos } from "./helpers/silenciar-avisos";
 
 /**
  * Tela de Regras (/regras) — pública. Cobre a tabela transparente "Pontos por
@@ -8,6 +9,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Regras — pontuação (público)", () => {
   test.beforeEach(async ({ page }) => {
+    await silenciarAvisos(page);
     await page.goto("/regras");
     await expect(page.getByRole("heading", { name: "Regras e pontuação" })).toBeVisible();
   });

@@ -26,6 +26,7 @@ describe("listarPartidas (integração Supabase via MSW)", () => {
         vencedorPenaltis: null,
         mandanteLabel: null,
         visitanteLabel: null,
+        numero: null,
       },
     ]);
   });

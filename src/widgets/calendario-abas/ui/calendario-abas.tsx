@@ -3,18 +3,21 @@
 import { useState } from "react";
 import { CalendarioContent } from "@/features/calendario";
 import { GruposContent } from "@/features/grupos";
+import { ChaveamentoContent } from "@/features/chaveamento";
 
-type Aba = "agenda" | "grupos";
+type Aba = "agenda" | "grupos" | "chaveamento";
 
 const ABAS: { id: Aba; label: string }[] = [
   { id: "agenda", label: "Agenda" },
   { id: "grupos", label: "Grupos" },
+  { id: "chaveamento", label: "Chaveamento" },
 ];
 
 /**
- * Alterna entre a agenda de jogos e a classificação dos grupos dentro de
- * /calendario, sem inflar a navegação principal. O estado é client-only —
- * a página continua Server Component (preserva metadata e static export).
+ * Alterna entre agenda de jogos, classificação dos grupos e chaveamento do
+ * mata-mata dentro de /calendario, sem inflar a navegação principal. O estado
+ * é client-only — a página continua Server Component (preserva metadata e
+ * static export).
  */
 export function CalendarioAbas() {
   const [aba, setAba] = useState<Aba>("agenda");
@@ -47,7 +50,9 @@ export function CalendarioAbas() {
         })}
       </div>
 
-      {aba === "agenda" ? <CalendarioContent /> : <GruposContent />}
+      {aba === "agenda" && <CalendarioContent />}
+      {aba === "grupos" && <GruposContent />}
+      {aba === "chaveamento" && <ChaveamentoContent />}
     </>
   );
 }

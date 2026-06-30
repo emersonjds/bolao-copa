@@ -21,12 +21,13 @@ const { avisoVistoLocal, marcarAvisoVistoLocal } = vi.hoisted(() => ({
 }));
 vi.mock("../lib/aviso-local", () => ({ avisoVistoLocal, marcarAvisoVistoLocal }));
 
-const { mataMataDefinido } = vi.hoisted(() => ({
-  mataMataDefinido: vi.fn<() => Promise<boolean>>(),
+const { faseDefinida } = vi.hoisted(() => ({
+  faseDefinida: vi.fn<(fase: string) => Promise<boolean>>(),
 }));
-vi.mock("../api/mata-mata-pronto", () => ({ mataMataDefinido }));
+vi.mock("../api/fase-pronta", () => ({ faseDefinida }));
 
 import { NovidadesGate } from "./novidades-gate";
+import { AVISOS } from "../model/aviso-atual";
 
 function semSessao() {
   return { data: { session: null } };
@@ -41,7 +42,7 @@ describe("NovidadesGate", () => {
     vi.clearAllMocks();
     marcarAvisoVisto.mockResolvedValue(undefined);
     marcarAvisoVistoLocal.mockReturnValue(undefined);
-    mataMataDefinido.mockResolvedValue(true);
+    faseDefinida.mockResolvedValue(true);
   });
 
   describe("usuário logado", () => {
@@ -76,8 +77,8 @@ describe("NovidadesGate", () => {
 
     it("fecha o modal e marca como visto ao clicar em Bora!", async () => {
       getSession.mockResolvedValue(comSessao());
-      // primeira chamada: novidades não visto → abre; segunda: mata-mata visto → fila vazia
-      avisoFoiVisto.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+      // novidades não visto → abre; restantes vistos → fila vazia após fechar
+      avisoFoiVisto.mockResolvedValueOnce(false).mockResolvedValue(true);
 
       render(<NovidadesGate />);
       await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
@@ -90,7 +91,7 @@ describe("NovidadesGate", () => {
 
     it("fecha o modal mesmo quando marcarAvisoVisto lança (falha silenciosa)", async () => {
       getSession.mockResolvedValue(comSessao());
-      avisoFoiVisto.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+      avisoFoiVisto.mockResolvedValueOnce(false).mockResolvedValue(true);
       marcarAvisoVisto.mockRejectedValue(new Error("falha ao marcar"));
 
       render(<NovidadesGate />);
@@ -159,7 +160,7 @@ describe("NovidadesGate", () => {
 
         render(<NovidadesGate />);
 
-        await waitFor(() => expect(avisoFoiVisto).toHaveBeenCalledTimes(2));
+        await waitFor(() => expect(avisoFoiVisto).toHaveBeenCalledTimes(AVISOS.length));
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
       });
 
@@ -200,7 +201,7 @@ describe("NovidadesGate", () => {
 
         render(<NovidadesGate />);
 
-        await waitFor(() => expect(avisoVistoLocal).toHaveBeenCalledTimes(2));
+        await waitFor(() => expect(avisoVistoLocal).toHaveBeenCalledTimes(AVISOS.length));
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
       });
 
@@ -222,24 +223,26 @@ describe("NovidadesGate", () => {
     });
   });
 
-  describe("gatilho de fase (mata-mata)", () => {
+  describe("gatilho de fase", () => {
     it("não exibe o aviso de mata-mata enquanto os confrontos não estão definidos", async () => {
       getSession.mockResolvedValue(comSessao());
       avisoFoiVisto
         .mockResolvedValueOnce(true) // novidades: visto
-        .mockResolvedValueOnce(false); // mata-mata: não visto
-      mataMataDefinido.mockResolvedValue(false);
+        .mockResolvedValueOnce(false) // mata-mata: não visto
+        .mockResolvedValue(true); // demais: vistos
+      faseDefinida.mockResolvedValue(false);
 
       render(<NovidadesGate />);
 
-      await waitFor(() => expect(mataMataDefinido).toHaveBeenCalled());
+      await waitFor(() => expect(faseDefinida).toHaveBeenCalled());
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 
     it("exibe o aviso de mata-mata assim que os confrontos ficam definidos", async () => {
       getSession.mockResolvedValue(comSessao());
-      avisoFoiVisto.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
-      mataMataDefinido.mockResolvedValue(true);
+      avisoFoiVisto
+        .mockResolvedValueOnce(true) // novidades: visto
+        .mockResolvedValueOnce(false); // mata-mata: não visto
 
       render(<NovidadesGate />);
 
@@ -250,12 +253,44 @@ describe("NovidadesGate", () => {
 
     it("não checa o gatilho de um aviso já visto", async () => {
       getSession.mockResolvedValue(comSessao());
-      avisoFoiVisto.mockResolvedValue(true); // novidades e mata-mata: vistos
+      avisoFoiVisto.mockResolvedValue(true); // todos vistos
 
       render(<NovidadesGate />);
 
-      await waitFor(() => expect(avisoFoiVisto).toHaveBeenCalledTimes(2));
-      expect(mataMataDefinido).not.toHaveBeenCalled();
+      await waitFor(() => expect(avisoFoiVisto).toHaveBeenCalledTimes(AVISOS.length));
+      expect(faseDefinida).not.toHaveBeenCalled();
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("exibe AVISO_OITAVAS quando oitavas definidas e anteriores já foram vistos", async () => {
+      getSession.mockResolvedValue(comSessao());
+      avisoFoiVisto
+        .mockResolvedValueOnce(true) // novidades: visto
+        .mockResolvedValueOnce(true) // mata-mata: visto
+        .mockResolvedValueOnce(false) // oitavas: não visto
+        .mockResolvedValue(true); // demais: vistos
+
+      render(<NovidadesGate />);
+
+      await waitFor(() =>
+        expect(screen.getByText("Começaram as oitavas!")).toBeInTheDocument(),
+      );
+    });
+
+    it("pula AVISO_OITAVAS quando gatilho de oitavas não está pronto", async () => {
+      getSession.mockResolvedValue(comSessao());
+      avisoFoiVisto
+        .mockResolvedValueOnce(true) // novidades: visto
+        .mockResolvedValueOnce(true) // mata-mata: visto
+        .mockResolvedValueOnce(false) // oitavas: não visto
+        .mockResolvedValue(true); // demais: vistos
+      faseDefinida.mockImplementation((fase) =>
+        Promise.resolve(fase !== "oitavas"),
+      );
+
+      render(<NovidadesGate />);
+
+      await waitFor(() => expect(faseDefinida).toHaveBeenCalledWith("oitavas"));
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
   });
