@@ -81,8 +81,8 @@ export interface SalvarPalpiteInput {
  * Cria ou atualiza um palpite via upsert.
  *
  * Estratégia de colunas:
- *   INSERT grant: participante_id, partida_id, gols_mandante, gols_visitante
- *   UPDATE grant: participante_id, partida_id, gols_mandante, gols_visitante, updated_at
+ *   INSERT grant: participante_id, partida_id, gols_mandante, gols_visitante, vencedor_avanca
+ *   UPDATE grant: participante_id, partida_id, gols_mandante, gols_visitante, vencedor_avanca, updated_at
  *
  * ATENÇÃO: no upsert, o PostgREST inclui TODAS as colunas do payload no SET do
  * ON CONFLICT DO UPDATE — INCLUSIVE participante_id e partida_id (ele NÃO exclui
