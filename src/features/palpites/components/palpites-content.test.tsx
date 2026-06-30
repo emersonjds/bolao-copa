@@ -69,6 +69,23 @@ const partidaAberta: Partida = {
   visitanteLabel: null,
 };
 
+const partidaOitavas: Partida = {
+  id: "part-oitavas",
+  fase: "oitavas",
+  grupo: null,
+  dataHora: "2099-06-20T19:00:00.000Z",
+  janelaInicio: "2020-01-01T03:00:00Z",
+  estadio: "Estadio Y",
+  status: "agendada",
+  mandante: { id: "sel-bra", nome: "Brasil", codigo: "BRA" },
+  visitante: { id: "sel-arg", nome: "Argentina", codigo: "ARG" },
+  golsMandante: null,
+  golsVisitante: null,
+  vencedorPenaltis: null,
+  mandanteLabel: null,
+  visitanteLabel: null,
+};
+
 const palpiteSalvo: Palpite = {
   id: "palp-1",
   participanteId: "part-id-1",
@@ -321,6 +338,7 @@ describe("PalpitesContent", () => {
         partidaId: "part-1",
         golsMandante: 2,
         golsVisitante: 1,
+        vencedorAvanca: null,
       });
     });
 
@@ -570,11 +588,13 @@ describe("PalpitesContent", () => {
       partidaId: "p-hoje",
       golsMandante: 2,
       golsVisitante: 1,
+      vencedorAvanca: null,
     });
     expect(mutateAsync).toHaveBeenCalledWith({
       partidaId: "p-amanha",
       golsMandante: 3,
       golsVisitante: 3,
+      vencedorAvanca: null,
     });
   });
 
@@ -625,6 +645,7 @@ describe("PalpitesContent", () => {
         partidaId: "p-amanha",
         golsMandante: 1,
         golsVisitante: 0,
+        vencedorAvanca: null,
       });
     });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -811,6 +832,53 @@ describe("PalpitesContent", () => {
     // em vez de "nenhum jogo" — o filtro dia-a-dia não se aplica ao passado.
     expect(screen.getByText(/Resultado oficial: 1 × 0/i)).toBeInTheDocument();
     expect(screen.getByText("Travado")).toBeInTheDocument();
+  });
+
+  // ── Seletor "Quem passa?" — mata-mata ────────────────────────────────────
+
+  it("bloqueia o save e exibe aviso quando empate de mata-mata sem escolher quem passa", async () => {
+    const user = userEvent.setup();
+    mockPartidasOk([partidaOitavas]);
+    mockPalpitesOk();
+    const { mutateAsync } = mockSalvarOk();
+
+    render(<PalpitesContent />);
+
+    await user.type(screen.getByRole("textbox", { name: /gols do brasil/i }), "1");
+    await user.type(screen.getByRole("textbox", { name: /gols do argentina/i }), "1");
+
+    await user.click(screen.getByRole("button", { name: /salvar palpites/i }));
+
+    expect(mutateAsync).not.toHaveBeenCalled();
+    expect(toast.warning).toHaveBeenCalledWith(
+      "Escolha quem passa nos jogos de mata-mata empatados"
+    );
+  });
+
+  it("salva com vencedorAvanca quando empate mata-mata e quem passa foi escolhido", async () => {
+    const user = userEvent.setup();
+    mockPartidasOk([partidaOitavas]);
+    mockPalpitesOk();
+    const { mutateAsync } = mockSalvarOk();
+
+    render(<PalpitesContent />);
+
+    await user.type(screen.getByRole("textbox", { name: /gols do brasil/i }), "1");
+    await user.type(screen.getByRole("textbox", { name: /gols do argentina/i }), "1");
+
+    const select = screen.getByLabelText(/quem passa/i);
+    await user.selectOptions(select, "sel-bra");
+
+    await user.click(screen.getByRole("button", { name: /salvar palpites/i }));
+
+    await waitFor(() => {
+      expect(mutateAsync).toHaveBeenCalledWith({
+        partidaId: "part-oitavas",
+        golsMandante: 1,
+        golsVisitante: 1,
+        vencedorAvanca: "sel-bra",
+      });
+    });
   });
 
   it("reage à borda: ao virar a janela do jogo, atualiza o instante e refaz o fetch", () => {

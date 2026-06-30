@@ -125,10 +125,19 @@ export function PalpitesContent() {
     if (local.mandante === "" || local.visitante === "") return false;
     const salvo = (meusPalpites ?? []).find((p) => p.partidaId === partidaId);
     if (!salvo) return true;
-    return (
+    if (
       local.mandante !== String(salvo.golsMandante) ||
       local.visitante !== String(salvo.golsVisitante)
-    );
+    ) {
+      return true;
+    }
+    const partida = listaPartidas.find((p) => p.id === partidaId);
+    const ehMataMata = partida && partida.fase !== "grupos";
+    const empate = local.mandante === local.visitante;
+    if (ehMataMata && empate) {
+      return (local.vencedorAvanca ?? null) !== (salvo.vencedorAvanca ?? null);
+    }
+    return false;
   }
 
   // Jogos de hoje (liberado) e antecipados (futuro) contam como pendência
@@ -159,6 +168,17 @@ export function PalpitesContent() {
     }
   }
 
+  function handleChangeVencedorAvanca(partidaId: string, selecaoId: string | null): void {
+    const anterior = placaresLocais[partidaId] ?? { mandante: "", visitante: "" };
+    const atualizado: PlacarLocal = { ...anterior, vencedorAvanca: selecaoId };
+    setPlacaresLocais((prev) => ({ ...prev, [partidaId]: atualizado }));
+
+    const partida = listaPartidas.find((p) => p.id === partidaId);
+    if (userId && partida && estadoPalpite(partida, agora) === "futuro") {
+      salvarRascunho(userId, partidaId, atualizado);
+    }
+  }
+
   async function gravarPendentes(pendentes: typeof listaPartidas): Promise<void> {
     setIsSaving(true);
     const toastId = toast.loading("Salvando palpites...");
@@ -167,10 +187,13 @@ export function PalpitesContent() {
       await Promise.all(
         pendentes.map((p) => {
           const local = placaresLocais[p.id];
+          const empateLocal = local.mandante === local.visitante;
           return salvarPalpite({
             partidaId: p.id,
             golsMandante: parseInt(local.mandante, 10),
             golsVisitante: parseInt(local.visitante, 10),
+            vencedorAvanca:
+              p.fase !== "grupos" && empateLocal ? (local.vencedorAvanca ?? null) : null,
           });
         })
       );
@@ -212,6 +235,19 @@ export function PalpitesContent() {
     const pendentes = coletarPendentes();
     /* v8 ignore next */
     if (pendentes.length === 0) return;
+
+    const temEmpateMataMataIncompleto = pendentes.some((p) => {
+      const local = placaresLocais[p.id];
+      return (
+        p.fase !== "grupos" &&
+        local.mandante === local.visitante &&
+        (local.vencedorAvanca ?? null) === null
+      );
+    });
+    if (temEmpateMataMataIncompleto) {
+      toast.warning("Escolha quem passa nos jogos de mata-mata empatados");
+      return;
+    }
 
     const temAntecipado = pendentes.some((p) => estadoPalpite(p, agora) === "futuro");
     if (temAntecipado && userId && !jaConfirmouAntecipado(userId)) {
@@ -288,6 +324,7 @@ export function PalpitesContent() {
             meusPalpites={meusPalpites ?? []}
             placaresLocais={placaresLocais}
             onChangePlacar={handleChangePlacar}
+            onChangeVencedorAvanca={handleChangeVencedorAvanca}
             isSaving={isSaving}
           />
 

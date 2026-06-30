@@ -12,6 +12,7 @@ interface ListaPalpitesProps {
   meusPalpites: Palpite[];
   placaresLocais: Record<string, PlacarLocal>;
   onChangePlacar: (partidaId: string, campo: "mandante" | "visitante", valor: string) => void;
+  onChangeVencedorAvanca: (partidaId: string, selecaoId: string | null) => void;
   isSaving: boolean;
 }
 
@@ -42,6 +43,7 @@ export function ListaPalpites({
   meusPalpites,
   placaresLocais,
   onChangePlacar,
+  onChangeVencedorAvanca,
   isSaving,
 }: ListaPalpitesProps) {
   if (partidas.length === 0) {
@@ -93,6 +95,7 @@ export function ListaPalpites({
                   placarLocal={placaresLocais[partida.id]}
                   onChangeMandante={(valor) => onChangePlacar(partida.id, "mandante", valor)}
                   onChangeVisitante={(valor) => onChangePlacar(partida.id, "visitante", valor)}
+                  onChangeVencedorAvanca={(sel) => onChangeVencedorAvanca(partida.id, sel)}
                   disabled={isSaving}
                 />
               ))}

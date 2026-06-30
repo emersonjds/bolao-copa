@@ -72,8 +72,34 @@ const palpiteSalvo: Palpite = {
 const defaultProps = {
   onChangeMandante: vi.fn(),
   onChangeVisitante: vi.fn(),
+  onChangeVencedorAvanca: vi.fn(),
   disabled: false,
 };
+
+const partidaOitavas: Partida = {
+  ...partidaAberta,
+  id: "part-oitavas",
+  fase: "oitavas",
+  grupo: null,
+};
+
+const partidaTerceiroLugar: Partida = {
+  ...partidaAberta,
+  id: "part-3lugar",
+  fase: "terceiro-lugar",
+  grupo: null,
+};
+
+/** Monta as props base para CardPalpite com sobreposição de campos da partida. */
+function propsBase(overrides: Partial<Partida> = {}) {
+  return {
+    ...defaultProps,
+    partida: { ...partidaAberta, ...overrides },
+    estado: "liberado" as const,
+    palpiteSalvo: undefined,
+    placarLocal: undefined,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Confronto indefinido
@@ -342,6 +368,7 @@ describe("CardPalpite — futuro", () => {
         placarLocal={undefined}
         onChangeMandante={() => {}}
         onChangeVisitante={() => {}}
+        onChangeVencedorAvanca={() => {}}
         disabled={false}
       />
     );
@@ -359,6 +386,7 @@ describe("CardPalpite — futuro", () => {
         placarLocal={{ mandante: "2", visitante: "1" }}
         onChangeMandante={() => {}}
         onChangeVisitante={() => {}}
+        onChangeVencedorAvanca={() => {}}
         disabled={false}
       />
     );
@@ -382,6 +410,7 @@ describe("CardPalpite — futuro", () => {
         placarLocal={undefined}
         onChangeMandante={() => {}}
         onChangeVisitante={() => {}}
+        onChangeVencedorAvanca={() => {}}
         disabled={false}
       />
     );
@@ -392,6 +421,86 @@ describe("CardPalpite — futuro", () => {
 
 // ---------------------------------------------------------------------------
 // Fallback de fase desconhecida no badgeGrupo
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Seletor "Quem passa?" / "Quem vence?" — mata-mata com empate
+// ---------------------------------------------------------------------------
+
+describe("CardPalpite — seletor quem passa", () => {
+  it("mostra seletor 'Quem passa?' quando mata-mata e placar empatado (liberado)", () => {
+    render(
+      <CardPalpite
+        {...propsBase({ fase: "oitavas", grupo: null })}
+        partida={partidaOitavas}
+        placarLocal={{ mandante: "1", visitante: "1" }}
+        estado="liberado"
+      />
+    );
+    expect(screen.getByLabelText(/quem passa/i)).toBeInTheDocument();
+  });
+
+  it("mostra seletor 'Quem passa?' quando mata-mata e placar empatado (futuro)", () => {
+    render(
+      <CardPalpite
+        {...propsBase()}
+        partida={partidaOitavas}
+        placarLocal={{ mandante: "0", visitante: "0" }}
+        estado="futuro"
+      />
+    );
+    expect(screen.getByLabelText(/quem passa/i)).toBeInTheDocument();
+  });
+
+  it("não mostra o seletor em jogo de grupos", () => {
+    render(
+      <CardPalpite
+        {...propsBase({ fase: "grupos" })}
+        placarLocal={{ mandante: "1", visitante: "1" }}
+        estado="liberado"
+      />
+    );
+    expect(screen.queryByLabelText(/quem passa/i)).not.toBeInTheDocument();
+  });
+
+  it("não mostra o seletor quando o placar tem vencedor (mata-mata)", () => {
+    render(
+      <CardPalpite
+        {...propsBase()}
+        partida={partidaOitavas}
+        placarLocal={{ mandante: "2", visitante: "1" }}
+        estado="liberado"
+      />
+    );
+    expect(screen.queryByLabelText(/quem passa/i)).not.toBeInTheDocument();
+  });
+
+  it("usa rótulo 'Quem vence?' em jogo de terceiro-lugar", () => {
+    render(
+      <CardPalpite
+        {...propsBase()}
+        partida={partidaTerceiroLugar}
+        placarLocal={{ mandante: "1", visitante: "1" }}
+        estado="liberado"
+      />
+    );
+    expect(screen.getByLabelText(/quem vence/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/quem passa/i)).not.toBeInTheDocument();
+  });
+
+  it("não mostra o seletor quando placarLocal está indefinido", () => {
+    render(
+      <CardPalpite
+        {...propsBase()}
+        partida={partidaOitavas}
+        placarLocal={undefined}
+        estado="liberado"
+      />
+    );
+    expect(screen.queryByLabelText(/quem passa/i)).not.toBeInTheDocument();
+  });
+});
+
 // ---------------------------------------------------------------------------
 
 describe("CardPalpite — fase não mapeada no FASE_LABEL (linha 97 fallback ??)", () => {

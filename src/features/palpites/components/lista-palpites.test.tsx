@@ -35,6 +35,7 @@ const defaultProps = {
   meusPalpites: [],
   placaresLocais: {},
   onChangePlacar: vi.fn(),
+  onChangeVencedorAvanca: vi.fn(),
   isSaving: false,
 };
 

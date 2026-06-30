@@ -9,6 +9,7 @@ import type { EstadoPalpite } from "../lib/estado-palpite";
 export interface PlacarLocal {
   mandante: string;
   visitante: string;
+  vencedorAvanca?: string | null;
 }
 
 interface CardPalpiteProps {
@@ -18,6 +19,7 @@ interface CardPalpiteProps {
   placarLocal: PlacarLocal | undefined;
   onChangeMandante: (valor: string) => void;
   onChangeVisitante: (valor: string) => void;
+  onChangeVencedorAvanca: (selecaoId: string | null) => void;
   disabled: boolean;
 }
 
@@ -64,6 +66,7 @@ export function CardPalpite({
   placarLocal,
   onChangeMandante,
   onChangeVisitante,
+  onChangeVencedorAvanca,
   disabled,
 }: CardPalpiteProps) {
   const indefinido = isConfrontoIndefinido(partida);
@@ -72,6 +75,16 @@ export function CardPalpite({
     placarLocal?.mandante ?? (palpiteSalvo ? String(palpiteSalvo.golsMandante) : "");
   const valorVisitante =
     placarLocal?.visitante ?? (palpiteSalvo ? String(palpiteSalvo.golsVisitante) : "");
+
+  const ehMataMata = partida.fase !== "grupos";
+  const empate =
+    valorMandante !== "" &&
+    valorVisitante !== "" &&
+    valorMandante === valorVisitante;
+  const vencedorAvanca =
+    placarLocal?.vencedorAvanca ?? (palpiteSalvo?.vencedorAvanca ?? null);
+  const labelQuemAvanca =
+    partida.fase === "terceiro-lugar" ? "Quem vence?" : "Quem passa?";
 
   const hasPendente = (() => {
     if (!placarLocal) return false;
@@ -261,6 +274,25 @@ export function CardPalpite({
           </div>
         </div>
 
+        {ehMataMata && empate && (
+          <label className="mt-3 block">
+            <span className="mb-1 block text-xs font-medium text-muted-foreground">
+              {labelQuemAvanca}
+            </span>
+            <select
+              aria-label={labelQuemAvanca}
+              value={vencedorAvanca ?? ""}
+              disabled={disabled}
+              onChange={(e) => onChangeVencedorAvanca(e.target.value || null)}
+              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
+            >
+              <option value="">Escolha quem passa</option>
+              <option value={partida.mandante.id}>{partida.mandante.nome}</option>
+              <option value={partida.visitante.id}>{partida.visitante.nome}</option>
+            </select>
+          </label>
+        )}
+
         <p className="mt-3 text-center text-xs text-amber-700">
           {hasSalvo
             ? "Palpite salvo · ajuste até o jogo começar"
@@ -346,6 +378,25 @@ export function CardPalpite({
           </span>
         </div>
       </div>
+
+      {ehMataMata && empate && (
+        <label className="mt-3 block">
+          <span className="mb-1 block text-xs font-medium text-muted-foreground">
+            {labelQuemAvanca}
+          </span>
+          <select
+            aria-label={labelQuemAvanca}
+            value={vencedorAvanca ?? ""}
+            disabled={disabled}
+            onChange={(e) => onChangeVencedorAvanca(e.target.value || null)}
+            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
+          >
+            <option value="">Escolha quem passa</option>
+            <option value={partida.mandante.id}>{partida.mandante.nome}</option>
+            <option value={partida.visitante.id}>{partida.visitante.nome}</option>
+          </select>
+        </label>
+      )}
     </article>
   );
 }
