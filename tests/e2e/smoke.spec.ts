@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { silenciarAvisos } from "./helpers/silenciar-avisos";
 
 const ROTAS_PUBLICAS = ["/", "/calendario", "/ranking", "/regras", "/palpites"];
 
@@ -17,6 +18,10 @@ function coletarErros(page: Page): string[] {
 }
 
 test.describe("Smoke — telas públicas", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenciarAvisos(page);
+  });
+
   test("home carrega com a marca e a navegação", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByText("Resenha - Bolão da Copa")).toBeVisible();

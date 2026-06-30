@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { loginComo } from "./helpers/login-demo";
+import { silenciarAvisos } from "./helpers/silenciar-avisos";
 
 /**
  * Valida TELA A TELA, FASE A FASE: logado como demo (cenário seedado), o
@@ -8,6 +9,9 @@ import { loginComo } from "./helpers/login-demo";
  *
  * O Histórico é agrupado por dia (sem abas de fase); cada card traz um badge:
  * "Grupo X" para grupos e o rótulo da fase para o mata-mata.
+ *
+ * Nota: o cenário deixa terceiro-lugar e final ABERTOS para palpites (agendados),
+ * portanto esses badges NÃO aparecem no Histórico — só jogos encerrados aparecem.
  */
 
 const BADGES_FASE: { fase: string; badge: RegExp }[] = [
@@ -16,12 +20,11 @@ const BADGES_FASE: { fase: string; badge: RegExp }[] = [
   { fase: "Oitavas", badge: /^Oitavas$/ },
   { fase: "Quartas", badge: /^Quartas$/ },
   { fase: "Semis", badge: /^Semis$/ },
-  { fase: "Terceiro lugar", badge: /^3º Lugar$/ },
-  { fase: "Final", badge: /^Final$/ },
 ];
 
 test.describe("Telas por fase — Histórico (demo)", () => {
   test.beforeEach(async ({ context, page }) => {
+    await silenciarAvisos(page);
     await loginComo(context, "demo@bolao.test");
     await page.goto("/palpites");
     await expect(page.getByRole("heading", { name: "Meus palpites" })).toBeVisible();

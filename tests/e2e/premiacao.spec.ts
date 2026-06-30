@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { silenciarAvisos } from "./helpers/silenciar-avisos";
 
 /**
  * Tela de Premiação (/premiacao) — pública, sem login. Cobre o bloco de
@@ -8,6 +9,10 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("Premiação — pagamento da inscrição (público)", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenciarAvisos(page);
+  });
+
   test("a aba Premiação na bottom-nav leva para /premiacao", async ({ page }) => {
     await page.goto("/");
     await page
