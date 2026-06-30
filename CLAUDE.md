@@ -99,13 +99,19 @@ Regra: **um agent por função, sem duplicação**.
 - **Participante**: o amigo que entra no bolão e faz palpites
 - **Partida/Jogo**: confronto entre duas seleções, com data, fase e placar
 - **Palpite**: aposta do participante no placar de uma partida
-- **Pontuação** (mecânica oficial — fonte de verdade: `apurar_pontos()` no Supabase): vale o placar do tempo normal (90'), pênaltis não contam.
-  - Base (`5/4/3/2/0`), depois **multiplicada pelo peso da fase** (`peso_fase()`):
+- **Pontuação** (mecânica oficial — fonte de verdade: `apurar_pontos()` no Supabase): o placar que vale é sempre o do tempo normal (90').
+  - **Grupos** (`5/4/3/2/0` — empate é resultado real):
     - `5` — cravou o placar de uma **vitória** (placar exato com vencedor)
     - `4` — cravou o placar de um **empate** (placar exato empatado)
     - `3` — acertou **quem ganhou**, placar errado
     - `2` — acertou que foi **empate**, placar errado
     - `0` — errou o resultado
-  - **Multiplicador por fase**: grupos / 32-avos / 3º lugar = **×1**; oitavas / quartas = **×2**; semi / final = **×3**. Ex.: cravar a final vale `5×3 = 15`.
+  - **Mata-mata** (`5/4/3/0` — vale **quem avança**; não há empate no fim):
+    - `5` — cravou o placar de uma **vitória** e acertou **quem passa**
+    - `4` — cravou o placar do **empate** do 90' e acertou **quem passa** na decisão
+    - `3` — acertou **quem passa**, placar errado
+    - `0` — errou **quem passa**
+    - Prorrogação/pênaltis (`vencedor_penaltis`) contam **só para definir quem avança**, não mudam o placar do 90'. Ao palpitar empate em jogo de mata-mata, o palpiteiro escolhe quem passa (`palpites.vencedor_avanca`). Empate cravado vale `4 < 5` (trava anti-empate: apostar empate nunca rende mais que cravar vitória).
+  - **Multiplicador por fase** (`peso_fase()`): grupos / 32-avos / 3º lugar = **×1**; oitavas / quartas = **×2**; semi / final = **×3**. Ex.: cravar a final vale `5×3 = 15`.
 - **Ranking**: classificação dos participantes por pontos
 - **Fases**: grupos → oitavas → quartas → semi → final
