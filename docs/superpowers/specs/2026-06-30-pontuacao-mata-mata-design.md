@@ -19,9 +19,16 @@ pontuação é **travada em quem avança**: errou o time que passa, zera.
 
 | O que aconteceu | O que você palpitou | Base |
 |---|---|---|
-| Time X avançou | apontou X **e** cravou o placar do tempo normal (90') | **5** |
+| Time X avançou | cravou o placar de uma **vitória** e apontou X | **5** |
+| Time X avançou | cravou o placar de **empate** (90') e apontou X na decisão | **4** |
 | Time X avançou | apontou X (placar do 90' errado) | **3** |
 | Time X avançou | apontou o outro time | **0** |
+
+**Trava anti-empate (decisão de design):** o empate cravado vale **4 < 5** (vitória
+cravada). Apostar empate nunca rende mais que cravar uma vitória, então não existe
+incentivo de gamear "chutar 0×0 + favorito". E **errar quem passa zera mesmo cravando o
+empate** — sem consolação, sem brecha. A regra fica idêntica à dos grupos de ler: cravou
+vitória 5, cravou empate 4, acertou quem passa 3, errou 0.
 
 - **× peso da fase** (igual hoje): grupos/32-avos/3º lugar `×1`; oitavas/quartas `×2`;
   semi/final `×3`. Ex.: cravar uma decisão na final = `5×3 = 15`.
@@ -36,11 +43,12 @@ pontuação é **travada em quem avança**: errou o time que passa, zera.
 
 ### Exemplos (confirmados com o dono)
 
-- Palpite `Brasil 2×1`, real `Brasil 2×1` (90') → **5**
+- Palpite `Brasil 2×1`, real `Brasil 2×1` (90') → **5** (cravou vitória + quem passa)
 - Palpite `Brasil 2×1`, real `Brasil 1×0` (90') → **3** (acertou quem passa)
 - Palpite `Brasil 2×1`, real `0×0` + Brasil nos pênaltis → **3** (errou o 90', mas Brasil passou)
-- Palpite `1×1`, escolheu Brasil, real `0×0` + Brasil pênaltis → **3**
-- Palpite `1×1`, escolheu Brasil, real `1×1` + Brasil pênaltis → **5** (cravou o 90' **e** quem passa)
+- Palpite `1×1`, escolheu Brasil, real `0×0` + Brasil pênaltis → **3** (quem passa, placar errado)
+- Palpite `1×1`, escolheu Brasil, real `1×1` + Brasil pênaltis → **4** (cravou o empate **e** quem passa)
+- Palpite `1×1`, escolheu Brasil, real `1×1` + **outro** time nos pênaltis → **0** (errou quem passa, mesmo cravando o 90')
 - Apontou o time errado → **0**
 
 > **3º lugar:** trata como qualquer jogo de mata-mata (`fase != grupos`). "Quem avança"
@@ -86,13 +94,18 @@ para cada palpite da partida:
     pal.gols_mandante > pal.gols_visitante → new.mandante_id
     pal.gols_visitante > pal.gols_mandante → new.visitante_id
     senão                                  → pal.vencedor_avanca
-  cravou := (pal.gols_mandante = new.gols_mandante and pal.gols_visitante = new.gols_visitante)
+  cravou      := (pal.gols_mandante = new.gols_mandante and pal.gols_visitante = new.gols_visitante)
+  empate_real := (new.gols_mandante = new.gols_visitante)   -- o 90' terminou empatado
   pontos := peso_fase(fase) * (
     pal_avanca is not null and pal_avanca = real_avanca
-      ? (cravou ? 5 : 3)
+      ? (cravou ? (empate_real ? 4 : 5) : 3)
       : 0
   )
 ```
+
+> Note que a apuração **não** precisa saber "que tipo de palpite foi": se cravou, o valor
+> sai de `empate_real` (4 para empate, 5 para vitória); senão, 3 se acertou quem passa, 0 se
+> errou. A trava anti-empate (4 < 5) é consequência direta disso.
 
 - Guarda: se `real_avanca` for nulo (empate no 90' sem `vencedor_penaltis`), a partida não
   está de fato resolvida — não pontua (mantém comportamento defensivo do auto-avanço).
@@ -133,9 +146,9 @@ descartada por complexidade: grandfather dando consolação a quem cravou o empa
 
 `regras-content.tsx`: nova seção **"Como funciona no mata-mata"** após o bloco
 "Multiplicador por fase" (antes da tabela "Pontos por fase"). Explica: vale quem passa
-(5 cravando o 90' + quem passa, 3 só quem passa, 0 errando quem passa), que pênaltis/
-prorrogação contam só pra definir quem avança, e que ao palpitar empate é preciso escolher
-quem passa. Segue o padrão visual existente (cards `rounded-2xl`, tokens `brand-*`/`gold-*`).
+(5 cravou vitória + quem passa, 4 cravou empate + quem passa, 3 só quem passa, 0 errou
+quem passa), que pênaltis/prorrogação contam só pra definir quem avança, e que ao palpitar
+empate é preciso escolher quem passa. Segue o padrão visual existente (cards `rounded-2xl`, tokens `brand-*`/`gold-*`).
 Atualizar testes que checam textos/valores (`regras-content.test.tsx`, `page.test.tsx`,
 `tests/e2e/regras.spec.ts`).
 
@@ -151,8 +164,8 @@ cargo do agent `scribe`. Itens (rascunho a refinar):
 
 - **Por que mudou:** mata-mata é eliminatória — não tem empate no fim, o que importa é
   quem passa. A regra antiga zerava quase todo mundo.
-- **Como pontua agora:** 5 (quem passa + cravou o 90'), 3 (quem passa), 0 (errou quem passa),
-  × peso da fase.
+- **Como pontua agora:** 5 (cravou vitória + quem passa), 4 (cravou empate + quem passa),
+  3 (quem passa), 0 (errou quem passa), × peso da fase.
 - **O que você faz:** ao palpitar empate num jogo de mata-mata, escolha quem passa.
 - **Re-apuração:** os jogos de mata-mata que já rolaram foram repontuados pela regra nova
   (transparência sobre pontos que podem ter mudado).
@@ -161,9 +174,10 @@ cargo do agent `scribe`. Itens (rascunho a refinar):
 
 ## 8. Testes (3 camadas + evidências)
 
-- **Banco (`tests/db/`)**: nova suíte para `apurar_pontos()` no mata-mata — cobre 5/3/0,
-  empate com `vencedor_avanca` certo/errado, palpite de vencedor derivando o avanço,
-  empate sem pick (0), cravou-vs-não-cravou, e idempotência da re-apuração. Reaproveita o harness
+- **Banco (`tests/db/`)**: nova suíte para `apurar_pontos()` no mata-mata — cobre 5/4/3/0,
+  empate cravado com `vencedor_avanca` certo (4) e errado (0), palpite de vencedor derivando
+  o avanço, empate sem pick (0), cravou-vs-não-cravou, e idempotência da re-apuração.
+  Reaproveita o harness
   harness de `mata-mata-auto-avanco.test.ts` (transação + rollback).
 - **Unitário**: derivação de "pendência" com `vencedor_avanca`; lógica de quando o seletor
   aparece; validação de save.
