@@ -9,6 +9,7 @@ interface PalpiteDb {
   gols_mandante: number;
   gols_visitante: number;
   pontos: number | null;
+  vencedor_avanca: string | null;
 }
 
 function mapPalpite(db: PalpiteDb): Palpite {
@@ -19,6 +20,7 @@ function mapPalpite(db: PalpiteDb): Palpite {
     golsMandante: db.gols_mandante,
     golsVisitante: db.gols_visitante,
     pontos: db.pontos,
+    vencedorAvanca: db.vencedor_avanca,
   };
 }
 
@@ -57,7 +59,7 @@ export async function listarMeusPalpites(participanteId: string): Promise<Palpit
 
   const { data, error } = await supabase
     .from("palpites")
-    .select("id, participante_id, partida_id, gols_mandante, gols_visitante, pontos")
+    .select("id, participante_id, partida_id, gols_mandante, gols_visitante, pontos, vencedor_avanca")
     .eq("participante_id", participanteId);
 
   if (error) {
@@ -72,6 +74,7 @@ export interface SalvarPalpiteInput {
   partidaId: string;
   golsMandante: number;
   golsVisitante: number;
+  vencedorAvanca?: string | null;
 }
 
 /**
@@ -101,6 +104,7 @@ export async function salvarPalpite(input: SalvarPalpiteInput): Promise<void> {
       partida_id: input.partidaId,
       gols_mandante: input.golsMandante,
       gols_visitante: input.golsVisitante,
+      vencedor_avanca: input.vencedorAvanca ?? null,
     },
     { onConflict: "participante_id,partida_id" }
   );

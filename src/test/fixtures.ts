@@ -50,6 +50,7 @@ export const palpiteDb = {
   gols_mandante: 2,
   gols_visitante: 0,
   pontos: null,
+  vencedor_avanca: null,
 };
 
 export const itemRankingRpc = {

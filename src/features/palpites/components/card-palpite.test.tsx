@@ -66,6 +66,7 @@ const palpiteSalvo: Palpite = {
   golsMandante: 2,
   golsVisitante: 0,
   pontos: null,
+  vencedorAvanca: null,
 };
 
 const defaultProps = {
@@ -376,6 +377,7 @@ describe("CardPalpite — futuro", () => {
           golsMandante: 2,
           golsVisitante: 1,
           pontos: null,
+          vencedorAvanca: null,
         }}
         placarLocal={undefined}
         onChangeMandante={() => {}}

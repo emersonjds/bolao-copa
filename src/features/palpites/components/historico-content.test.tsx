@@ -45,6 +45,7 @@ const palpite: Palpite = {
   golsMandante: 2,
   golsVisitante: 0,
   pontos: 3,
+  vencedorAvanca: null,
 };
 
 // ---------------------------------------------------------------------------

@@ -76,6 +76,7 @@ const palpiteSalvo: Palpite = {
   golsMandante: 2,
   golsVisitante: 0,
   pontos: null,
+  vencedorAvanca: null,
 };
 
 const HORA = 60 * 60 * 1000;

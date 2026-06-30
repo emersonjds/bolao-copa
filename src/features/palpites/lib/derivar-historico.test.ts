@@ -34,6 +34,7 @@ function palpite(over: Partial<Palpite> & Pick<Palpite, "partidaId">): Palpite {
     golsMandante: 0,
     golsVisitante: 0,
     pontos: null,
+    vencedorAvanca: null,
     ...over,
   };
 }

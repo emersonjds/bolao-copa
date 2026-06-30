@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { http, HttpResponse } from "msw";
 import { server } from "@/test/msw/server";
 import { restSingle, restList, restWrite, restError } from "@/test/msw/handlers";
 import { palpiteDb } from "@/test/fixtures";
@@ -51,6 +52,7 @@ describe("listarMeusPalpites", () => {
         golsMandante: 2,
         golsVisitante: 0,
         pontos: null,
+        vencedorAvanca: null,
       },
     ]);
   });
@@ -92,6 +94,24 @@ describe("salvarPalpite", () => {
         golsVisitante: 1,
       })
     ).resolves.toBeUndefined();
+  });
+
+  it("envia vencedor_avanca no upsert quando informado", async () => {
+    let bodyRecebido: unknown;
+    server.use(
+      http.post("*/rest/v1/palpites", async ({ request }) => {
+        bodyRecebido = await request.json();
+        return new HttpResponse(null, { status: 201 });
+      }),
+    );
+    await salvarPalpite({
+      participanteId: "p1",
+      partidaId: "m1",
+      golsMandante: 1,
+      golsVisitante: 1,
+      vencedorAvanca: "sel-brasil",
+    });
+    expect(bodyRecebido).toMatchObject({ vencedor_avanca: "sel-brasil" });
   });
 
   it("lança erro com a mensagem do banco quando a permissão é negada (403)", async () => {
