@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import fs from "node:fs";
 import path from "node:path";
 import { buildSupabaseAuthCookies } from "./helpers/auth-cookie";
+import { AVISOS } from "@/features/novidades/model/aviso-atual";
 
 /**
  * Setup de autenticação para os specs logados. Como o login real é Google OAuth
@@ -75,12 +76,13 @@ setup("autentica o usuário de teste", async ({ context }) => {
   await context.storageState({ path: STORAGE_FILE });
   fs.writeFileSync(META_FILE, JSON.stringify({ userId: data.user.id }));
 
-  // Marca o aviso de novidades como visto (id em features/novidades/model):
-  // o modal aparece no 1º acesso e cobriria os cliques dos specs autenticados.
+  // Marca TODOS os avisos como vistos para o usuário de teste — mesmo padrão
+  // do scenario-e2e.ts para as contas demo. Impede que modais de fase (mata-mata,
+  // oitavas…) bloqueiem cliques nos specs autenticados.
   await admin
     .from("avisos_vistos")
     .upsert(
-      { user_id: data.user.id, aviso_id: "novidades-2026-06" },
+      AVISOS.map((aviso) => ({ user_id: data.user.id, aviso_id: aviso.id })),
       { onConflict: "user_id,aviso_id" }
     );
 });
