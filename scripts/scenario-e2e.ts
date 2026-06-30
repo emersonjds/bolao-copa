@@ -15,6 +15,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Client } from "pg";
 import fs from "node:fs";
 import path from "node:path";
+import { AVISOS } from "@/features/novidades/model/aviso-atual";
 
 // ── carrega .env.test ────────────────────────────────────────────────────────
 const envTest = path.join(process.cwd(), ".env.test");
@@ -134,14 +135,13 @@ async function run(pgClient: Client) {
     if (error || !pa) throw new Error(`Sem participante para ${c.email}: ${error?.message}`);
     participantes.push({ nome: c.nome, participanteId: pa.id });
 
-    // Marca o modal de novidades como visto (id em features/novidades/model):
-    // ele aparece no 1º acesso e cobriria os cliques dos specs E2E logados.
-    await admin
-      .from("avisos_vistos")
-      .upsert(
-        { user_id: userId, aviso_id: "novidades-2026-06" },
-        { onConflict: "user_id,aviso_id" }
-      );
+    // Marca TODOS os avisos como vistos para as contas demo: qualquer modal
+    // apareceria no 1º acesso e cobriria os cliques dos specs E2E logados. Os
+    // specs que testam os modais usam contexto anônimo + localStorage próprio.
+    await admin.from("avisos_vistos").upsert(
+      AVISOS.map((aviso) => ({ user_id: userId, aviso_id: aviso.id })),
+      { onConflict: "user_id,aviso_id" }
+    );
   }
   const participanteIds = participantes.map((p) => p.participanteId);
 
