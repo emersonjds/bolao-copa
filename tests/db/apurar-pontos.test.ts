@@ -106,7 +106,7 @@ async function palpita(partida: string, gm: number, gv: number): Promise<void> {
 
 async function encerra(partida: string, gm: number, gv: number, penaltis = false): Promise<void> {
   await db.query(
-    `update partidas set status='encerrada', gols_mandante=$2, gols_visitante=$3, vencedor_penaltis=$4 where id=$1`,
+    `update partidas set status='encerrada', gols_mandante=$2, gols_visitante=$3, vencedor_penaltis=$4, data_hora=now()-interval '1 hour' where id=$1`,
     [partida, gm, gv, penaltis ? selB : null]
   );
 }
@@ -304,7 +304,7 @@ describe("hardening — validação e integridade (0024–0026)", () => {
     const p = await novaPartida();
     await expect(
       db.query(
-        "update partidas set status='encerrada', gols_mandante=100, gols_visitante=0 where id=$1",
+        "update partidas set status='encerrada', gols_mandante=100, gols_visitante=0, data_hora=now()-interval '1 hour' where id=$1",
         [p]
       )
     ).rejects.toThrow(/partidas_gols_validos|check/i);

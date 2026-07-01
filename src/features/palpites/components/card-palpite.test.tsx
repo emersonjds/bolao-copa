@@ -475,6 +475,50 @@ describe("CardPalpite — seletor quem passa", () => {
     expect(screen.queryByLabelText(/quem passa/i)).not.toBeInTheDocument();
   });
 
+  it("herda o quem-passa salvo quando o seletor não foi tocado (placarLocal sem vencedorAvanca)", () => {
+    render(
+      <CardPalpite
+        {...propsBase()}
+        partida={partidaOitavas}
+        palpiteSalvo={{
+          id: "pal-1",
+          participanteId: "part-1",
+          partidaId: partidaOitavas.id,
+          golsMandante: 1,
+          golsVisitante: 1,
+          pontos: null,
+          vencedorAvanca: "sel-bra",
+        }}
+        placarLocal={{ mandante: "1", visitante: "1" }}
+        estado="liberado"
+      />
+    );
+    expect(screen.getByLabelText(/quem passa/i)).toHaveValue("sel-bra");
+  });
+
+  it("reflete a limpeza do quem-passa (placeholder) mesmo havendo palpite salvo", () => {
+    // Regressão: antes, o seletor caía no valor salvo via `??` e continuava
+    // mostrando o time enquanto o save acusava "escolha quem passa".
+    render(
+      <CardPalpite
+        {...propsBase()}
+        partida={partidaOitavas}
+        palpiteSalvo={{
+          id: "pal-1",
+          participanteId: "part-1",
+          partidaId: partidaOitavas.id,
+          golsMandante: 1,
+          golsVisitante: 1,
+          pontos: null,
+          vencedorAvanca: "sel-bra",
+        }}
+        placarLocal={{ mandante: "1", visitante: "1", vencedorAvanca: null }}
+        estado="liberado"
+      />
+    );
+    expect(screen.getByLabelText(/quem passa/i)).toHaveValue("");
+  });
+
   it("usa rótulo 'Quem vence?' em jogo de terceiro-lugar", () => {
     render(
       <CardPalpite

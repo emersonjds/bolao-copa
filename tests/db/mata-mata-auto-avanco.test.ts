@@ -89,7 +89,8 @@ async function encerrar(
 ): Promise<void> {
   await db.query(
     `update partidas
-        set status = 'encerrada', gols_mandante = $2, gols_visitante = $3, vencedor_penaltis = $4
+        set status = 'encerrada', gols_mandante = $2, gols_visitante = $3, vencedor_penaltis = $4,
+            data_hora = now() - interval '1 hour'
       where id = $1`,
     [jogoId, golsMandante, golsVisitante, vencedorPenaltis]
   );

@@ -5,6 +5,7 @@ import type { Partida } from "@/entities/partida";
 import type { Palpite } from "@/entities/palpite";
 import { FlagIcon } from "@/shared/ui/flag-icon";
 import type { EstadoPalpite } from "../lib/estado-palpite";
+import { vencedorAvancaEfetivo } from "../lib/vencedor-avanca";
 
 export interface PlacarLocal {
   mandante: string;
@@ -81,8 +82,10 @@ export function CardPalpite({
     valorMandante !== "" &&
     valorVisitante !== "" &&
     valorMandante === valorVisitante;
-  const vencedorAvanca =
-    placarLocal?.vencedorAvanca ?? (palpiteSalvo?.vencedorAvanca ?? null);
+  const vencedorAvanca = vencedorAvancaEfetivo(
+    placarLocal?.vencedorAvanca,
+    palpiteSalvo?.vencedorAvanca
+  );
   const labelQuemAvanca =
     partida.fase === "terceiro-lugar" ? "Quem vence?" : "Quem passa?";
 
@@ -90,10 +93,17 @@ export function CardPalpite({
     if (!placarLocal) return false;
     if (placarLocal.mandante === "" || placarLocal.visitante === "") return false;
     if (!palpiteSalvo) return true;
-    return (
+    if (
       placarLocal.mandante !== String(palpiteSalvo.golsMandante) ||
       placarLocal.visitante !== String(palpiteSalvo.golsVisitante)
-    );
+    ) {
+      return true;
+    }
+    // Empate de mata-mata: trocar só o "quem passa" também é uma pendência.
+    if (ehMataMata && empate) {
+      return vencedorAvanca !== (palpiteSalvo.vencedorAvanca ?? null);
+    }
+    return false;
   })();
 
   const hasSalvo = !!palpiteSalvo && !hasPendente;

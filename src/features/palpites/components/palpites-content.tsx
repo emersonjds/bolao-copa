@@ -8,6 +8,7 @@ import { useSupabaseUser } from "@/shared/lib/supabase";
 import { useMeusPalpites, useSalvarPalpite } from "../api/queries";
 import { traduzirErroSalvar } from "../lib/traduzir-erro-salvar";
 import { estadoPalpite, filtrarHojeEProximoDia } from "../lib/estado-palpite";
+import { vencedorAvancaEfetivo } from "../lib/vencedor-avanca";
 import { lerRascunho, salvarRascunho, limparRascunho } from "../lib/rascunho-local";
 import { jaConfirmouAntecipado, marcarConfirmouAntecipado } from "../lib/confirmacao-antecipado";
 import { useRefetchNaBorda } from "../api/use-refetch-na-borda";
@@ -135,7 +136,10 @@ export function PalpitesContent() {
     const ehMataMata = partida && partida.fase !== "grupos";
     const empate = local.mandante === local.visitante;
     if (ehMataMata && empate) {
-      return (local.vencedorAvanca ?? null) !== (salvo.vencedorAvanca ?? null);
+      return (
+        vencedorAvancaEfetivo(local.vencedorAvanca, salvo.vencedorAvanca) !==
+        (salvo.vencedorAvanca ?? null)
+      );
     }
     return false;
   }
@@ -199,13 +203,16 @@ export function PalpitesContent() {
       await Promise.all(
         pendentes.map((p) => {
           const local = placaresLocais[p.id];
+          const salvo = (meusPalpites ?? []).find((sp) => sp.partidaId === p.id);
           const empateLocal = local.mandante === local.visitante;
           return salvarPalpite({
             partidaId: p.id,
             golsMandante: parseInt(local.mandante, 10),
             golsVisitante: parseInt(local.visitante, 10),
             vencedorAvanca:
-              p.fase !== "grupos" && empateLocal ? (local.vencedorAvanca ?? null) : null,
+              p.fase !== "grupos" && empateLocal
+                ? vencedorAvancaEfetivo(local.vencedorAvanca, salvo?.vencedorAvanca)
+                : null,
           });
         })
       );
@@ -250,10 +257,11 @@ export function PalpitesContent() {
 
     const temEmpateMataMataIncompleto = pendentes.some((p) => {
       const local = placaresLocais[p.id];
+      const salvo = (meusPalpites ?? []).find((sp) => sp.partidaId === p.id);
       return (
         p.fase !== "grupos" &&
         local.mandante === local.visitante &&
-        (local.vencedorAvanca ?? null) === null
+        vencedorAvancaEfetivo(local.vencedorAvanca, salvo?.vencedorAvanca) === null
       );
     });
     if (temEmpateMataMataIncompleto) {
