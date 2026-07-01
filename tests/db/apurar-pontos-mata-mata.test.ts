@@ -75,7 +75,7 @@ async function cenario(opts: {
     [participante, partida, opts.pgm, opts.pgv, opts.avanca],
   );
   await db.query(
-    `update partidas set status='encerrada', gols_mandante=$2, gols_visitante=$3, vencedor_penaltis=$4 where id=$1`,
+    `update partidas set status='encerrada', gols_mandante=$2, gols_visitante=$3, vencedor_penaltis=$4, data_hora=now()-interval '1 hour' where id=$1`,
     [partida, opts.rgm, opts.rgv, opts.pen],
   );
   const r = await db.query("select pontos from palpites where partida_id=$1", [partida]);
