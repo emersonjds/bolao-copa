@@ -125,6 +125,14 @@ describe("enforce_palpite_lock — hoje + próximo dia com jogos (0037) e apito 
     const distante = await partidaEm(DISTANTE_BRT);
     await expect(palpita(distante)).rejects.toThrow(/próximo dia|liberado/i);
   });
+  it("recusa palpite a menos de 5 min do apito (margem 0038)", async () => {
+    const p = await partidaEm("now() + interval '3 minutes'");
+    await expect(palpita(p)).rejects.toThrow(/encerrado|5 minutos/i);
+  });
+  it("aceita palpite a mais de 5 min do apito", async () => {
+    const p = await partidaEm("now() + interval '30 minutes'");
+    await expect(palpita(p)).resolves.toBeUndefined();
+  });
   it("recusa palpite DEPOIS do apito (borda superior, mantida)", async () => {
     const p = await partidaEm("now() - interval '1 hour'");
     await expect(palpita(p)).rejects.toThrow(/encerrado|começou/i);

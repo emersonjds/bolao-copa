@@ -57,7 +57,7 @@ export function ModalConfirmarAntecipado({
 
         <p id="texto-antecipado" className="text-sm leading-relaxed text-muted-foreground">
           Esses serão os palpites usados quando o jogo começar — a não ser que você ajuste no dia.
-          Você pode mudar quantas vezes quiser até o apito inicial.
+          Você pode mudar quantas vezes quiser até 5 minutos antes do apito.
         </p>
 
         <div className="mt-5 flex flex-col gap-2 sm:flex-row-reverse">

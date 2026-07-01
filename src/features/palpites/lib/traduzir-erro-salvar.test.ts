@@ -7,7 +7,7 @@ describe("traduzirErroSalvar", () => {
       "Falha ao salvar palpite: Palpite encerrado: a partida já começou"
     );
     expect(r.tipo).toBe("lock");
-    expect(r.texto).toMatch(/já começou/i);
+    expect(r.texto).toMatch(/5 minutos|fecharam/i);
     expect(r.texto).not.toMatch(/erro|exception|42501/i);
   });
 

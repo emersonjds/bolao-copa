@@ -391,7 +391,7 @@ describe("PalpitesContent", () => {
 
     await waitFor(() => {
       expect(toast.warning).toHaveBeenCalledWith(
-        "Tarde demais! Esse jogo já começou e os palpites dele fecharam no apito inicial.",
+        "Tarde demais! Os palpites deste jogo fecharam 5 minutos antes do apito.",
         { id: "mock-toast-id" }
       );
     });

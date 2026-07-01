@@ -48,6 +48,20 @@ describe("estadoPalpite", () => {
     });
     expect(estadoPalpite(p, agora)).toBe("encerrado");
   });
+  it("encerrado: dentro dos 5 min antes do apito (margem)", () => {
+    const p = partida({
+      janelaInicio: new Date(agora - HORA).toISOString(),
+      dataHora: new Date(agora + 3 * 60 * 1000).toISOString(), // apito em 3 min
+    });
+    expect(estadoPalpite(p, agora)).toBe("encerrado");
+  });
+  it("liberado: mais de 5 min antes do apito", () => {
+    const p = partida({
+      janelaInicio: new Date(agora - HORA).toISOString(),
+      dataHora: new Date(agora + 10 * 60 * 1000).toISOString(), // apito em 10 min
+    });
+    expect(estadoPalpite(p, agora)).toBe("liberado");
+  });
   it("encerrado: status não agendada mesmo antes do apito", () => {
     const p = partida({
       status: "encerrada",

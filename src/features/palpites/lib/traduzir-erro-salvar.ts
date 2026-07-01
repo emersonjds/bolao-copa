@@ -28,11 +28,11 @@ export function traduzirErroSalvar(mensagemBruta: string): ErroSalvarAmigavel {
     };
   }
 
-  // Trava de horário: a partida já começou (apito inicial fecha os palpites).
+  // Trava de horário: fecha 5 min antes do apito.
   if (msg.includes("começou") || msg.includes("encerrado")) {
     return {
       tipo: "lock",
-      texto: "Tarde demais! Esse jogo já começou e os palpites dele fecharam no apito inicial.",
+      texto: "Tarde demais! Os palpites deste jogo fecharam 5 minutos antes do apito.",
     };
   }
 

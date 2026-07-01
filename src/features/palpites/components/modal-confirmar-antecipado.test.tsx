@@ -8,7 +8,7 @@ describe("ModalConfirmarAntecipado", () => {
     render(<ModalConfirmarAntecipado onConfirmar={() => {}} onCancelar={() => {}} />);
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText(/usados quando o jogo começar/i)).toBeInTheDocument();
-    expect(screen.getByText(/até o apito inicial/i)).toBeInTheDocument();
+    expect(screen.getByText(/até 5 minutos antes do apito/i)).toBeInTheDocument();
   });
 
   it("usa botões com altura confortável de toque (h-14)", () => {

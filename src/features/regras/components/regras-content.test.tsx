@@ -97,11 +97,11 @@ describe("RegrasContent", () => {
     expect(badges0[0].className).toContain("text-muted-foreground");
   });
 
-  it("exibe o aviso de trava de palpite ao apito inicial", () => {
+  it("exibe o aviso de trava de palpite 5 min antes do apito", () => {
     render(<RegrasContent />);
 
-    expect(screen.getByText(/palpite trava no apito/i)).toBeInTheDocument();
-    expect(screen.getByText(/até o apito inicial da partida/i)).toBeInTheDocument();
+    expect(screen.getByText(/palpite trava 5 min antes do apito/i)).toBeInTheDocument();
+    expect(screen.getByText(/até 5 minutos antes do apito/i)).toBeInTheDocument();
   });
 
   it("exibe a seção de desempate com os critérios na ordem correta", () => {
