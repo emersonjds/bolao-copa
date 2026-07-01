@@ -10,7 +10,7 @@ export default function PalpitesPage() {
     <div className="space-y-4">
       <header>
         <h1 className="font-display text-2xl font-bold text-foreground">Meus palpites</h1>
-        <p className="text-sm text-muted-foreground">Palpite trava no apito inicial da partida.</p>
+        <p className="text-sm text-muted-foreground">Palpite trava 5 minutos antes do apito.</p>
       </header>
 
       {loading ? (

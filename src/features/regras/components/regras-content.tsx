@@ -405,10 +405,10 @@ export function RegrasContent() {
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
         <p className="flex items-center gap-1.5 text-sm font-semibold text-amber-800">
           <Lock className="h-4 w-4 shrink-0" aria-hidden="true" />
-          Palpite trava no apito
+          Palpite trava 5 min antes do apito
         </p>
         <p className="mt-1.5 text-xs leading-relaxed text-amber-700">
-          Você pode alterar seu palpite quantas vezes quiser até o apito inicial da partida. Depois
+          Você pode alterar seu palpite quantas vezes quiser até 5 minutos antes do apito. Depois
           disso, ele fica travado e não pode ser mudado.
         </p>
       </div>
