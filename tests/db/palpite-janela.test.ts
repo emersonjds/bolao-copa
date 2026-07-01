@@ -1,8 +1,8 @@
 /**
  * Testes da janela de palpite. Bate no Postgres LOCAL (supabase start).
  * Valida as funções janela_palpite_inicio / janela_inicio (usadas pelo cliente
- * para agrupar jogos por dia) e o trigger enforce_palpite_lock. Desde a 0021 a
- * borda inferior foi removida (palpite antecipado liberado); só o apito trava.
+ * para agrupar jogos por dia) e o trigger enforce_palpite_lock. A 0021 removeu a
+ * borda inferior; a 0037 limita o palpite a hoje + o próximo dia com jogos (BRT).
  *
  * Cada teste cria partida+palpite numa transação e dá ROLLBACK no fim.
  * Usa participante dedicado (email diferente de apurar-pontos) para não colidir.
@@ -103,23 +103,34 @@ describe("janela_palpite_inicio — meia-noite BRT do dia do jogo", () => {
   });
 });
 
-describe("enforce_palpite_lock — só a borda superior (0021 liberou palpite antecipado)", () => {
-  it("aceita palpite antecipado (jogo daqui a 10 dias) — 0021 removeu a borda inferior", async () => {
-    const p = await partidaEm("now() + interval '10 days'");
-    await expect(palpita(p)).resolves.toBeUndefined();
-  });
-  it("aceita palpite de jogo próximo (1h no futuro)", async () => {
+// Âncoras de dia no fuso BRT (não input externo) para testes determinísticos.
+const AMANHA_BRT =
+  "((now() at time zone 'America/Sao_Paulo')::date + 1 + interval '15 hours') at time zone 'America/Sao_Paulo'";
+const DISTANTE_BRT =
+  "((now() at time zone 'America/Sao_Paulo')::date + 7 + interval '15 hours') at time zone 'America/Sao_Paulo'";
+
+describe("enforce_palpite_lock — hoje + próximo dia com jogos (0037) e apito (0021)", () => {
+  it("aceita palpite de jogo de HOJE (1h no futuro)", async () => {
     const p = await partidaEm("now() + interval '1 hour'");
     await expect(palpita(p)).resolves.toBeUndefined();
+  });
+  it("aceita palpite do PRÓXIMO dia (amanhã BRT)", async () => {
+    const p = await partidaEm(AMANHA_BRT);
+    await expect(palpita(p)).resolves.toBeUndefined();
+  });
+  it("recusa palpite de jogo DISTANTE (além do próximo dia com jogos)", async () => {
+    // Um jogo amanhã fixa o "próximo dia" = amanhã, independente do seed;
+    // o jogo distante (+7) fica fora da janela e é recusado.
+    await partidaEm(AMANHA_BRT);
+    const distante = await partidaEm(DISTANTE_BRT);
+    await expect(palpita(distante)).rejects.toThrow(/próximo dia|liberado/i);
   });
   it("recusa palpite DEPOIS do apito (borda superior, mantida)", async () => {
     const p = await partidaEm("now() - interval '1 hour'");
     await expect(palpita(p)).rejects.toThrow(/encerrado|começou/i);
   });
-  it("aceita UPDATE de gols de jogo distante (sem borda inferior) — 0021", async () => {
-    // Antes da 0021 isto era recusado; hoje editar palpite de jogo futuro é livre,
-    // a única trava é o apito (coberta acima).
-    const p = await partidaEm("now() + interval '10 days'");
+  it("aceita editar gols de palpite de jogo dentro da janela (hoje)", async () => {
+    const p = await partidaEm("now() + interval '1 hour'");
     await palpita(p); // 1x0
     await expect(
       db.query("update palpites set gols_mandante=3 where participante_id=$1 and partida_id=$2", [
