@@ -52,9 +52,12 @@ export function SeletorSemana({
             const isToday = key === todayKey;
             const hasGames = daysWithGames.has(key);
             const isProximoDia = key === proximoDiaKey;
-            const label = hasGames
-              ? `${formatarDiaPorExtenso(day)} — com jogos`
-              : formatarDiaPorExtenso(day);
+            const sufixo = isProximoDia
+              ? " — próximo dia com jogos"
+              : hasGames
+                ? " — com jogos"
+                : "";
+            const label = `${formatarDiaPorExtenso(day)}${sufixo}`;
 
             return (
               <button

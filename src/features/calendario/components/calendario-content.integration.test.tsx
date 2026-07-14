@@ -44,7 +44,7 @@ describe("Agenda da Copa (integração com Supabase mockado)", () => {
 
     expect(await screen.findByText("Sem jogos hoje")).toBeInTheDocument();
     expect(screen.getByText(/Bola rola em 2 dias/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Ver esse dia" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Ver esse dia/ })).toBeInTheDocument();
   });
 
   it("'Ver esse dia' abre a agenda do próximo dia com jogos", async () => {
@@ -52,7 +52,7 @@ describe("Agenda da Copa (integração com Supabase mockado)", () => {
 
     renderWithProviders(<CalendarioContent />);
 
-    await userEvent.click(await screen.findByRole("button", { name: "Ver esse dia" }));
+    await userEvent.click(await screen.findByRole("button", { name: /Ver esse dia/ }));
 
     expect(screen.getByText("México")).toBeInTheDocument();
     expect(screen.queryByText("Sem jogos hoje")).not.toBeInTheDocument();

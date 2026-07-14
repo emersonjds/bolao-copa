@@ -22,19 +22,17 @@ function teaserDoDia(grupo: GrupoDiaData): string {
   return `${jogo.mandante.nome} × ${jogo.visitante.nome}`;
 }
 
-function EstadoVazio({
-  titulo,
-  eHoje,
-  proximoDia,
-  onIrParaDia,
-}: {
+interface EstadoVazioProps {
   titulo: string;
-  eHoje: boolean;
+  hoje: Date | null;
   proximoDia: GrupoDiaData | null;
   onIrParaDia: (grupo: GrupoDiaData) => void;
-}) {
+}
+
+/** `hoje` só vem preenchido quando o dia vazio é o de hoje (habilita a contagem regressiva). */
+function EstadoVazio({ titulo, hoje, proximoDia, onIrParaDia }: EstadoVazioProps) {
   return (
-    <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
+    <div role="status" className="flex flex-col items-center gap-3 px-4 py-12 text-center">
       <span className="text-3xl" aria-hidden="true">
         ⚽
       </span>
@@ -43,7 +41,7 @@ function EstadoVazio({
         <p className="font-display text-base font-bold text-foreground">{titulo}</p>
         {proximoDia && (
           <p className="text-sm text-muted-foreground">
-            {eHoje && `Bola rola ${contagemRegressiva(new Date(), proximoDia.date)} · `}
+            {hoje && `Bola rola ${contagemRegressiva(hoje, proximoDia.date)} · `}
             {formatarDiaPorExtenso(proximoDia.date)}
           </p>
         )}
@@ -57,6 +55,7 @@ function EstadoVazio({
           <button
             type="button"
             onClick={() => onIrParaDia(proximoDia)}
+            aria-label={`Ver esse dia: ${formatarDiaPorExtenso(proximoDia.date)}`}
             className="mt-1 flex h-11 min-w-[160px] items-center justify-center rounded-full bg-brand-700 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-800"
           >
             Ver esse dia
@@ -92,7 +91,8 @@ export function AgendaList({
     return (
       <EstadoVazio
         titulo={eHoje ? "Sem jogos hoje" : "Nenhum jogo neste dia"}
-        eHoje={eHoje}
+        // Mesma fonte de "hoje" do resto da tela (todayKey), não o relógio do render.
+        hoje={eHoje ? new Date(`${todayKey}T00:00:00`) : null}
         proximoDia={proximoDia}
         onIrParaDia={onIrParaDia}
       />

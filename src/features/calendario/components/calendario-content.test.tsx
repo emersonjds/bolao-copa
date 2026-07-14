@@ -137,7 +137,7 @@ describe("CalendarioContent", () => {
     renderWithProviders(<CalendarioContent />);
 
     expect(screen.getByText("Sem jogos hoje")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Ver esse dia" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Ver esse dia/ })).toBeInTheDocument();
     expect(screen.queryByText("Brasil")).not.toBeInTheDocument();
   });
 
@@ -145,7 +145,7 @@ describe("CalendarioContent", () => {
     setUsePartidas({ data: [makePartidaFutura()] });
     renderWithProviders(<CalendarioContent />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Ver esse dia" }));
+    await userEvent.click(screen.getByRole("button", { name: /Ver esse dia/ }));
 
     expect(screen.getByText("Brasil")).toBeInTheDocument();
     expect(screen.queryByText("Sem jogos hoje")).not.toBeInTheDocument();
@@ -199,6 +199,28 @@ describe("CalendarioContent", () => {
 
     expect(screen.getByText("México")).toBeInTheDocument();
     expect(getDayButtons().some((b) => b.getAttribute("aria-current") === "date")).toBe(false);
+  });
+
+  it("'Ver esse dia' desloca o seletor para a semana do próximo jogo", async () => {
+    // Hoje = seg 13/jul/2026 (sem jogos); próximo jogo = dom 19/jul, já na
+    // semana seguinte — força o cálculo de weekOffset, não só o filtro do dia.
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date(2026, 6, 13, 10, 0, 0));
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+    setUsePartidas({
+      data: [{ ...makePartidaHoje(), id: "p-final", dataHora: "2026-07-19T16:00:00" }],
+    });
+    renderWithProviders(<CalendarioContent />);
+
+    await user.click(screen.getByRole("button", { name: /Ver esse dia/ }));
+
+    const dia19 = getDayButtons().find((b) => b.textContent?.includes("19")) as HTMLElement;
+    expect(dia19).toHaveAttribute("aria-pressed", "true");
+    // Hoje (13/jul) saiu da janela visível: a semana exibida é a de 19–25/jul.
+    expect(getDayButtons().some((b) => b.getAttribute("aria-current") === "date")).toBe(false);
+
+    vi.useRealTimers();
   });
 
   it("voltar para a semana atual reexibe o dia de hoje", async () => {

@@ -124,7 +124,7 @@ describe("AgendaList", () => {
       proximoDia,
     });
 
-    await userEvent.click(screen.getByRole("button", { name: "Ver esse dia" }));
+    await userEvent.click(screen.getByRole("button", { name: /Ver esse dia/ }));
 
     expect(onIrParaDia).toHaveBeenCalledWith(proximoDia);
   });
@@ -138,7 +138,7 @@ describe("AgendaList", () => {
       proximoDia: null,
     });
     expect(screen.getByText("Sem jogos hoje")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Ver esse dia" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Ver esse dia/ })).not.toBeInTheDocument();
   });
 
   it("renderiza todos os grupos quando nenhum dia está selecionado", () => {
