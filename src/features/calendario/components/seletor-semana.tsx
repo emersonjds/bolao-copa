@@ -1,23 +1,16 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { DIAS_SEMANA_ABREV, toDateKey } from "../lib";
+import { DIAS_SEMANA_ABREV, formatarDiaPorExtenso, toDateKey } from "../lib";
 
 interface SeletorSemanaProps {
   weekDays: readonly Date[];
   selectedDate: string | null;
   todayKey: string;
   daysWithGames: ReadonlySet<string>;
+  proximoDiaKey: string | null;
   onSelectDay: (dateKey: string) => void;
   onPrevWeek: () => void;
   onNextWeek: () => void;
-}
-
-function ariaLabelDia(date: Date): string {
-  return date.toLocaleDateString("pt-BR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
 }
 
 export function SeletorSemana({
@@ -25,6 +18,7 @@ export function SeletorSemana({
   selectedDate,
   todayKey,
   daysWithGames,
+  proximoDiaKey,
   onSelectDay,
   onPrevWeek,
   onNextWeek,
@@ -57,6 +51,13 @@ export function SeletorSemana({
             const isSelected = selectedDate === key;
             const isToday = key === todayKey;
             const hasGames = daysWithGames.has(key);
+            const isProximoDia = key === proximoDiaKey;
+            const sufixo = isProximoDia
+              ? " — próximo dia com jogos"
+              : hasGames
+                ? " — com jogos"
+                : "";
+            const label = `${formatarDiaPorExtenso(day)}${sufixo}`;
 
             return (
               <button
@@ -64,7 +65,7 @@ export function SeletorSemana({
                 type="button"
                 aria-pressed={isSelected}
                 aria-current={isToday ? "date" : undefined}
-                aria-label={ariaLabelDia(day)}
+                aria-label={label}
                 onClick={() => onSelectDay(key)}
                 className="flex min-w-[40px] flex-col items-center gap-0.5"
               >
@@ -79,7 +80,9 @@ export function SeletorSemana({
                       ? "bg-brand-800 text-white"
                       : isToday
                         ? "font-bold text-brand-700 ring-1 ring-brand-300"
-                        : "text-foreground hover:bg-muted"
+                        : isProximoDia
+                          ? "bg-brand-50 font-semibold text-brand-800 ring-1 ring-brand-300"
+                          : "text-foreground hover:bg-muted"
                   )}
                   aria-hidden="true"
                 >
@@ -88,8 +91,8 @@ export function SeletorSemana({
 
                 <span
                   className={cn(
-                    "h-1 w-1 rounded-full",
-                    hasGames ? "bg-brand-400" : "bg-transparent"
+                    "h-1.5 w-1.5 rounded-full",
+                    hasGames ? "bg-brand-600" : "bg-transparent"
                   )}
                   aria-hidden="true"
                 />

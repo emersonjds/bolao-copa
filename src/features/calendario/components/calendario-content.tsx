@@ -3,7 +3,14 @@
 import { useState, useMemo } from "react";
 import { usePartidas } from "@/features/partidas";
 import { useAuth } from "@/features/auth";
-import { toDateKey, groupByDay, getWeekStart, type GrupoDiaData } from "../lib";
+import {
+  toDateKey,
+  groupByDay,
+  getWeekStart,
+  semanasEntre,
+  proximoDiaComJogo,
+  type GrupoDiaData,
+} from "../lib";
 import { SeletorSemana } from "./seletor-semana";
 import { AgendaList } from "./agenda-list";
 
@@ -48,7 +55,8 @@ export function CalendarioContent() {
   const todayKey = toDateKey(today);
 
   const [weekOffset, setWeekOffset] = useState(0);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  // Abre já filtrado no dia de hoje; clicar de novo no dia limpa o filtro.
+  const [selectedDate, setSelectedDate] = useState<string | null>(todayKey);
 
   const weekDays = useMemo<readonly Date[]>(() => {
     const baseStart = getWeekStart(today);
@@ -70,8 +78,17 @@ export function CalendarioContent() {
     return new Set(allGroups.map((g) => g.dateKey));
   }, [allGroups]);
 
+  const proximoDia = useMemo<GrupoDiaData | null>(() => {
+    return proximoDiaComJogo(allGroups, selectedDate ?? todayKey);
+  }, [allGroups, selectedDate, todayKey]);
+
   const handleSelectDay = (dateKey: string) => {
     setSelectedDate((prev) => (prev === dateKey ? null : dateKey));
+  };
+
+  const handleIrParaDia = (grupo: GrupoDiaData) => {
+    setWeekOffset(semanasEntre(today, grupo.date));
+    setSelectedDate(grupo.dateKey);
   };
 
   const handlePrevWeek = () => {
@@ -117,6 +134,7 @@ export function CalendarioContent() {
         selectedDate={selectedDate}
         todayKey={todayKey}
         daysWithGames={daysWithGames}
+        proximoDiaKey={proximoDia?.dateKey ?? null}
         onSelectDay={handleSelectDay}
         onPrevWeek={handlePrevWeek}
         onNextWeek={handleNextWeek}
@@ -125,7 +143,9 @@ export function CalendarioContent() {
         groups={allGroups}
         selectedDate={selectedDate}
         todayKey={todayKey}
+        proximoDia={proximoDia}
         mostrarCta={!!user}
+        onIrParaDia={handleIrParaDia}
       />
     </>
   );

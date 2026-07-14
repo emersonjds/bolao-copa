@@ -38,6 +38,23 @@ function dataHojeLocal(): string {
   return `${hoje.getFullYear()}-${pad(hoje.getMonth() + 1)}-${pad(hoje.getDate())}`;
 }
 
+function dataLocalEm(dias: number): string {
+  const data = new Date();
+  data.setDate(data.getDate() + dias);
+  return `${data.getFullYear()}-${pad(data.getMonth() + 1)}-${pad(data.getDate())}`;
+}
+
+/** Jogo em D+3: cai fora da semana atual só quando hoje é qui/sex/sáb. */
+function makePartidaFutura(): Partida {
+  return {
+    ...makePartidaHoje(),
+    id: "p-futura",
+    dataHora: `${dataLocalEm(3)}T12:00:00`,
+    mandante: { id: "sel-bra", nome: "Brasil", codigo: "BRA" },
+    visitante: { id: "sel-arg", nome: "Argentina", codigo: "ARG" },
+  };
+}
+
 function makePartidaHoje(): Partida {
   return {
     id: "p-hoje",
@@ -107,18 +124,45 @@ describe("CalendarioContent", () => {
     expect(screen.getByRole("link")).toBeInTheDocument();
   });
 
-  it("ao selecionar um dia sem jogos, mostra 'Nenhum jogo neste dia.'", async () => {
+  it("abre já filtrado no dia de hoje, sem listar os jogos dos outros dias", () => {
+    setUsePartidas({ data: [makePartidaHoje(), makePartidaFutura()] });
+    renderWithProviders(<CalendarioContent />);
+
+    expect(screen.getByText("México")).toBeInTheDocument();
+    expect(screen.queryByText("Brasil")).not.toBeInTheDocument();
+  });
+
+  it("quando hoje não tem jogos, mostra 'Sem jogos hoje' e o próximo dia com jogos", () => {
+    setUsePartidas({ data: [makePartidaFutura()] });
+    renderWithProviders(<CalendarioContent />);
+
+    expect(screen.getByText("Sem jogos hoje")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Ver esse dia/ })).toBeInTheDocument();
+    expect(screen.queryByText("Brasil")).not.toBeInTheDocument();
+  });
+
+  it("'Ver esse dia' pula para o próximo dia com jogos e lista as partidas", async () => {
+    setUsePartidas({ data: [makePartidaFutura()] });
+    renderWithProviders(<CalendarioContent />);
+
+    await userEvent.click(screen.getByRole("button", { name: /Ver esse dia/ }));
+
+    expect(screen.getByText("Brasil")).toBeInTheDocument();
+    expect(screen.queryByText("Sem jogos hoje")).not.toBeInTheDocument();
+  });
+
+  it("ao selecionar um dia sem jogos, mostra 'Nenhum jogo neste dia'", async () => {
     setUsePartidas({ data: [makePartidaHoje()] });
     renderWithProviders(<CalendarioContent />);
 
-    // Jogo de hoje aparece inicialmente (nenhum dia selecionado).
+    // Abre no dia de hoje, que tem jogo.
     expect(screen.getByText("México")).toBeInTheDocument();
 
     // Clica num dia da semana que não é hoje (sem aria-current) → sem jogos.
     const diaSemJogos = getDayButtons().find((b) => b.getAttribute("aria-current") !== "date");
     await userEvent.click(diaSemJogos as HTMLElement);
 
-    expect(screen.getByText("Nenhum jogo neste dia.")).toBeInTheDocument();
+    expect(screen.getByText("Nenhum jogo neste dia")).toBeInTheDocument();
     expect(screen.queryByText("México")).not.toBeInTheDocument();
   });
 
@@ -132,12 +176,12 @@ describe("CalendarioContent", () => {
 
     // 1º clique: seleciona o dia sem jogos → lista vazia.
     await userEvent.click(diaSemJogos);
-    expect(screen.getByText("Nenhum jogo neste dia.")).toBeInTheDocument();
+    expect(screen.getByText("Nenhum jogo neste dia")).toBeInTheDocument();
 
     // 2º clique no mesmo dia: prev === dateKey → desmarca (volta a mostrar tudo).
     await userEvent.click(diaSemJogos);
     expect(screen.getByText("México")).toBeInTheDocument();
-    expect(screen.queryByText("Nenhum jogo neste dia.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Nenhum jogo neste dia")).not.toBeInTheDocument();
   });
 
   it("trocar de semana reseta a seleção de dia e desloca a janela", async () => {
@@ -147,7 +191,7 @@ describe("CalendarioContent", () => {
     // Seleciona um dia sem jogos para esvaziar a lista.
     const diaSemJogos = getDayButtons().find((b) => b.getAttribute("aria-current") !== "date");
     await userEvent.click(diaSemJogos as HTMLElement);
-    expect(screen.getByText("Nenhum jogo neste dia.")).toBeInTheDocument();
+    expect(screen.getByText("Nenhum jogo neste dia")).toBeInTheDocument();
 
     // Avança a semana → seleção é resetada (lista volta a mostrar tudo) e hoje
     // sai da janela visível (nenhum botão com aria-current=date).
@@ -155,6 +199,28 @@ describe("CalendarioContent", () => {
 
     expect(screen.getByText("México")).toBeInTheDocument();
     expect(getDayButtons().some((b) => b.getAttribute("aria-current") === "date")).toBe(false);
+  });
+
+  it("'Ver esse dia' desloca o seletor para a semana do próximo jogo", async () => {
+    // Hoje = seg 13/jul/2026 (sem jogos); próximo jogo = dom 19/jul, já na
+    // semana seguinte — força o cálculo de weekOffset, não só o filtro do dia.
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date(2026, 6, 13, 10, 0, 0));
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+    setUsePartidas({
+      data: [{ ...makePartidaHoje(), id: "p-final", dataHora: "2026-07-19T16:00:00" }],
+    });
+    renderWithProviders(<CalendarioContent />);
+
+    await user.click(screen.getByRole("button", { name: /Ver esse dia/ }));
+
+    const dia19 = getDayButtons().find((b) => b.textContent?.includes("19")) as HTMLElement;
+    expect(dia19).toHaveAttribute("aria-pressed", "true");
+    // Hoje (13/jul) saiu da janela visível: a semana exibida é a de 19–25/jul.
+    expect(getDayButtons().some((b) => b.getAttribute("aria-current") === "date")).toBe(false);
+
+    vi.useRealTimers();
   });
 
   it("voltar para a semana atual reexibe o dia de hoje", async () => {
