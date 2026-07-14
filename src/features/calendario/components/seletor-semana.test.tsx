@@ -10,6 +10,7 @@ interface Overrides {
   selectedDate?: string | null;
   todayKey?: string;
   daysWithGames?: ReadonlySet<string>;
+  proximoDiaKey?: string | null;
   onSelectDay?: (dateKey: string) => void;
   onPrevWeek?: () => void;
   onNextWeek?: () => void;
@@ -21,6 +22,7 @@ function renderSeletor(overrides: Overrides = {}) {
     selectedDate: overrides.selectedDate ?? null,
     todayKey: overrides.todayKey ?? "2026-06-10",
     daysWithGames: overrides.daysWithGames ?? new Set<string>(["2026-06-07", "2026-06-11"]),
+    proximoDiaKey: overrides.proximoDiaKey ?? null,
     onSelectDay: overrides.onSelectDay ?? vi.fn(),
     onPrevWeek: overrides.onPrevWeek ?? vi.fn(),
     onNextWeek: overrides.onNextWeek ?? vi.fn(),
@@ -66,8 +68,28 @@ describe("SeletorSemana", () => {
     const botoes = getDayButtons();
     const pontoComJogo = botoes[0].querySelectorAll("span")[2];
     const pontoSemJogo = botoes[1].querySelectorAll("span")[2];
-    expect(pontoComJogo.className).toContain("bg-brand-400");
+    expect(pontoComJogo.className).toContain("bg-brand-600");
     expect(pontoSemJogo.className).toContain("bg-transparent");
+  });
+
+  it("anuncia no aria-label quais dias têm jogos", () => {
+    renderSeletor({ daysWithGames: new Set<string>(["2026-06-07"]) });
+    const botoes = getDayButtons();
+    expect(botoes[0]).toHaveAccessibleName("domingo, 7 de junho — com jogos");
+    expect(botoes[1]).toHaveAccessibleName("segunda-feira, 8 de junho");
+  });
+
+  it("destaca o próximo dia com jogos com anel e fundo", () => {
+    renderSeletor({ proximoDiaKey: "2026-06-11", todayKey: "2026-06-10" });
+    const numeroDoProximo = getDayButtons()[4].querySelectorAll("span")[1];
+    expect(numeroDoProximo.className).toContain("ring-brand-300");
+    expect(numeroDoProximo.className).toContain("bg-brand-50");
+  });
+
+  it("não destaca outros dias com jogos, só o próximo", () => {
+    renderSeletor({ proximoDiaKey: "2026-06-11", todayKey: "2026-06-10" });
+    const numeroDoDia07 = getDayButtons()[0].querySelectorAll("span")[1];
+    expect(numeroDoDia07.className).not.toContain("ring-brand-300");
   });
 
   it("dispara onPrevWeek ao clicar em 'Semana anterior'", async () => {
