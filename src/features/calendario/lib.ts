@@ -60,6 +60,40 @@ export function getWeekStart(date: Date): Date {
   return d;
 }
 
+/** Ex.: "segunda-feira, 14 de julho". */
+export function formatarDiaPorExtenso(date: Date): string {
+  return date.toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+}
+
+const UM_DIA_MS = 24 * 60 * 60 * 1000;
+
+/** Dias inteiros entre duas datas, ignorando o horário. */
+export function diasEntre(de: Date, para: Date): number {
+  const inicio = new Date(de).setHours(0, 0, 0, 0);
+  const fim = new Date(para).setHours(0, 0, 0, 0);
+  return Math.round((fim - inicio) / UM_DIA_MS);
+}
+
+const UMA_SEMANA_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** Quantas semanas separam a semana de `de` da semana de `para` (negativo = passado). */
+export function semanasEntre(de: Date, para: Date): number {
+  const diff = getWeekStart(para).getTime() - getWeekStart(de).getTime();
+  return Math.round(diff / UMA_SEMANA_MS);
+}
+
+/** Primeiro dia com jogos depois de `dateKey` (grupos já vêm ordenados por dia). */
+export function proximoDiaComJogo(
+  grupos: readonly GrupoDiaData[],
+  dateKey: string
+): GrupoDiaData | null {
+  return grupos.find((grupo) => grupo.dateKey > dateKey) ?? null;
+}
+
 const FASE_ABREV: Record<FaseCopa, string> = {
   grupos: "Grupos",
   "trinta-e-dois": "R32",

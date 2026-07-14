@@ -7,6 +7,8 @@ import {
   getWeekStart,
   getFaseBadge,
   groupByDay,
+  semanasEntre,
+  proximoDiaComJogo,
 } from "./lib";
 
 // Builder de Partida no formato de domínio (camelCase). Datas SEM "Z" para
@@ -135,6 +137,50 @@ describe("getFaseBadge", () => {
 
   it("retorna Final para a final", () => {
     expect(getFaseBadge(makePartida({ fase: "final", grupo: null }))).toBe("Final");
+  });
+});
+
+describe("semanasEntre", () => {
+  it("retorna 0 para datas da mesma semana", () => {
+    expect(semanasEntre(new Date(2026, 6, 13), new Date(2026, 6, 18))).toBe(0);
+  });
+
+  it("retorna positivo para uma semana futura", () => {
+    // 13/jul (seg) → 19/jul (dom, início da semana seguinte).
+    expect(semanasEntre(new Date(2026, 6, 13), new Date(2026, 6, 19))).toBe(1);
+  });
+
+  it("retorna negativo para uma semana passada", () => {
+    expect(semanasEntre(new Date(2026, 6, 13), new Date(2026, 5, 11))).toBe(-5);
+  });
+
+  it("ignora o horário do dia (não é afetado por horário de verão)", () => {
+    const de = new Date(2026, 6, 13, 23, 30);
+    const para = new Date(2026, 6, 21, 0, 30);
+    expect(semanasEntre(de, para)).toBe(1);
+  });
+});
+
+describe("proximoDiaComJogo", () => {
+  const grupos = groupByDay([
+    makePartida({ id: "a", dataHora: "2026-07-14T16:00:00" }),
+    makePartida({ id: "b", dataHora: "2026-07-18T16:00:00" }),
+  ]);
+
+  it("retorna o primeiro dia com jogo depois da data informada", () => {
+    expect(proximoDiaComJogo(grupos, "2026-07-13")?.dateKey).toBe("2026-07-14");
+  });
+
+  it("ignora o próprio dia informado (estritamente depois)", () => {
+    expect(proximoDiaComJogo(grupos, "2026-07-14")?.dateKey).toBe("2026-07-18");
+  });
+
+  it("retorna null quando não há mais jogos depois da data", () => {
+    expect(proximoDiaComJogo(grupos, "2026-07-18")).toBeNull();
+  });
+
+  it("retorna null quando não há grupos", () => {
+    expect(proximoDiaComJogo([], "2026-07-13")).toBeNull();
   });
 });
 
